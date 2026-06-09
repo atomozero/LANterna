@@ -155,6 +155,13 @@ MainWindow::MainWindow()
               B_TITLED_WINDOW,
               B_QUIT_ON_WINDOW_CLOSE | B_AUTO_UPDATE_SIZE_LIMITS) {
 
+    // Inizializzazione difensiva (in caso di ABI mismatch).
+    fPivotWindow = nullptr;
+    fTopoWindow = nullptr;
+    fAutoScanRunner = nullptr;
+    fScanning = false;
+    fSelectedInterface = 0;
+
     // Carica impostazioni e lingua.
     fAppSettings.DetectSystemLanguage();
     fAppSettings.Load(AppSettings::DefaultPath());
@@ -466,6 +473,22 @@ void MainWindow::DispatchMessage(BMessage* message, BHandler* handler) {
 }
 
 bool MainWindow::QuitRequested() {
+    // Ferma il runner della scansione periodica.
+    delete fAutoScanRunner;
+    fAutoScanRunner = nullptr;
+
+    // Chiudi forzatamente le helper window: il loro QuitRequested torna
+    // false (si nascondono invece di chiudersi), quindi senza un Quit()
+    // esplicito il looper resterebbe vivo e l'app non terminerebbe.
+    if (fPivotWindow != nullptr && fPivotWindow->Lock()) {
+        fPivotWindow->Quit(); // termina il looper, fPivotWindow invalido dopo
+        fPivotWindow = nullptr;
+    }
+    if (fTopoWindow != nullptr && fTopoWindow->Lock()) {
+        fTopoWindow->Quit();
+        fTopoWindow = nullptr;
+    }
+
     be_app->PostMessage(B_QUIT_REQUESTED);
     return true;
 }

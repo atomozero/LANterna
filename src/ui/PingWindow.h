@@ -35,7 +35,7 @@ public:
 
 private:
     std::vector<float> fSamples;
-    static const size_t kMaxSamples = 200;
+    static const size_t kMaxSamples = 500;
 };
 
 class PingWindow : public BWindow {

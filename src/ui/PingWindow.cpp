@@ -103,22 +103,35 @@ void PingGraphView::Draw(BRect updateRect) {
                             bounds.top + (bounds.Height() - 20) / 2 + 10));
     DrawString("0", BPoint(bounds.left + 4, bounds.bottom - 22));
 
-    // Disegna grafico.
+    // Disegna grafico con scorrimento: ogni campione occupa una larghezza
+    // fissa (dx), il piu' recente e' sempre ancorato al bordo destro.
+    // Quando il grafico e' pieno, i campioni piu' vecchi scorrono fuori
+    // dal bordo sinistro.
     float plotX = bounds.left + 40;
     float plotW = bounds.right - plotX - 5;
     float plotY = bounds.top + 10;
     float plotH = bounds.bottom - plotY - 20;
 
-    if (fSamples.size() < 2) return;
+    if (fSamples.empty()) return;
 
-    float dx = plotW / (fSamples.size() - 1);
+    const float dx = 6.0f;
+    size_t n = fSamples.size();
+    size_t maxFit = static_cast<size_t>(plotW / dx);
+    if (maxFit == 0) maxFit = 1;
+    size_t visible = std::min(n, maxFit);
+    size_t startIdx = n - visible;
+
+    float rightX = bounds.right - 5;
 
     BPoint prev(-1, -1);
-    for (size_t i = 0; i < fSamples.size(); i++) {
+    for (size_t i = startIdx; i < n; i++) {
         float s = fSamples[i];
+        // X = bordo destro - (campioni rimanenti dopo i) * dx
+        float x = rightX - (n - 1 - i) * dx;
+        if (x < plotX) continue;
+
         if (s < 0) {
             // Persa: marker rosso, no linea.
-            float x = plotX + i * dx;
             SetHighColor(220, 60, 60);
             FillRect(BRect(x - 1, plotY + plotH - 4,
                             x + 1, plotY + plotH));
@@ -126,7 +139,7 @@ void PingGraphView::Draw(BRect updateRect) {
             continue;
         }
         float y = plotY + plotH - (s / maxMs) * plotH;
-        BPoint cur(plotX + i * dx, y);
+        BPoint cur(x, y);
 
         // Linea dal punto precedente.
         if (prev.x >= 0) {
@@ -149,13 +162,13 @@ struct PingJob {
     BMessenger target;
     std::string ip;
     uint16_t    port;
-    volatile bool* stopFlag;
+    volatile bool* runFlag;  // true = continua, false = ferma
 };
 
 static int32 PingThread(void* arg) {
     std::unique_ptr<PingJob> job(static_cast<PingJob*>(arg));
 
-    while (!*job->stopFlag) {
+    while (*job->runFlag) {
         auto t0 = std::chrono::steady_clock::now();
 
         int sock = socket(AF_INET, SOCK_STREAM, 0);

@@ -13,7 +13,7 @@
 CXX      ?= g++
 PRIVATE  := /system/develop/headers/private
 BSD_HDR  := /boot/system/develop/headers/bsd
-CXXFLAGS ?= -std=c++17 -Wall -O2 -Isrc -D_DEFAULT_SOURCE \
+CXXFLAGS ?= -std=c++17 -Wall -O2 -Isrc -D_DEFAULT_SOURCE -MMD -MP \
             -I$(PRIVATE)/interface -I$(PRIVATE)/shared -I$(BSD_HDR)
 LIBS     := -lbe -lnetwork -lbsd -lcolumnlistview -lshared -ltracker
 APP      := LANterna
@@ -49,6 +49,7 @@ UI_SRCS := \
 
 SRCS := $(CORE_SRCS) $(UI_SRCS)
 OBJS := $(SRCS:.cpp=.o)
+DEPS := $(SRCS:.cpp=.d)
 
 all: $(APP)
 
@@ -59,6 +60,8 @@ $(APP): $(OBJS)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(APP)
+	rm -f $(OBJS) $(DEPS) $(APP)
+
+-include $(DEPS)
 
 .PHONY: all clean
