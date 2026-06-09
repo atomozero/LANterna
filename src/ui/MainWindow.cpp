@@ -29,6 +29,7 @@
 
 #include "Locale.h"
 #include "Messages.h"
+#include "PingWindow.h"
 #include "PivotWindow.h"
 #include "ScanRunner.h"
 #include "SettingsWindow.h"
@@ -355,6 +356,20 @@ void MainWindow::MessageReceived(BMessage* message) {
                     be_clipboard->Commit();
                     be_clipboard->Unlock();
                 }
+            }
+            break;
+        }
+        case kMsgCtxPing:
+        {
+            const DeviceInfo* sel = _SelectedDeviceInfo();
+            if (sel) {
+                // Estrai la prima porta dall'elenco.
+                uint16_t port = 80;
+                const char* p = sel->ports.String();
+                int n = atoi(p);
+                if (n > 0 && n <= 65535) port = static_cast<uint16_t>(n);
+                PingWindow* pw = new PingWindow(sel->ip, port);
+                pw->Show();
             }
             break;
         }
@@ -798,6 +813,11 @@ void MainWindow::_ShowContextMenu(BPoint where) {
         menu->AddSeparatorItem();
         menu->AddItem(new BMenuItem("Wake-on-LAN (sveglia)",
                                     new BMessage(kMsgCtxWakeOnLan)));
+    }
+    if (dev->ports.Length() > 0 && dev->ports != "-") {
+        menu->AddSeparatorItem();
+        menu->AddItem(new BMenuItem("Ping continuo (grafico latenza)",
+                                    new BMessage(kMsgCtxPing)));
     }
 
     menu->SetTargetForItems(this);
