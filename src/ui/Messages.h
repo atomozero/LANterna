@@ -9,7 +9,13 @@ enum {
     kMsgInterfacePicked = 'ifsl', // UI -> finestra: interfaccia scelta nel menu
     kMsgDeviceFound     = 'dvfd', // worker -> finestra: un device (con campi)
     kMsgScanProgress    = 'prog', // worker -> finestra: percentuale 0..100
-    kMsgScanDone        = 'done'  // worker -> finestra: scansione conclusa
+    kMsgScanDone        = 'done', // worker -> finestra: scansione conclusa
+    kMsgFilterChanged   = 'filt', // UI -> finestra: filtro modificato
+    kMsgShowPivot       = 'pivt', // UI -> finestra: apri riepilogo pivot
+    kMsgPivotFieldChanged = 'pfch', // PivotWindow: campo raggruppamento cambiato
+    kMsgRowInvoked      = 'rinv', // UI -> finestra: doppio click su riga lista
+    kMsgExportCSV       = 'excs', // UI -> finestra: esporta CSV
+    kMsgExportSaveRef   = 'exsv'  // BFilePanel -> finestra: path scelto
 };
 
 // Campi del messaggio kMsgDeviceFound.
@@ -19,7 +25,10 @@ enum {
 #define LANTERNA_FIELD_TYPE     "type"
 #define LANTERNA_FIELD_HOSTNAME "hostname"
 #define LANTERNA_FIELD_PORTS    "ports"
-#define LANTERNA_FIELD_PROGRESS "percent"
-#define LANTERNA_FIELD_FOUND    "found"
+#define LANTERNA_FIELD_FIRST_SEEN "firstSeen"
+#define LANTERNA_FIELD_LAST_SEEN  "lastSeen"
+#define LANTERNA_FIELD_IS_NEW     "isNew"
+#define LANTERNA_FIELD_PROGRESS   "percent"
+#define LANTERNA_FIELD_FOUND      "found"
 
 #endif // LANTERNA_UI_MESSAGES_H

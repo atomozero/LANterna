@@ -6,6 +6,8 @@
 #ifndef LANTERNA_UI_MAINWINDOW_H
 #define LANTERNA_UI_MAINWINDOW_H
 
+#include <ColumnListView.h>
+#include <String.h>
 #include <Window.h>
 
 #include <vector>
@@ -14,11 +16,38 @@
 
 class BButton;
 class BColumnListView;
+class BFilePanel;
+class BMenuBar;
 class BMenuField;
 class BPopUpMenu;
 class BStringView;
+class BTextControl;
 
 namespace lanterna {
+
+class PivotWindow;
+
+// Dati di un device memorizzati per poter rifiltrare.
+struct DeviceInfo {
+    BString ip;
+    BString host;
+    BString mac;
+    BString vendor;
+    BString type;
+    BString ports;
+    BString firstSeen;
+    BString lastSeen;
+    bool    isNew = false;
+};
+
+// Riga figlia con azione associata (URL da aprire al doppio click).
+class ActionRow : public BRow {
+public:
+    ActionRow(const char* url) : BRow(), fUrl(url) {}
+    const BString& Url() const { return fUrl; }
+private:
+    BString fUrl;
+};
 
 class MainWindow : public BWindow {
 public:
@@ -29,8 +58,15 @@ public:
 
 private:
     void _StartScan();
-    void _AddDeviceRow(const BMessage* message);
+    void _StoreDevice(const BMessage* message);
+    void _AddDeviceWithChildren(const DeviceInfo& dev);
+    void _RebuildList();
+    bool _MatchesFilters(const DeviceInfo& dev) const;
     void _SetScanning(bool scanning);
+    void _ShowPivot();
+    void _HandleRowInvoked();
+    void _ExportCSV();
+    void _SaveCSV(const entry_ref& dir, const char* name);
     std::string _DefaultOuiPath() const;
 
     std::vector<LocalInterface> fInterfaces;
@@ -39,9 +75,24 @@ private:
     BMenuField* fInterfaceField = nullptr;
     BPopUpMenu* fInterfaceMenu = nullptr;
     BButton* fScanButton = nullptr;
+    BButton* fPivotButton = nullptr;
+    BButton* fExportButton = nullptr;
     BColumnListView* fListView = nullptr;
     BStringView* fStatusView = nullptr;
     bool fScanning = false;
+
+    // Filtri per colonna.
+    BTextControl* fFilterIp = nullptr;
+    BTextControl* fFilterHost = nullptr;
+    BTextControl* fFilterMac = nullptr;
+    BTextControl* fFilterVendor = nullptr;
+    BTextControl* fFilterType = nullptr;
+    BTextControl* fFilterPorts = nullptr;
+
+    // Tutti i device trovati nella scansione corrente.
+    std::vector<DeviceInfo> fDevices;
+
+    PivotWindow* fPivotWindow = nullptr;
 };
 
 } // namespace lanterna

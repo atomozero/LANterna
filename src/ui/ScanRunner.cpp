@@ -3,6 +3,8 @@
 #include <Message.h>
 #include <OS.h>
 
+#include <ctime>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,6 +14,7 @@
 #include "enrich/OuiVendorEnricher.h"
 #include "enrich/ReverseDnsEnricher.h"
 #include "enrich/TypeInferenceEnricher.h"
+#include "model/DevicePersistence.h"
 
 namespace lanterna {
 
@@ -66,14 +69,48 @@ int32 ScanThread(void* arg) {
         target.SendMessage(&msg);
     };
 
+    // Carica i device persistiti per confronto firstSeen/lastSeen.
+    DevicePersistence persist;
+    auto known = persist.LoadAll();
+    std::time_t now = std::time(nullptr);
+
     auto onDevice = [&](const Device& d) {
+        // Determina se e' un device nuovo o gia' visto.
+        std::string ports = FormatPorts(d);
+        bool isNew = (known.find(d.ip) == known.end());
+        std::time_t firstSeen = isNew ? now : known[d.ip].firstSeen;
+        std::time_t lastSeen  = now;
+
+        // Persisti su BFS.
+        PersistedDevice pd;
+        pd.ip         = d.ip;
+        pd.mac        = d.mac;
+        pd.vendor     = d.vendor;
+        pd.hostname   = d.hostname;
+        pd.deviceType = d.deviceType;
+        pd.ports      = ports;
+        pd.firstSeen  = firstSeen;
+        pd.lastSeen   = lastSeen;
+        persist.Save(pd);
+
+        // Formatta i timestamp per la UI.
+        char fsBuf[32] = {}, lsBuf[32] = {};
+        struct tm tmBuf;
+        if (localtime_r(&firstSeen, &tmBuf))
+            strftime(fsBuf, sizeof(fsBuf), "%Y-%m-%d %H:%M", &tmBuf);
+        if (localtime_r(&lastSeen, &tmBuf))
+            strftime(lsBuf, sizeof(lsBuf), "%Y-%m-%d %H:%M", &tmBuf);
+
         BMessage msg(kMsgDeviceFound);
         msg.AddString(LANTERNA_FIELD_IP, d.ip.c_str());
         msg.AddString(LANTERNA_FIELD_MAC, d.mac.c_str());
         msg.AddString(LANTERNA_FIELD_VENDOR, d.vendor.c_str());
         msg.AddString(LANTERNA_FIELD_TYPE, d.deviceType.c_str());
         msg.AddString(LANTERNA_FIELD_HOSTNAME, d.hostname.c_str());
-        msg.AddString(LANTERNA_FIELD_PORTS, FormatPorts(d).c_str());
+        msg.AddString(LANTERNA_FIELD_PORTS, ports.c_str());
+        msg.AddString(LANTERNA_FIELD_FIRST_SEEN, fsBuf);
+        msg.AddString(LANTERNA_FIELD_LAST_SEEN, lsBuf);
+        msg.AddBool(LANTERNA_FIELD_IS_NEW, isNew);
         target.SendMessage(&msg);
     };
 

@@ -12,8 +12,10 @@
 
 CXX      ?= g++
 PRIVATE  := /system/develop/headers/private
-CXXFLAGS ?= -std=c++17 -Wall -O2 -Isrc -I$(PRIVATE)/interface -I$(PRIVATE)/shared
-LIBS     := -lbe -lnetwork
+BSD_HDR  := /boot/system/develop/headers/bsd
+CXXFLAGS ?= -std=c++17 -Wall -O2 -Isrc -D_DEFAULT_SOURCE \
+            -I$(PRIVATE)/interface -I$(PRIVATE)/shared -I$(BSD_HDR)
+LIBS     := -lbe -lnetwork -lbsd -lcolumnlistview -lshared -ltracker
 APP      := LANterna
 
 CORE_SRCS := \
@@ -22,6 +24,7 @@ CORE_SRCS := \
   src/net/Resolver.cpp \
   src/net/ArpCache.cpp \
   src/model/DeviceStore.cpp \
+  src/model/DevicePersistence.cpp \
   src/enrich/ReverseDnsEnricher.cpp \
   src/enrich/ArpMacEnricher.cpp \
   src/enrich/OuiDatabase.cpp \
@@ -32,6 +35,7 @@ CORE_SRCS := \
 UI_SRCS := \
   src/ui/ScanRunner.cpp \
   src/ui/MainWindow.cpp \
+  src/ui/PivotWindow.cpp \
   src/ui/main_gui.cpp
 
 SRCS := $(CORE_SRCS) $(UI_SRCS)
