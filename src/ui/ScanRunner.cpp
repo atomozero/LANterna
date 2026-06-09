@@ -15,6 +15,7 @@
 #include "enrich/NetBiosEnricher.h"
 #include "enrich/OuiVendorEnricher.h"
 #include "enrich/SnmpEnricher.h"
+#include "enrich/SsdpEnricher.h"
 #include "enrich/ReverseDnsEnricher.h"
 #include "enrich/TypeInferenceEnricher.h"
 #include "model/DevicePersistence.h"
@@ -49,6 +50,10 @@ int32 ScanThread(void* arg) {
     MdnsEnricher mdns;
     mdns.Discover(1500);
 
+    // Discovery SSDP/UPnP multicast (smart TV, Sonos, NAS, router IGD).
+    SsdpEnricher ssdp;
+    ssdp.Discover(2000);
+
     // Pipeline di arricchimento.
     ArpMacEnricher arp;
     ReverseDnsEnricher dns;
@@ -65,6 +70,7 @@ int32 ScanThread(void* arg) {
     pipeline.push_back(&mdns);
     pipeline.push_back(&netbios);
     pipeline.push_back(&snmp);
+    pipeline.push_back(&ssdp);
     pipeline.push_back(&type);
 
     Scanner scanner(pipeline);

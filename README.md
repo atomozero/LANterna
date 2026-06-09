@@ -36,7 +36,15 @@ attuale e':
 4. `MdnsEnricher`       - hostname `.local` e tipo da DNS-SD multicast
 5. `NetBiosEnricher`    - nome NetBIOS e workgroup (UDP 137, NBSTAT)
 6. `SnmpEnricher`       - sysDescr e sysName via SNMPv1 GET (UDP 161)
-7. `TypeInferenceEnricher` - tipo device inferito dalle porte aperte
+7. `SsdpEnricher`       - smart TV, Sonos, NAS, router IGD via SSDP/UPnP
+                         multicast (M-SEARCH a 239.255.255.250:1900)
+8. `TypeInferenceEnricher` - tipo device inferito dalle porte aperte
+
+Gli enricher multicast (mDNS, SSDP) eseguono una "discovery" una sola
+volta all'inizio della scansione e riempiono cache `ip -> dati` che gli
+`Enrich()` per device consultano. Gli enricher unicast (NetBIOS, SNMP)
+contattano direttamente ogni device durante l'arricchimento, con timeout
+brevi (250-300ms) per non rallentare la scansione.
 
 `MdnsEnricher` esegue una "discovery" multicast una volta sola all'inizio
 della scansione (query a 224.0.0.251:5353 per `_services._dns-sd._udp` e
