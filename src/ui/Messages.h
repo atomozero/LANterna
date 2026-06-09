@@ -15,7 +15,10 @@ enum {
     kMsgPivotFieldChanged = 'pfch', // PivotWindow: campo raggruppamento cambiato
     kMsgRowInvoked      = 'rinv', // UI -> finestra: doppio click su riga lista
     kMsgExportCSV       = 'excs', // UI -> finestra: esporta CSV
-    kMsgExportSaveRef   = 'exsv'  // BFilePanel -> finestra: path scelto
+    kMsgExportSaveRef   = 'exsv', // BFilePanel -> finestra: path scelto
+    kMsgShowSettings    = 'sett', // UI -> finestra: mostra impostazioni
+    kMsgSettingsChanged = 'stch', // SettingsWindow -> finestra: settings cambiati
+    kMsgAbout           = 'abou'  // UI -> finestra: mostra About
 };
 
 // Campi del messaggio kMsgDeviceFound.

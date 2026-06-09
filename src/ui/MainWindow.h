@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "net/Subnet.h"
+#include "SettingsWindow.h"
 
 class BButton;
 class BColumnListView;
@@ -77,6 +78,8 @@ private:
     BButton* fScanButton = nullptr;
     BButton* fPivotButton = nullptr;
     BButton* fExportButton = nullptr;
+    BButton* fSettingsButton = nullptr;
+    BButton* fAboutButton = nullptr;
     BColumnListView* fListView = nullptr;
     BStringView* fStatusView = nullptr;
     bool fScanning = false;
@@ -93,6 +96,7 @@ private:
     std::vector<DeviceInfo> fDevices;
 
     PivotWindow* fPivotWindow = nullptr;
+    AppSettings fAppSettings;
 };
 
 } // namespace lanterna

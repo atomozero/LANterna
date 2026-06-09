@@ -1,0 +1,50 @@
+// Finestra impostazioni LANterna, stile LocalSend.
+// Sezioni: Generale (lingua), Rete (porte, timeout, concorrenza).
+// Persistenza su file key=value in ~/config/settings/LANterna/settings.
+#ifndef LANTERNA_UI_SETTINGSWINDOW_H
+#define LANTERNA_UI_SETTINGSWINDOW_H
+
+#include <Window.h>
+
+#include <string>
+
+class BCheckBox;
+class BMenuField;
+class BPopUpMenu;
+class BTextControl;
+
+namespace lanterna {
+
+struct AppSettings {
+    std::string language;
+    std::string ports;       // es. "22,80,443,445"
+    int         timeoutMs  = 400;
+    int         maxInFlight = 256;
+
+    void Load(const std::string& path);
+    void Save(const std::string& path) const;
+    void DetectSystemLanguage();
+
+    static std::string DefaultPath();
+};
+
+class SettingsWindow : public BWindow {
+public:
+    SettingsWindow(AppSettings* settings, BWindow* target);
+
+    void MessageReceived(BMessage* message) override;
+
+private:
+    AppSettings*   fSettings;
+    BWindow*       fTarget;
+
+    BPopUpMenu*    fLangMenu    = nullptr;
+    BMenuField*    fLangField   = nullptr;
+    BTextControl*  fPortsField  = nullptr;
+    BTextControl*  fTimeoutField = nullptr;
+    BTextControl*  fConcField   = nullptr;
+};
+
+} // namespace lanterna
+
+#endif // LANTERNA_UI_SETTINGSWINDOW_H

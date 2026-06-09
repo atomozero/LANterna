@@ -36,6 +36,7 @@ UI_SRCS := \
   src/ui/ScanRunner.cpp \
   src/ui/MainWindow.cpp \
   src/ui/PivotWindow.cpp \
+  src/ui/SettingsWindow.cpp \
   src/ui/main_gui.cpp
 
 SRCS := $(CORE_SRCS) $(UI_SRCS)

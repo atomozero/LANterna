@@ -18,12 +18,17 @@
 #include <StringView.h>
 #include <TextControl.h>
 
+#include <Alert.h>
+
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
+#include "Locale.h"
 #include "Messages.h"
 #include "PivotWindow.h"
 #include "ScanRunner.h"
+#include "SettingsWindow.h"
 
 namespace lanterna {
 
@@ -136,15 +141,20 @@ static const rgb_color kNewDevBg  = { 215, 245, 215, 255 }; // verde chiaro
 static const rgb_color kNewDevFg  = {  20,  80,  20, 255 }; // verde scuro
 
 MainWindow::MainWindow()
-    : BWindow(BRect(100, 100, 800, 520), "LANterna",
+    : BWindow(BRect(100, 100, 900, 560), "LANterna",
               B_TITLED_WINDOW,
               B_QUIT_ON_WINDOW_CLOSE | B_AUTO_UPDATE_SIZE_LIMITS) {
+
+    // Carica impostazioni e lingua.
+    fAppSettings.DetectSystemLanguage();
+    fAppSettings.Load(AppSettings::DefaultPath());
+    SetLanguageFromCode(fAppSettings.language.c_str());
 
     fInterfaces = EnumerateInterfaces();
 
     fInterfaceMenu = new BPopUpMenu("interface");
     if (fInterfaces.empty()) {
-        BMenuItem* none = new BMenuItem("Nessuna interfaccia", nullptr);
+        BMenuItem* none = new BMenuItem(Tr(S_NO_INTERFACE), nullptr);
         none->SetEnabled(false);
         fInterfaceMenu->AddItem(none);
     } else {
@@ -162,34 +172,38 @@ MainWindow::MainWindow()
         fInterfaceMenu->ItemAt(0)->SetMarked(true);
     }
 
-    fInterfaceField = new BMenuField("iffield", "Interfaccia:", fInterfaceMenu);
-    fScanButton = new BButton("scan", "Scansiona",
+    fInterfaceField = new BMenuField("iffield", Tr(S_INTERFACE), fInterfaceMenu);
+    fScanButton = new BButton("scan", Tr(S_SCAN),
                               new BMessage(kMsgScanStart));
-    fPivotButton = new BButton("pivot", "Riepilogo",
+    fPivotButton = new BButton("pivot", Tr(S_SUMMARY),
                                new BMessage(kMsgShowPivot));
-    fExportButton = new BButton("export", "Esporta CSV",
+    fExportButton = new BButton("export", Tr(S_EXPORT_CSV),
                                 new BMessage(kMsgExportCSV));
-    fStatusView = new BStringView("status", "Pronto.");
+    fSettingsButton = new BButton("settings", Tr(S_SETTINGS_TITLE),
+                                  new BMessage(kMsgShowSettings));
+    fAboutButton = new BButton("about", "?",
+                               new BMessage(kMsgAbout));
+    fStatusView = new BStringView("status", Tr(S_READY));
 
     fListView = new BColumnListView("devices", 0);
     fListView->SetInvocationMessage(new BMessage(kMsgRowInvoked));
     fListView->AddColumn(
-        new ColoredColumn("IP", 130, 80, 200, B_TRUNCATE_MIDDLE), kColIp);
+        new ColoredColumn(Tr(S_COL_IP), 130, 80, 200, B_TRUNCATE_MIDDLE), kColIp);
     fListView->AddColumn(
-        new ColoredColumn("Nome", 170, 80, 320, B_TRUNCATE_END), kColHost);
+        new ColoredColumn(Tr(S_COL_NAME), 170, 80, 320, B_TRUNCATE_END), kColHost);
     fListView->AddColumn(
-        new ColoredColumn("MAC", 140, 80, 200, B_TRUNCATE_MIDDLE), kColMac);
+        new ColoredColumn(Tr(S_COL_MAC), 140, 80, 200, B_TRUNCATE_MIDDLE), kColMac);
     fListView->AddColumn(
-        new ColoredColumn("Produttore", 170, 80, 320, B_TRUNCATE_END), kColVendor);
+        new ColoredColumn(Tr(S_COL_VENDOR), 170, 80, 320, B_TRUNCATE_END), kColVendor);
     fListView->AddColumn(
-        new ColoredColumn("Tipo", 120, 60, 200, B_TRUNCATE_END), kColType);
+        new ColoredColumn(Tr(S_COL_TYPE), 120, 60, 200, B_TRUNCATE_END), kColType);
     fListView->AddColumn(
-        new ColoredColumn("Porte", 140, 60, 400, B_TRUNCATE_END), kColPorts);
+        new ColoredColumn(Tr(S_COL_PORTS), 140, 60, 400, B_TRUNCATE_END), kColPorts);
     fListView->AddColumn(
-        new ColoredColumn("Primo avvistamento", 130, 80, 200, B_TRUNCATE_END),
+        new ColoredColumn(Tr(S_COL_FIRST_SEEN), 130, 80, 200, B_TRUNCATE_END),
         kColFirstSeen);
     fListView->AddColumn(
-        new ColoredColumn("Ultimo avvistamento", 130, 80, 200, B_TRUNCATE_END),
+        new ColoredColumn(Tr(S_COL_LAST_SEEN), 130, 80, 200, B_TRUNCATE_END),
         kColLastSeen);
 
     // Filtri per colonna: ricerca case-insensitive su sottostringa.
@@ -214,6 +228,8 @@ MainWindow::MainWindow()
             .Add(fScanButton)
             .Add(fPivotButton)
             .Add(fExportButton)
+            .Add(fSettingsButton)
+            .Add(fAboutButton)
             .AddGlue()
             .SetInsets(B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING,
                        B_USE_WINDOW_SPACING, B_USE_HALF_ITEM_SPACING)
@@ -267,6 +283,25 @@ void MainWindow::MessageReceived(BMessage* message) {
         case kMsgExportCSV:
             _ExportCSV();
             break;
+        case kMsgShowSettings:
+        {
+            SettingsWindow* sw = new SettingsWindow(&fAppSettings, this);
+            sw->Show();
+            break;
+        }
+        case kMsgSettingsChanged:
+            // Le impostazioni sono state salvate; verranno usate alla
+            // prossima scansione.
+            break;
+        case kMsgAbout:
+        {
+            BAlert* alert = new BAlert("About LANterna",
+                Tr(S_ABOUT_TEXT),
+                Tr(S_OK), NULL, NULL,
+                B_WIDTH_AS_USUAL, B_INFO_ALERT);
+            alert->Go();
+            break;
+        }
         case kMsgExportSaveRef:
         {
             entry_ref dir;
@@ -322,13 +357,28 @@ void MainWindow::_StartScan() {
     fListView->Clear();
     fDevices.clear();
     _SetScanning(true);
-    fStatusView->SetText("Scansione in corso...");
+    fStatusView->SetText(Tr(S_SCANNING));
 
-    ScanConfig config; // porte e timeout di default
+    ScanConfig config;
+    // Applica impostazioni utente.
+    if (!fAppSettings.ports.empty()) {
+        // Parsa le porte dalla stringa "22,80,443,..."
+        const char* s = fAppSettings.ports.c_str();
+        while (*s) {
+            while (*s == ',' || *s == ' ') ++s;
+            if (*s == '\0') break;
+            int port = atoi(s);
+            if (port > 0 && port <= 65535)
+                config.ports.push_back(static_cast<uint16_t>(port));
+            while (*s && *s != ',' && *s != ' ') ++s;
+        }
+    }
+    config.probe.timeoutMs = fAppSettings.timeoutMs;
+    config.probe.maxInFlight = fAppSettings.maxInFlight;
     bool ok = StartScan(BMessenger(this), fInterfaces[fSelectedInterface],
                         config, _DefaultOuiPath());
     if (!ok) {
-        fStatusView->SetText("Impossibile avviare la scansione.");
+        fStatusView->SetText(Tr(S_CANNOT_START_SCAN));
         _SetScanning(false);
     }
 }
@@ -543,7 +593,7 @@ void MainWindow::_ShowPivot() {
 
 void MainWindow::_ExportCSV() {
     if (fDevices.empty()) {
-        fStatusView->SetText("Nessun dato da esportare.");
+        fStatusView->SetText(Tr(S_NOTHING_TO_EXPORT));
         return;
     }
     BFilePanel* panel = new BFilePanel(B_SAVE_PANEL, new BMessenger(this),
@@ -570,7 +620,7 @@ void MainWindow::_SaveCSV(const entry_ref& dir, const char* name) {
 
     BFile file(path.Path(), B_CREATE_FILE | B_ERASE_FILE | B_WRITE_ONLY);
     if (file.InitCheck() != B_OK) {
-        fStatusView->SetText("Errore: impossibile creare il file.");
+        fStatusView->SetText(Tr(S_ERROR_CREATE_FILE));
         return;
     }
 
