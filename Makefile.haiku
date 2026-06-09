@@ -26,6 +26,7 @@ CORE_SRCS := \
   src/net/WakeOnLan.cpp \
   src/model/DeviceStore.cpp \
   src/model/DevicePersistence.cpp \
+  src/model/DeviceHistory.cpp \
   src/enrich/ReverseDnsEnricher.cpp \
   src/enrich/ArpMacEnricher.cpp \
   src/enrich/OuiDatabase.cpp \
@@ -43,6 +44,7 @@ UI_SRCS := \
   src/ui/PivotWindow.cpp \
   src/ui/PingWindow.cpp \
   src/ui/DeviceDetailsWindow.cpp \
+  src/ui/HistoryWindow.cpp \
   src/ui/SettingsWindow.cpp \
   src/ui/TopologyView.cpp \
   src/ui/NetworkReplicant.cpp \

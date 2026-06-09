@@ -19,6 +19,7 @@ SRCS := \
   src/net/ArpCache.cpp \
   src/net/WakeOnLan.cpp \
   src/model/DeviceStore.cpp \
+  src/model/DeviceHistory.cpp \
   src/enrich/ReverseDnsEnricher.cpp \
   src/enrich/ArpMacEnricher.cpp \
   src/enrich/OuiDatabase.cpp \

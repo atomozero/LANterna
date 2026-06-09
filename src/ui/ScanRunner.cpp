@@ -18,6 +18,7 @@
 #include "enrich/SsdpEnricher.h"
 #include "enrich/ReverseDnsEnricher.h"
 #include "enrich/TypeInferenceEnricher.h"
+#include "model/DeviceHistory.h"
 #include "model/DevicePersistence.h"
 
 namespace lanterna {
@@ -90,6 +91,7 @@ int32 ScanThread(void* arg) {
 
     // Carica i device persistiti per confronto firstSeen/lastSeen.
     DevicePersistence persist;
+    DeviceHistory history;
     auto known = persist.LoadAll();
     std::time_t now = std::time(nullptr);
 
@@ -112,6 +114,9 @@ int32 ScanThread(void* arg) {
         pd.firstSeen  = firstSeen;
         pd.lastSeen   = lastSeen;
         persist.Save(pd);
+
+        // Registra l'evento "online" (no-op se gia' online dall'ultima volta).
+        history.RecordOnline(d.ip, now);
 
         // Formatta i timestamp per la UI.
         char fsBuf[32] = {}, lsBuf[32] = {};

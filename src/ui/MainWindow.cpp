@@ -30,11 +30,13 @@
 #include "Locale.h"
 #include "Messages.h"
 #include "DeviceDetailsWindow.h"
+#include "HistoryWindow.h"
 #include "PingWindow.h"
 #include "PivotWindow.h"
 #include "ScanRunner.h"
 #include "SettingsWindow.h"
 #include "TopologyView.h"
+#include "model/DeviceHistory.h"
 #include "model/DevicePersistence.h"
 #include "net/WakeOnLan.h"
 
@@ -399,6 +401,18 @@ void MainWindow::MessageReceived(BMessage* message) {
                 DeviceDetailsWindow* dw = new DeviceDetailsWindow(
                     *sel, BMessenger(this));
                 dw->Show();
+            }
+            break;
+        }
+        case kMsgCtxHistory:
+        {
+            const DeviceInfo* sel = _SelectedDeviceInfo();
+            if (sel) {
+                BString name = sel->alias.Length() > 0
+                    ? sel->alias
+                    : (sel->host.Length() > 0 ? sel->host : sel->ip);
+                HistoryWindow* hw = new HistoryWindow(sel->ip, name);
+                hw->Show();
             }
             break;
         }
@@ -942,6 +956,8 @@ void MainWindow::_ShowContextMenu(BPoint where) {
     menu->AddSeparatorItem();
     menu->AddItem(new BMenuItem("Modifica dettagli (alias, note)...",
                                 new BMessage(kMsgCtxDetails)));
+    menu->AddItem(new BMenuItem("Storico online/offline...",
+                                new BMessage(kMsgCtxHistory)));
 
     menu->SetTargetForItems(this);
     ConvertToScreen(&where);
@@ -1015,17 +1031,23 @@ void MainWindow::_CheckOfflineDevices() {
     if (fPreScanIps.empty())
         return; // prima scansione: nessun confronto possibile
 
-    // Cerca IP nello snapshot pre-scan che non sono apparsi nella corrente.
     DevicePersistence persist;
+    DeviceHistory     history;
     auto known = persist.LoadAll();
+    std::time_t now = std::time(nullptr);
 
     for (const BString& ip : fPreScanIps) {
         if (fCurrentScanIps.find(ip) != fCurrentScanIps.end())
             continue; // ancora online
 
+        std::string ipStr(ip.String());
+
+        // Registra la transizione offline nello storico.
+        history.RecordOffline(ipStr, now);
+
         // Recupera hostname dal disco per la notifica.
         BString host;
-        auto it = known.find(std::string(ip.String()));
+        auto it = known.find(ipStr);
         if (it != known.end())
             host = it->second.hostname.c_str();
 
