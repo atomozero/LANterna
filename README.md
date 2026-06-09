@@ -35,7 +35,8 @@ attuale e':
 3. `ReverseDnsEnricher` - hostname da reverse DNS unicast
 4. `MdnsEnricher`       - hostname `.local` e tipo da DNS-SD multicast
 5. `NetBiosEnricher`    - nome NetBIOS e workgroup (UDP 137, NBSTAT)
-6. `TypeInferenceEnricher` - tipo device inferito dalle porte aperte
+6. `SnmpEnricher`       - sysDescr e sysName via SNMPv1 GET (UDP 161)
+7. `TypeInferenceEnricher` - tipo device inferito dalle porte aperte
 
 `MdnsEnricher` esegue una "discovery" multicast una volta sola all'inizio
 della scansione (query a 224.0.0.251:5353 per `_services._dns-sd._udp` e

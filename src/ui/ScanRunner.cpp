@@ -14,6 +14,7 @@
 #include "enrich/MdnsEnricher.h"
 #include "enrich/NetBiosEnricher.h"
 #include "enrich/OuiVendorEnricher.h"
+#include "enrich/SnmpEnricher.h"
 #include "enrich/ReverseDnsEnricher.h"
 #include "enrich/TypeInferenceEnricher.h"
 #include "model/DevicePersistence.h"
@@ -52,6 +53,7 @@ int32 ScanThread(void* arg) {
     ArpMacEnricher arp;
     ReverseDnsEnricher dns;
     NetBiosEnricher netbios;
+    SnmpEnricher snmp;
     TypeInferenceEnricher type;
     std::vector<Enricher*> pipeline = {&arp};
     std::unique_ptr<OuiVendorEnricher> oui;
@@ -62,6 +64,7 @@ int32 ScanThread(void* arg) {
     pipeline.push_back(&dns);
     pipeline.push_back(&mdns);
     pipeline.push_back(&netbios);
+    pipeline.push_back(&snmp);
     pipeline.push_back(&type);
 
     Scanner scanner(pipeline);
