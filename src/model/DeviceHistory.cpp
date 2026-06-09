@@ -76,10 +76,18 @@ void DeviceHistory::RecordTransition(const std::string& ip,
 }
 
 void DeviceHistory::RecordOnline(const std::string& ip, std::time_t ts) {
-    RecordTransition(ip, ts, true);
+    // Per "online" registra ogni rilevamento (senza dedup): cosi' il log
+    // si popola scansione dopo scansione e la heatmap ha piu' dati.
+    _EnsureDir();
+    std::FILE* f = std::fopen(_PathFor(ip).c_str(), "a");
+    if (!f) return;
+    std::fprintf(f, "%lld:online\n", static_cast<long long>(ts));
+    std::fclose(f);
 }
 
 void DeviceHistory::RecordOffline(const std::string& ip, std::time_t ts) {
+    // Per "offline" solo transizione: evita lunghe sequenze di "offline"
+    // ripetuti per device che restano spenti.
     RecordTransition(ip, ts, false);
 }
 
