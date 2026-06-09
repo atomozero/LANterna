@@ -148,6 +148,10 @@ static const rgb_color kInfoBg    = { 230, 230, 230, 255 }; // grigio chiaro
 static const rgb_color kInfoFg    = {  80,  80,  80, 255 }; // grigio scuro
 static const rgb_color kNewDevBg  = { 215, 245, 215, 255 }; // verde chiaro
 static const rgb_color kNewDevFg  = {  20,  80,  20, 255 }; // verde scuro
+static const rgb_color kFavBg     = { 255, 245, 200, 255 }; // giallo chiaro
+static const rgb_color kFavFg     = { 140, 100,   0, 255 }; // ambra scuro
+static const rgb_color kBlackBg   = { 255, 215, 215, 255 }; // rosa
+static const rgb_color kBlackFg   = { 160,  20,  20, 255 }; // rosso scuro
 
 // Forward declaration (definita piu' avanti).
 static void OpenAction(const BString& url);
@@ -401,10 +405,13 @@ void MainWindow::MessageReceived(BMessage* message) {
         case kMsgDeviceUpdated:
         {
             BString ip, alias, note, tags;
+            bool favorite = false, blacklist = false;
             message->FindString("ip", &ip);
             message->FindString("alias", &alias);
             message->FindString("note", &note);
             message->FindString("tags", &tags);
+            message->FindBool("favorite", &favorite);
+            message->FindBool("blacklist", &blacklist);
 
             // Aggiorna il vettore in memoria.
             for (DeviceInfo& dev : fDevices) {
@@ -412,6 +419,8 @@ void MainWindow::MessageReceived(BMessage* message) {
                     dev.alias = alias;
                     dev.note = note;
                     dev.tags = tags;
+                    dev.favorite = favorite;
+                    dev.blacklist = blacklist;
                     break;
                 }
             }
@@ -423,6 +432,8 @@ void MainWindow::MessageReceived(BMessage* message) {
                 pd.alias = alias.String();
                 pd.note = note.String();
                 pd.tags = tags.String();
+                pd.favorite = favorite;
+                pd.blacklist = blacklist;
                 persist.Save(pd);
             }
 
@@ -656,12 +667,14 @@ void MainWindow::_StoreDevice(const BMessage* message) {
     message->FindString(LANTERNA_FIELD_ALIAS, &dev.alias);
     message->FindString(LANTERNA_FIELD_NOTE, &dev.note);
     message->FindString(LANTERNA_FIELD_TAGS, &dev.tags);
+    message->FindBool(LANTERNA_FIELD_FAVORITE, &dev.favorite);
+    message->FindBool(LANTERNA_FIELD_BLACKLIST, &dev.blacklist);
     message->FindBool(LANTERNA_FIELD_IS_NEW, &dev.isNew);
     fDevices.push_back(dev);
     fCurrentScanIps.insert(dev.ip);
 
-    // Notifica Haiku per i device nuovi.
-    if (dev.isNew)
+    // Notifica Haiku per i device nuovi o blacklist (sempre, per allerta).
+    if (dev.isNew || dev.blacklist)
         _NotifyNewDevice(dev);
 
     if (_MatchesFilters(dev))
@@ -670,30 +683,42 @@ void MainWindow::_StoreDevice(const BMessage* message) {
 
 void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
     // Se l'utente ha settato un alias, mostralo al posto dell'hostname,
-    // con l'hostname rilevato tra parentesi.
+    // con l'hostname rilevato tra parentesi. Prefisso visivo per flag.
     BString name;
+    if (dev.blacklist)
+        name << "[!] ";
+    else if (dev.favorite)
+        name << "[*] ";
+
     if (dev.alias.Length() > 0) {
-        name = dev.alias;
+        name << dev.alias;
         if (dev.host.Length() > 0)
             name << " (" << dev.host << ")";
     } else if (dev.host.Length() > 0) {
-        name = dev.host;
+        name << dev.host;
     } else {
-        name = "-";
+        name << "-";
     }
 
+    // Priorita' colore: blacklist > favorite > new > normale.
+    bool colored = dev.blacklist || dev.favorite || dev.isNew;
+    rgb_color bg, fg;
+    if (dev.blacklist)      { bg = kBlackBg;  fg = kBlackFg;  }
+    else if (dev.favorite)  { bg = kFavBg;    fg = kFavFg;    }
+    else if (dev.isNew)     { bg = kNewDevBg; fg = kNewDevFg; }
+    else                    { bg = {255,255,255,255}; fg = {0,0,0,255}; }
+
     BRow* parent = new BRow();
-    if (dev.isNew) {
-        // Device nuovo: evidenzia con sfondo verde.
-        parent->SetField(new ColoredField(dev.ip.String(), kNewDevBg, kNewDevFg), kColIp);
-        parent->SetField(new ColoredField(name.String(), kNewDevBg, kNewDevFg), kColHost);
-        parent->SetField(new ColoredField(dev.mac.Length() ? dev.mac.String() : "-", kNewDevBg, kNewDevFg), kColMac);
-        parent->SetField(new ColoredField(dev.vendor.Length() ? dev.vendor.String() : "-", kNewDevBg, kNewDevFg), kColVendor);
-        parent->SetField(new ColoredField(dev.type.Length() ? dev.type.String() : "-", kNewDevBg, kNewDevFg), kColType);
-        parent->SetField(new ColoredField(dev.ports.Length() ? dev.ports.String() : "-", kNewDevBg, kNewDevFg), kColPorts);
-        parent->SetField(new ColoredField(dev.firstSeen.Length() ? dev.firstSeen.String() : "-", kNewDevBg, kNewDevFg), kColFirstSeen);
-        parent->SetField(new ColoredField(dev.lastSeen.Length() ? dev.lastSeen.String() : "-", kNewDevBg, kNewDevFg), kColLastSeen);
-        parent->SetField(new ColoredField(dev.tags.Length() ? dev.tags.String() : "-", kNewDevBg, kNewDevFg), kColTags);
+    if (colored) {
+        parent->SetField(new ColoredField(dev.ip.String(), bg, fg), kColIp);
+        parent->SetField(new ColoredField(name.String(), bg, fg), kColHost);
+        parent->SetField(new ColoredField(dev.mac.Length() ? dev.mac.String() : "-", bg, fg), kColMac);
+        parent->SetField(new ColoredField(dev.vendor.Length() ? dev.vendor.String() : "-", bg, fg), kColVendor);
+        parent->SetField(new ColoredField(dev.type.Length() ? dev.type.String() : "-", bg, fg), kColType);
+        parent->SetField(new ColoredField(dev.ports.Length() ? dev.ports.String() : "-", bg, fg), kColPorts);
+        parent->SetField(new ColoredField(dev.firstSeen.Length() ? dev.firstSeen.String() : "-", bg, fg), kColFirstSeen);
+        parent->SetField(new ColoredField(dev.lastSeen.Length() ? dev.lastSeen.String() : "-", bg, fg), kColLastSeen);
+        parent->SetField(new ColoredField(dev.tags.Length() ? dev.tags.String() : "-", bg, fg), kColTags);
     } else {
         parent->SetField(new BStringField(dev.ip.String()), kColIp);
         parent->SetField(new BStringField(name.String()), kColHost);
@@ -958,6 +983,8 @@ void MainWindow::_LoadPersistedDevices() {
         dev.alias = pd.alias.c_str();
         dev.note = pd.note.c_str();
         dev.tags = pd.tags.c_str();
+        dev.favorite = pd.favorite;
+        dev.blacklist = pd.blacklist;
         dev.isNew = false; // i device persistiti non sono "nuovi"
 
         // Formatta i timestamp.
@@ -1041,9 +1068,12 @@ void MainWindow::_UpdateAutoScanRunner() {
 }
 
 void MainWindow::_NotifyNewDevice(const DeviceInfo& dev) {
-    BNotification notification(B_INFORMATION_NOTIFICATION);
+    BNotification notification(dev.blacklist ? B_IMPORTANT_NOTIFICATION
+                                              : B_INFORMATION_NOTIFICATION);
     notification.SetGroup("LANterna");
-    notification.SetTitle("Nuovo device in rete");
+    notification.SetTitle(dev.blacklist
+        ? "Device in blacklist rilevato"
+        : "Nuovo device in rete");
     BString body;
     body << dev.ip;
     if (dev.host.Length() > 0)

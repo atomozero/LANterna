@@ -44,6 +44,8 @@ struct DeviceInfo {
     BString alias;       // nome custom utente
     BString note;        // testo libero
     BString tags;        // tag separati da virgola
+    bool    favorite = false;
+    bool    blacklist = false;
     bool    isNew = false;
 };
 

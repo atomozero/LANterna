@@ -7,6 +7,7 @@
 #include <Messenger.h>
 #include <Window.h>
 
+class BCheckBox;
 class BTextControl;
 class BTextView;
 
@@ -27,6 +28,8 @@ private:
     BTextControl*  fAliasField;
     BTextControl*  fTagsField;
     BTextView*     fNoteView;
+    BCheckBox*     fFavoriteBox;
+    BCheckBox*     fBlacklistBox;
 };
 
 } // namespace lanterna

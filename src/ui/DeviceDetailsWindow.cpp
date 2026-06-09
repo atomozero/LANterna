@@ -5,6 +5,7 @@
 #include "Messages.h"
 
 #include <Button.h>
+#include <CheckBox.h>
 #include <LayoutBuilder.h>
 #include <Message.h>
 #include <Messenger.h>
@@ -63,6 +64,14 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
                                     "Tag (separati da virgola):",
                                     dev.tags.String(), nullptr);
 
+    fFavoriteBox  = new BCheckBox("favorite",  "Preferito (evidenziato)",
+                                    nullptr);
+    fFavoriteBox->SetValue(dev.favorite ? B_CONTROL_ON : B_CONTROL_OFF);
+
+    fBlacklistBox = new BCheckBox("blacklist", "Blacklist (sospetto)",
+                                    nullptr);
+    fBlacklistBox->SetValue(dev.blacklist ? B_CONTROL_ON : B_CONTROL_OFF);
+
     fNoteView = new BTextView("note");
     fNoteView->SetText(dev.note.String());
     fNoteView->SetWordWrap(true);
@@ -93,6 +102,11 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
         .Add(SectionLabel("Personalizzazione"))
         .Add(fAliasField)
         .Add(fTagsField)
+        .AddGroup(B_HORIZONTAL)
+            .Add(fFavoriteBox)
+            .Add(fBlacklistBox)
+            .AddGlue()
+        .End()
         .Add(new BStringView("", "Note:"))
         .Add(noteScroll, 1.0f)
         .AddGroup(B_HORIZONTAL)
@@ -113,6 +127,10 @@ void DeviceDetailsWindow::MessageReceived(BMessage* message) {
             update.AddString("alias", fAliasField->Text());
             update.AddString("tags",  fTagsField->Text());
             update.AddString("note",  fNoteView->Text());
+            update.AddBool("favorite",
+                fFavoriteBox->Value() == B_CONTROL_ON);
+            update.AddBool("blacklist",
+                fBlacklistBox->Value() == B_CONTROL_ON);
             fTarget.SendMessage(&update);
             PostMessage(B_QUIT_REQUESTED);
             break;

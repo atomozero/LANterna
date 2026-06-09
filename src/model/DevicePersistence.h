@@ -25,6 +25,10 @@ struct PersistedDevice {
     std::string alias;       // nome custom (es. "NAS Mario")
     std::string note;        // testo libero, multilinea
     std::string tags;        // tag separati da virgola (es. "casa,IoT")
+
+    // Flag binari (mutuamente esclusivi).
+    bool        favorite  = false;  // device importante (stella)
+    bool        blacklist = false;  // device sospetto (bordo rosso)
 };
 
 class DevicePersistence {

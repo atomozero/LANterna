@@ -24,6 +24,8 @@ static const char* kAttrLastSeen  = "LANterna:lastSeen";
 static const char* kAttrAlias     = "LANterna:alias";
 static const char* kAttrNote      = "LANterna:note";
 static const char* kAttrTags      = "LANterna:tags";
+static const char* kAttrFavorite  = "LANterna:favorite";
+static const char* kAttrBlacklist = "LANterna:blacklist";
 
 // ── Helper: leggi stringa da attributo BFS ─────────────────────────────
 static std::string ReadStringAttr(BNode& node, const char* name) {
@@ -99,6 +101,10 @@ bool DevicePersistence::Load(const std::string& ip,
     out.alias     = ReadStringAttr(node, kAttrAlias);
     out.note      = ReadStringAttr(node, kAttrNote);
     out.tags      = ReadStringAttr(node, kAttrTags);
+
+    // Flag binari memorizzati come stringa "1"/"0".
+    out.favorite  = ReadStringAttr(node, kAttrFavorite)  == "1";
+    out.blacklist = ReadStringAttr(node, kAttrBlacklist) == "1";
     return true;
 }
 
@@ -145,6 +151,8 @@ void DevicePersistence::Save(const PersistedDevice& dev) {
     WriteStringAttr(node, kAttrAlias,    dev.alias);
     WriteStringAttr(node, kAttrNote,     dev.note);
     WriteStringAttr(node, kAttrTags,     dev.tags);
+    WriteStringAttr(node, kAttrFavorite,  dev.favorite ? "1" : "0");
+    WriteStringAttr(node, kAttrBlacklist, dev.blacklist ? "1" : "0");
 }
 
 } // namespace lanterna
