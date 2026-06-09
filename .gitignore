@@ -1,0 +1,7 @@
+# Artefatti di build del core/CLI portabile
+*.o
+/lanterna-cli
+
+# Artefatti tipici Haiku (build futuro UI)
+/objects.*
+/*.x86
