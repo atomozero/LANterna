@@ -20,6 +20,7 @@ class BColumnListView;
 class BFilePanel;
 class BMenuBar;
 class BMenuField;
+class BMessageRunner;
 class BPopUpMenu;
 class BStringView;
 class BTextControl;
@@ -74,6 +75,7 @@ private:
     void _ShowTopology();
     void _NotifyNewDevice(const DeviceInfo& dev);
     void _LoadPersistedDevices();
+    void _UpdateAutoScanRunner();
     const DeviceInfo* _SelectedDeviceInfo() const;
     std::string _DefaultOuiPath() const;
     std::string _GuessGatewayIp() const;
@@ -107,6 +109,9 @@ private:
     PivotWindow* fPivotWindow = nullptr;
     TopologyWindow* fTopoWindow = nullptr;
     AppSettings fAppSettings;
+
+    // Scansione periodica.
+    BMessageRunner* fAutoScanRunner = nullptr;
 };
 
 } // namespace lanterna

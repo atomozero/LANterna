@@ -20,6 +20,7 @@
 
 #include <Alert.h>
 #include <Clipboard.h>
+#include <MessageRunner.h>
 #include <Notification.h>
 
 #include <cstdio>
@@ -269,6 +270,9 @@ MainWindow::MainWindow()
 
     // Carica i device persistiti dalle scansioni precedenti.
     _LoadPersistedDevices();
+
+    // Attiva l'autoscan se configurato.
+    _UpdateAutoScanRunner();
 }
 
 void MainWindow::MessageReceived(BMessage* message) {
@@ -306,7 +310,14 @@ void MainWindow::MessageReceived(BMessage* message) {
         }
         case kMsgSettingsChanged:
             // Le impostazioni sono state salvate; verranno usate alla
-            // prossima scansione.
+            // prossima scansione. Aggiorna anche l'autoscan runner.
+            _UpdateAutoScanRunner();
+            break;
+        case kMsgAutoScanTick:
+            // Tick periodico: avvia una scansione solo se non c'e' gia'
+            // una in corso.
+            if (!fScanning)
+                _StartScan();
             break;
         case kMsgAbout:
         {
@@ -809,6 +820,27 @@ void MainWindow::_LoadPersistedDevices() {
                            static_cast<int>(all.size()));
         fStatusView->SetText(status.String());
     }
+}
+
+void MainWindow::_UpdateAutoScanRunner() {
+    // Ferma il runner esistente.
+    delete fAutoScanRunner;
+    fAutoScanRunner = nullptr;
+
+    if (fAppSettings.autoScanMinutes <= 0)
+        return; // disabilitata
+
+    // BMessageRunner posta kMsgAutoScanTick periodicamente.
+    bigtime_t interval = static_cast<bigtime_t>(fAppSettings.autoScanMinutes)
+                       * 60LL * 1000000LL;
+    BMessage tickMsg(kMsgAutoScanTick);
+    fAutoScanRunner = new BMessageRunner(BMessenger(this), &tickMsg,
+                                          interval, -1);
+
+    BString s;
+    s.SetToFormat("Scansione automatica ogni %d min.",
+                  fAppSettings.autoScanMinutes);
+    fStatusView->SetText(s.String());
 }
 
 void MainWindow::_NotifyNewDevice(const DeviceInfo& dev) {

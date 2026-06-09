@@ -25,7 +25,8 @@ enum {
     kMsgCtxOpenSsh      = 'cxsh', // menu contestuale: apri SSH
     kMsgCtxOpenSmb      = 'cxsm', // menu contestuale: apri SMB
     kMsgShowTopology    = 'topo', // UI -> finestra: mostra topologia
-    kMsgReplicantUpdate = 'rpup'  // MainWindow -> replicant: aggiorna conteggio
+    kMsgReplicantUpdate = 'rpup', // MainWindow -> replicant: aggiorna conteggio
+    kMsgAutoScanTick    = 'astk'  // BMessageRunner -> finestra: tick periodico
 };
 
 // Campi del messaggio kMsgDeviceFound.

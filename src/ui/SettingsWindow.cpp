@@ -64,6 +64,7 @@ void AppSettings::Load(const std::string& path) {
         else if (key == "ports")  ports = val;
         else if (key == "timeout") timeoutMs = atoi(val.c_str());
         else if (key == "maxconn") maxInFlight = atoi(val.c_str());
+        else if (key == "autoscan") autoScanMinutes = atoi(val.c_str());
     }
     SetLanguageFromCode(language.c_str());
 }
@@ -80,6 +81,7 @@ void AppSettings::Save(const std::string& path) const {
     std::fprintf(f, "ports=%s\n", ports.c_str());
     std::fprintf(f, "timeout=%d\n", timeoutMs);
     std::fprintf(f, "maxconn=%d\n", maxInFlight);
+    std::fprintf(f, "autoscan=%d\n", autoScanMinutes);
     std::fclose(f);
 }
 
@@ -124,6 +126,11 @@ SettingsWindow::SettingsWindow(AppSettings* settings, BWindow* target)
     concStr << settings->maxInFlight;
     fConcField = new BTextControl(Tr(S_MAX_CONCURRENT), concStr.String(), nullptr);
 
+    BString autoStr;
+    autoStr << settings->autoScanMinutes;
+    fAutoScanField = new BTextControl(Tr(S_AUTO_SCAN_MINUTES),
+                                       autoStr.String(), nullptr);
+
     BButton* saveBtn = new BButton(Tr(S_SAVE), new BMessage(kMsgSettingsSave));
     BButton* cancelBtn = new BButton(Tr(S_CANCEL), new BMessage(kMsgSettingsCancel));
     saveBtn->MakeDefault(true);
@@ -144,6 +151,9 @@ SettingsWindow::SettingsWindow(AppSettings* settings, BWindow* target)
         .Add(fPortsField)
         .Add(fTimeoutField)
         .Add(fConcField)
+        .AddStrut(B_USE_ITEM_SPACING)
+        .Add(MakeLabel(Tr(S_MONITORING)))
+        .Add(fAutoScanField)
         .AddGlue()
         .AddGroup(B_HORIZONTAL)
             .AddGlue()
@@ -178,6 +188,10 @@ void SettingsWindow::MessageReceived(BMessage* message) {
             if (fSettings->timeoutMs <= 0) fSettings->timeoutMs = 400;
             fSettings->maxInFlight = atoi(fConcField->Text());
             if (fSettings->maxInFlight <= 0) fSettings->maxInFlight = 256;
+
+            // Monitoraggio
+            fSettings->autoScanMinutes = atoi(fAutoScanField->Text());
+            if (fSettings->autoScanMinutes < 0) fSettings->autoScanMinutes = 0;
 
             fSettings->Save(AppSettings::DefaultPath());
 

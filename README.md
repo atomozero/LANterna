@@ -22,7 +22,8 @@ verifiche tecniche da fare su Haiku reale sono in
   pannello impostazioni, multilingua (it/en/es/de/ja).
 - L3 Discovery avanzato (in corso): mDNS/DNS-SD attivo (fatto), NetBIOS,
   SNMP, UPnP/SSDP.
-- L4 Sentinella: scansione periodica e notifica per device nuovi/scomparsi.
+- L4 Sentinella: scansione periodica (fatto) e notifica per device
+  scomparsi (in corso).
 - L5 Socket raw (se verificati): ARP/ICMP e MAC affidabile.
 
 ## Pipeline di arricchimento

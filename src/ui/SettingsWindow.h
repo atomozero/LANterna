@@ -20,6 +20,7 @@ struct AppSettings {
     std::string ports;       // es. "22,80,443,445"
     int         timeoutMs  = 400;
     int         maxInFlight = 256;
+    int         autoScanMinutes = 0;  // 0 = disabilitata
 
     void Load(const std::string& path);
     void Save(const std::string& path) const;
@@ -43,6 +44,7 @@ private:
     BTextControl*  fPortsField  = nullptr;
     BTextControl*  fTimeoutField = nullptr;
     BTextControl*  fConcField   = nullptr;
+    BTextControl*  fAutoScanField = nullptr;
 };
 
 } // namespace lanterna

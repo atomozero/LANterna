@@ -76,6 +76,8 @@ enum StringId {
     S_PROBE_PORTS,
     S_TIMEOUT_MS,
     S_MAX_CONCURRENT,
+    S_MONITORING,
+    S_AUTO_SCAN_MINUTES,
     S_SAVE,
     S_CANCEL,
     S_OK,
@@ -206,6 +208,10 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     { "Timeout (ms):", "Timeout (ms):", "Timeout (ms):", "Timeout (ms):", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\xa0\xe3\x82\xa2\xe3\x82\xa6\xe3\x83\x88 (ms):" },
     // S_MAX_CONCURRENT
     { "Connessioni simultanee:", "Max concurrent:", "Conexiones simult\xc3\xa1neas:", "Max. gleichzeitig:", "\xe5\x90\x8c\xe6\x99\x82\xe6\x8e\xa5\xe7\xb6\x9a:" },
+    // S_MONITORING
+    { "Monitoraggio", "Monitoring", "Monitoreo", "\xc3\x9c\x62\x65rwachung", "\xe7\x9b\xa3\xe8\xa6\x96" },
+    // S_AUTO_SCAN_MINUTES
+    { "Scansione automatica (min, 0=off):", "Auto-scan (min, 0=off):", "Auto-escaneo (min, 0=off):", "Auto-Scan (min, 0=aus):", "\xe8\x87\xaa\xe5\x8b\x95\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3 (\xe5\x88\x86):" },
     // S_SAVE
     { "Salva", "Save", "Guardar", "Speichern", "\xe4\xbf\x9d\xe5\xad\x98" },
     // S_CANCEL
