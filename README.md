@@ -11,7 +11,8 @@ verifiche tecniche da fare su Haiku reale sono in
 ## Milestone
 
 - L0 Scoperta base: sottorete + TCP connect probe + reverse DNS (solo socket
-  POSIX/BSD standard).
+  POSIX/BSD standard). Core fatto e testato; UI nativa BeAPI scritta, da
+  compilare e verificare su Haiku.
 - L1 Arricchimento: vendor da MAC (OUI IEEE), tipo device (fatto); mDNS
   (mjansson/mdns) ancora da fare. Il MAC degli host on-link si ricava dalla
   cache ARP di sistema dopo il connect, senza socket raw (backend Linux
@@ -25,5 +26,22 @@ verifiche tecniche da fare su Haiku reale sono in
 
 - Niente Qt, niente dipendenze pesanti. Solo mattoni compatibili MIT.
 - Niente funzioni offensive, niente packet sniffer, niente cloud.
+
+## Build
+
+Core portabile + CLI di test (Linux/POSIX, per sviluppare e verificare la
+logica di scoperta):
+
+    make
+    ./lanterna-cli --list-interfaces
+    ./lanterna-cli --oui data/oui-sample.txt
+
+App nativa Haiku con UI BeAPI (da compilare SU Haiku, vedi note nel file):
+
+    make -f Makefile.haiku
+
+La UI (`src/ui/`) e' scritta in BeAPI ma non e' stata compilata fuori da
+Haiku: header come BColumnListView e librerie come libbe vanno verificati
+sul sistema reale. Il core resta indipendente e testabile su qualunque POSIX.
 
 Licenza: MIT (vedi `LICENSE`).
