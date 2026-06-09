@@ -10,6 +10,7 @@
 #include <String.h>
 #include <Window.h>
 
+#include <set>
 #include <vector>
 
 #include "net/Subnet.h"
@@ -74,8 +75,10 @@ private:
     void _ShowContextMenu(BPoint where);
     void _ShowTopology();
     void _NotifyNewDevice(const DeviceInfo& dev);
+    void _NotifyDeviceOffline(const BString& ip, const BString& host);
     void _LoadPersistedDevices();
     void _UpdateAutoScanRunner();
+    void _CheckOfflineDevices();
     const DeviceInfo* _SelectedDeviceInfo() const;
     std::string _DefaultOuiPath() const;
     std::string _GuessGatewayIp() const;
@@ -105,6 +108,12 @@ private:
 
     // Tutti i device trovati nella scansione corrente.
     std::vector<DeviceInfo> fDevices;
+
+    // Snapshot degli IP online prima dell'ultima scansione.
+    // Usato a fine scansione per identificare device scomparsi.
+    std::set<BString> fPreScanIps;
+    // IP visti durante la scansione corrente (popolato da _StoreDevice).
+    std::set<BString> fCurrentScanIps;
 
     PivotWindow* fPivotWindow = nullptr;
     TopologyWindow* fTopoWindow = nullptr;

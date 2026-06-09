@@ -391,6 +391,8 @@ void MainWindow::MessageReceived(BMessage* message) {
             s.SetToFormat("Fatto. %d device trovati.", static_cast<int>(found));
             fStatusView->SetText(s.String());
             _SetScanning(false);
+            // Confronta IP pre/post per notificare device scomparsi.
+            _CheckOfflineDevices();
             // Aggiorna la pivot se aperta (lock necessario: thread diverso).
             if (fPivotWindow != nullptr && fPivotWindow->Lock()) {
                 if (!fPivotWindow->IsHidden())
@@ -433,6 +435,12 @@ void MainWindow::_StartScan() {
     if (fSelectedInterface < 0
         || fSelectedInterface >= static_cast<int32>(fInterfaces.size()))
         return;
+
+    // Snapshot degli IP attualmente noti per detection offline.
+    fPreScanIps.clear();
+    for (const DeviceInfo& dev : fDevices)
+        fPreScanIps.insert(dev.ip);
+    fCurrentScanIps.clear();
 
     fListView->Clear();
     fDevices.clear();
@@ -533,6 +541,7 @@ void MainWindow::_StoreDevice(const BMessage* message) {
     message->FindString(LANTERNA_FIELD_LAST_SEEN, &dev.lastSeen);
     message->FindBool(LANTERNA_FIELD_IS_NEW, &dev.isNew);
     fDevices.push_back(dev);
+    fCurrentScanIps.insert(dev.ip);
 
     // Notifica Haiku per i device nuovi.
     if (dev.isNew)
@@ -820,6 +829,41 @@ void MainWindow::_LoadPersistedDevices() {
                            static_cast<int>(all.size()));
         fStatusView->SetText(status.String());
     }
+}
+
+void MainWindow::_CheckOfflineDevices() {
+    if (fPreScanIps.empty())
+        return; // prima scansione: nessun confronto possibile
+
+    // Cerca IP nello snapshot pre-scan che non sono apparsi nella corrente.
+    DevicePersistence persist;
+    auto known = persist.LoadAll();
+
+    for (const BString& ip : fPreScanIps) {
+        if (fCurrentScanIps.find(ip) != fCurrentScanIps.end())
+            continue; // ancora online
+
+        // Recupera hostname dal disco per la notifica.
+        BString host;
+        auto it = known.find(std::string(ip.String()));
+        if (it != known.end())
+            host = it->second.hostname.c_str();
+
+        _NotifyDeviceOffline(ip, host);
+    }
+}
+
+void MainWindow::_NotifyDeviceOffline(const BString& ip, const BString& host) {
+    BNotification notification(B_INFORMATION_NOTIFICATION);
+    notification.SetGroup("LANterna");
+    notification.SetTitle("Device offline");
+    BString body;
+    body << ip;
+    if (host.Length() > 0)
+        body << " (" << host << ")";
+    body << "\nnon risponde piu'.";
+    notification.SetContent(body.String());
+    notification.Send();
 }
 
 void MainWindow::_UpdateAutoScanRunner() {
