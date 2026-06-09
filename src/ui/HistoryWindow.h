@@ -11,6 +11,7 @@
 
 #include "model/DeviceHistory.h"
 
+class BListView;
 class BStringView;
 
 namespace lanterna {
@@ -57,6 +58,7 @@ private:
     BString       fIp;
     TimelineView* fTimeline;
     HeatmapView*  fHeatmap;
+    BListView*    fEventLog;
     BStringView*  fSummary;
 };
 

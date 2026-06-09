@@ -2,6 +2,9 @@
 
 #include <Font.h>
 #include <LayoutBuilder.h>
+#include <ListItem.h>
+#include <ListView.h>
+#include <ScrollView.h>
 #include <StringView.h>
 
 #include <algorithm>
@@ -240,7 +243,7 @@ void HeatmapView::Draw(BRect updateRect) {
 // ── HistoryWindow ─────────────────────────────────────────────────────
 
 HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
-    : BWindow(BRect(150, 150, 850, 650), "", B_TITLED_WINDOW,
+    : BWindow(BRect(120, 100, 920, 780), "", B_TITLED_WINDOW,
               B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
       fIp(ip)
 {
@@ -260,6 +263,13 @@ HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
     BStringView* hmLabel = new BStringView("",
         "Heatmap settimanale (intensita' = tempo online per ora)");
     hmLabel->SetFont(be_bold_font);
+    BStringView* lgLabel = new BStringView("", "Log eventi");
+    lgLabel->SetFont(be_bold_font);
+
+    fEventLog = new BListView("eventlog");
+    BScrollView* logScroll = new BScrollView("logscroll", fEventLog,
+                                              0, false, true);
+    logScroll->SetExplicitMinSize(BSize(B_SIZE_UNSET, 120));
 
     fSummary = new BStringView("summary", "");
 
@@ -270,15 +280,30 @@ HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
         .AddStrut(B_USE_ITEM_SPACING)
         .Add(hmLabel)
         .Add(fHeatmap)
+        .AddStrut(B_USE_ITEM_SPACING)
+        .Add(lgLabel)
+        .Add(logScroll, 1.0f)
         .Add(fSummary)
-        .AddGlue()
     .End();
 
-    // Carica eventi e popola entrambe le view.
+    // Carica eventi e popola tutte le view.
     DeviceHistory hist;
     auto events = hist.Load(std::string(ip.String()));
     fTimeline->SetEvents(events);
     fHeatmap->SetEvents(events);
+
+    // Popola log eventi: piu' recenti in alto.
+    for (auto it = events.rbegin(); it != events.rend(); ++it) {
+        char buf[64];
+        struct tm tm;
+        localtime_r(&it->ts, &tm);
+        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tm);
+
+        BString line;
+        line.SetToFormat("%s   %s", buf,
+                         it->online ? "[+] ONLINE" : "[-] offline");
+        fEventLog->AddItem(new BStringItem(line.String()));
+    }
 
     // Riepilogo testuale.
     int online = 0, offline = 0;
