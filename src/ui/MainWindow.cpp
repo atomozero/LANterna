@@ -19,6 +19,8 @@
 #include <TextControl.h>
 
 #include <Alert.h>
+#include <Clipboard.h>
+#include <Notification.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -29,6 +31,7 @@
 #include "PivotWindow.h"
 #include "ScanRunner.h"
 #include "SettingsWindow.h"
+#include "TopologyView.h"
 
 namespace lanterna {
 
@@ -140,6 +143,9 @@ static const rgb_color kInfoFg    = {  80,  80,  80, 255 }; // grigio scuro
 static const rgb_color kNewDevBg  = { 215, 245, 215, 255 }; // verde chiaro
 static const rgb_color kNewDevFg  = {  20,  80,  20, 255 }; // verde scuro
 
+// Forward declaration (definita piu' avanti).
+static void OpenAction(const BString& url);
+
 MainWindow::MainWindow()
     : BWindow(BRect(100, 100, 900, 560), "LANterna",
               B_TITLED_WINDOW,
@@ -181,12 +187,16 @@ MainWindow::MainWindow()
                                 new BMessage(kMsgExportCSV));
     fSettingsButton = new BButton("settings", Tr(S_SETTINGS_TITLE),
                                   new BMessage(kMsgShowSettings));
+    fTopoButton = new BButton("topo", "Topologia",
+                              new BMessage(kMsgShowTopology));
     fAboutButton = new BButton("about", "?",
                                new BMessage(kMsgAbout));
     fStatusView = new BStringView("status", Tr(S_READY));
 
     fListView = new BColumnListView("devices", 0);
     fListView->SetInvocationMessage(new BMessage(kMsgRowInvoked));
+    // Il menu contestuale viene mostrato in _HandleRowInvoked o via
+    // secondary mouse button intercettato nel message handler.
     fListView->AddColumn(
         new ColoredColumn(Tr(S_COL_IP), 130, 80, 200, B_TRUNCATE_MIDDLE), kColIp);
     fListView->AddColumn(
@@ -228,6 +238,7 @@ MainWindow::MainWindow()
             .Add(fScanButton)
             .Add(fPivotButton)
             .Add(fExportButton)
+            .Add(fTopoButton)
             .Add(fSettingsButton)
             .Add(fAboutButton)
             .AddGlue()
@@ -311,6 +322,43 @@ void MainWindow::MessageReceived(BMessage* message) {
                 _SaveCSV(dir, name.String());
             break;
         }
+        case kMsgShowTopology:
+            _ShowTopology();
+            break;
+        case kMsgCtxCopyIp:
+        case kMsgCtxCopyMac:
+        {
+            const DeviceInfo* sel = _SelectedDeviceInfo();
+            if (sel) {
+                const char* text = (message->what == kMsgCtxCopyIp)
+                    ? sel->ip.String() : sel->mac.String();
+                if (be_clipboard->Lock()) {
+                    be_clipboard->Clear();
+                    BMessage* clip = be_clipboard->Data();
+                    clip->AddData("text/plain", B_MIME_TYPE, text, strlen(text));
+                    be_clipboard->Commit();
+                    be_clipboard->Unlock();
+                }
+            }
+            break;
+        }
+        case kMsgCtxOpenHttp:
+        case kMsgCtxOpenSsh:
+        case kMsgCtxOpenSmb:
+        {
+            const DeviceInfo* sel = _SelectedDeviceInfo();
+            if (sel) {
+                BString url;
+                if (message->what == kMsgCtxOpenHttp)
+                    url.SetToFormat("http://%s", sel->ip.String());
+                else if (message->what == kMsgCtxOpenSsh)
+                    url.SetToFormat("ssh://%s", sel->ip.String());
+                else
+                    url.SetToFormat("smb://%s", sel->ip.String());
+                OpenAction(url);
+            }
+            break;
+        }
         case kMsgScanProgress:
         {
             int32 percent = 0;
@@ -340,6 +388,23 @@ void MainWindow::MessageReceived(BMessage* message) {
             BWindow::MessageReceived(message);
             break;
     }
+}
+
+void MainWindow::DispatchMessage(BMessage* message, BHandler* handler) {
+    // Intercetta il click destro sulla lista per il menu contestuale.
+    if (message->what == B_MOUSE_DOWN) {
+        int32 buttons = 0;
+        message->FindInt32("buttons", &buttons);
+        if (buttons == B_SECONDARY_MOUSE_BUTTON) {
+            BPoint where;
+            if (message->FindPoint("be:view_where", &where) == B_OK
+                || message->FindPoint("where", &where) == B_OK) {
+                _ShowContextMenu(where);
+                return;
+            }
+        }
+    }
+    BWindow::DispatchMessage(message, handler);
 }
 
 bool MainWindow::QuitRequested() {
@@ -453,6 +518,10 @@ void MainWindow::_StoreDevice(const BMessage* message) {
     message->FindString(LANTERNA_FIELD_LAST_SEEN, &dev.lastSeen);
     message->FindBool(LANTERNA_FIELD_IS_NEW, &dev.isNew);
     fDevices.push_back(dev);
+
+    // Notifica Haiku per i device nuovi.
+    if (dev.isNew)
+        _NotifyNewDevice(dev);
 
     if (_MatchesFilters(dev))
         _AddDeviceWithChildren(dev);
@@ -647,6 +716,107 @@ void MainWindow::_SaveCSV(const entry_ref& dir, const char* name) {
     BString status;
     status.SetToFormat("Esportato: %s", path.Path());
     fStatusView->SetText(status.String());
+}
+
+void MainWindow::_ShowContextMenu(BPoint where) {
+    const DeviceInfo* dev = _SelectedDeviceInfo();
+    if (dev == nullptr) return;
+
+    BPopUpMenu* menu = new BPopUpMenu("context", false, false);
+    BString copyIpLabel;
+    copyIpLabel.SetToFormat("Copia IP (%s)", dev->ip.String());
+    menu->AddItem(new BMenuItem(copyIpLabel.String(), new BMessage(kMsgCtxCopyIp)));
+
+    if (dev->mac.Length() > 0) {
+        BString copyMacLabel;
+        copyMacLabel.SetToFormat("Copia MAC (%s)", dev->mac.String());
+        menu->AddItem(new BMenuItem(copyMacLabel.String(), new BMessage(kMsgCtxCopyMac)));
+    }
+
+    menu->AddSeparatorItem();
+
+    // Azioni basate sulle porte.
+    if (dev->ports.FindFirst("80") >= 0 || dev->ports.FindFirst("443") >= 0
+        || dev->ports.FindFirst("8080") >= 0)
+        menu->AddItem(new BMenuItem("Apri nel browser", new BMessage(kMsgCtxOpenHttp)));
+    if (dev->ports.FindFirst("22") >= 0)
+        menu->AddItem(new BMenuItem("Connetti SSH", new BMessage(kMsgCtxOpenSsh)));
+    if (dev->ports.FindFirst("445") >= 0 || dev->ports.FindFirst("139") >= 0)
+        menu->AddItem(new BMenuItem("Apri condivisione SMB", new BMessage(kMsgCtxOpenSmb)));
+
+    menu->SetTargetForItems(this);
+    ConvertToScreen(&where);
+    menu->Go(where, true, true, true);
+}
+
+void MainWindow::_ShowTopology() {
+    if (fTopoWindow == nullptr) {
+        fTopoWindow = new TopologyWindow();
+        fTopoWindow->Show();
+    }
+
+    std::string gw = _GuessGatewayIp();
+
+    if (fTopoWindow->Lock()) {
+        fTopoWindow->SetDevices(fDevices, gw.c_str());
+        if (fTopoWindow->IsHidden())
+            fTopoWindow->Show();
+        else
+            fTopoWindow->Activate();
+        fTopoWindow->Unlock();
+    }
+}
+
+void MainWindow::_NotifyNewDevice(const DeviceInfo& dev) {
+    BNotification notification(B_INFORMATION_NOTIFICATION);
+    notification.SetGroup("LANterna");
+    notification.SetTitle("Nuovo device in rete");
+    BString body;
+    body << dev.ip;
+    if (dev.host.Length() > 0)
+        body << " (" << dev.host << ")";
+    if (dev.vendor.Length() > 0)
+        body << "\n" << dev.vendor;
+    notification.SetContent(body.String());
+    notification.Send();
+}
+
+const DeviceInfo* MainWindow::_SelectedDeviceInfo() const {
+    BRow* row = fListView->CurrentSelection();
+    if (row == nullptr) return nullptr;
+
+    // Risali alla riga parent se e' una riga figlia.
+    BRow* parent = nullptr;
+    bool isChild = false;
+    fListView->FindParent(row, &parent, &isChild);
+    if (isChild && parent != nullptr)
+        row = parent;
+
+    // Trova l'IP dalla prima colonna.
+    BStringField* ipField = dynamic_cast<BStringField*>(row->GetField(kColIp));
+    if (ipField == nullptr) return nullptr;
+
+    // Cerca anche tra i ColoredField.
+    const char* ipStr = ipField->String();
+    if (ipStr == nullptr || ipStr[0] == '\0')
+        return nullptr;
+
+    for (const DeviceInfo& dev : fDevices) {
+        if (dev.ip.Compare(ipStr) == 0)
+            return &dev;
+    }
+    return nullptr;
+}
+
+std::string MainWindow::_GuessGatewayIp() const {
+    // Euristica: il primo IP della subnet (tipicamente .1) e' spesso il gateway.
+    if (fSelectedInterface < 0
+        || fSelectedInterface >= static_cast<int32>(fInterfaces.size()))
+        return "";
+    const LocalInterface& iface = fInterfaces[fSelectedInterface];
+    uint32_t network = iface.address & iface.netmask;
+    uint32_t gw = network + 1; // es. 192.168.1.1
+    return Ipv4ToString(gw);
 }
 
 void MainWindow::_SetScanning(bool scanning) {

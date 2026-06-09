@@ -18,7 +18,14 @@ enum {
     kMsgExportSaveRef   = 'exsv', // BFilePanel -> finestra: path scelto
     kMsgShowSettings    = 'sett', // UI -> finestra: mostra impostazioni
     kMsgSettingsChanged = 'stch', // SettingsWindow -> finestra: settings cambiati
-    kMsgAbout           = 'abou'  // UI -> finestra: mostra About
+    kMsgAbout           = 'abou', // UI -> finestra: mostra About
+    kMsgCtxCopyIp       = 'cxip', // menu contestuale: copia IP
+    kMsgCtxCopyMac      = 'cxmc', // menu contestuale: copia MAC
+    kMsgCtxOpenHttp     = 'cxht', // menu contestuale: apri HTTP
+    kMsgCtxOpenSsh      = 'cxsh', // menu contestuale: apri SSH
+    kMsgCtxOpenSmb      = 'cxsm', // menu contestuale: apri SMB
+    kMsgShowTopology    = 'topo', // UI -> finestra: mostra topologia
+    kMsgReplicantUpdate = 'rpup'  // MainWindow -> replicant: aggiorna conteggio
 };
 
 // Campi del messaggio kMsgDeviceFound.

@@ -27,6 +27,7 @@ class BTextControl;
 namespace lanterna {
 
 class PivotWindow;
+class TopologyWindow;
 
 // Dati di un device memorizzati per poter rifiltrare.
 struct DeviceInfo {
@@ -55,6 +56,7 @@ public:
     MainWindow();
 
     void MessageReceived(BMessage* message) override;
+    void DispatchMessage(BMessage* message, BHandler* handler) override;
     bool QuitRequested() override;
 
 private:
@@ -68,7 +70,12 @@ private:
     void _HandleRowInvoked();
     void _ExportCSV();
     void _SaveCSV(const entry_ref& dir, const char* name);
+    void _ShowContextMenu(BPoint where);
+    void _ShowTopology();
+    void _NotifyNewDevice(const DeviceInfo& dev);
+    const DeviceInfo* _SelectedDeviceInfo() const;
     std::string _DefaultOuiPath() const;
+    std::string _GuessGatewayIp() const;
 
     std::vector<LocalInterface> fInterfaces;
     int32 fSelectedInterface = 0;
@@ -79,6 +86,7 @@ private:
     BButton* fPivotButton = nullptr;
     BButton* fExportButton = nullptr;
     BButton* fSettingsButton = nullptr;
+    BButton* fTopoButton = nullptr;
     BButton* fAboutButton = nullptr;
     BColumnListView* fListView = nullptr;
     BStringView* fStatusView = nullptr;
@@ -96,6 +104,7 @@ private:
     std::vector<DeviceInfo> fDevices;
 
     PivotWindow* fPivotWindow = nullptr;
+    TopologyWindow* fTopoWindow = nullptr;
     AppSettings fAppSettings;
 };
 
