@@ -13,14 +13,34 @@ verifiche tecniche da fare su Haiku reale sono in
 - L0 Scoperta base: sottorete + TCP connect probe + reverse DNS (solo socket
   POSIX/BSD standard). Core fatto e testato; UI nativa BeAPI scritta, da
   compilare e verificare su Haiku.
-- L1 Arricchimento: vendor da MAC (OUI IEEE), tipo device (fatto); mDNS
-  (mjansson/mdns) ancora da fare. Il MAC degli host on-link si ricava dalla
-  cache ARP di sistema dopo il connect, senza socket raw (backend Linux
-  `/proc/net/arp`; backend Haiku da verificare).
-- L2 Anima Haiku: device come oggetti con attributi BFS, query Tracker,
-  Replicant/Deskbar.
-- L3 Sentinella: scansione periodica e notifica per device nuovi.
-- L4 Socket raw (se verificati): ARP/ICMP e MAC affidabile.
+- L1 Arricchimento: vendor da MAC (OUI IEEE), tipo device (fatto). Il MAC
+  degli host on-link si ricava dalla cache ARP di sistema dopo il connect,
+  senza socket raw (backend Linux `/proc/net/arp`; backend Haiku via
+  `/proc/net/arp` BSD compat).
+- L2 Anima Haiku: persistenza su attributi BFS, finestra Riepilogo (pivot),
+  topologia interattiva, replicant Desktop, BNotification, BAboutWindow,
+  pannello impostazioni, multilingua (it/en/es/de/ja).
+- L3 Discovery avanzato (in corso): mDNS/DNS-SD attivo (fatto), NetBIOS,
+  SNMP, UPnP/SSDP.
+- L4 Sentinella: scansione periodica e notifica per device nuovi/scomparsi.
+- L5 Socket raw (se verificati): ARP/ICMP e MAC affidabile.
+
+## Pipeline di arricchimento
+
+Il core applica una pipeline di `Enricher` su ogni device scoperto. L'ordine
+attuale e':
+
+1. `ArpMacEnricher`     - MAC da cache ARP del sistema
+2. `OuiVendorEnricher`  - vendor da prefisso OUI (`oui.txt` IEEE)
+3. `ReverseDnsEnricher` - hostname da reverse DNS unicast
+4. `MdnsEnricher`       - hostname `.local` e tipo da DNS-SD multicast
+5. `TypeInferenceEnricher` - tipo device inferito dalle porte aperte
+
+`MdnsEnricher` esegue una "discovery" multicast una volta sola all'inizio
+della scansione (query a 224.0.0.251:5353 per `_services._dns-sd._udp` e
+per ~10 service-type comuni: HTTP, IPP, SMB, AFP, AirPlay, Chromecast,
+HomeKit, SSH, workstation). Le risposte popolano una cache `ip -> servizi`
+che viene poi consultata per ogni device.
 
 ## Vincoli
 

@@ -4,6 +4,13 @@
 CXX      ?= g++
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 -Isrc
 BIN      := lanterna-cli
+LDLIBS   :=
+
+# Su Haiku servono header BSD (getifaddrs) e libnetwork (socket, DNS).
+ifeq ($(shell uname -s),Haiku)
+  CXXFLAGS += -D_DEFAULT_SOURCE -I/boot/system/develop/headers/bsd
+  LDLIBS   += -lbsd -lnetwork
+endif
 
 SRCS := \
   src/net/Subnet.cpp \
@@ -16,6 +23,7 @@ SRCS := \
   src/enrich/OuiDatabase.cpp \
   src/enrich/OuiVendorEnricher.cpp \
   src/enrich/TypeInferenceEnricher.cpp \
+  src/enrich/MdnsEnricher.cpp \
   src/scan/Scanner.cpp \
   src/cli/main.cpp
 
@@ -24,7 +32,7 @@ OBJS := $(SRCS:.cpp=.o)
 all: $(BIN)
 
 $(BIN): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

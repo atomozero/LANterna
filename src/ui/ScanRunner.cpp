@@ -11,6 +11,7 @@
 
 #include "Messages.h"
 #include "enrich/ArpMacEnricher.h"
+#include "enrich/MdnsEnricher.h"
 #include "enrich/OuiVendorEnricher.h"
 #include "enrich/ReverseDnsEnricher.h"
 #include "enrich/TypeInferenceEnricher.h"
@@ -41,7 +42,12 @@ int32 ScanThread(void* arg) {
 
     std::vector<uint32_t> hosts = EnumerateHosts(job->iface);
 
-    // Pipeline L1, stesso ordine della CLI.
+    // Esegui discovery mDNS multicast prima della scansione. Le risposte
+    // riempiono una cache che l'enricher consultera' per ogni device.
+    MdnsEnricher mdns;
+    mdns.Discover(1500);
+
+    // Pipeline di arricchimento.
     ArpMacEnricher arp;
     ReverseDnsEnricher dns;
     TypeInferenceEnricher type;
@@ -52,6 +58,7 @@ int32 ScanThread(void* arg) {
         pipeline.push_back(oui.get());
     }
     pipeline.push_back(&dns);
+    pipeline.push_back(&mdns);
     pipeline.push_back(&type);
 
     Scanner scanner(pipeline);
