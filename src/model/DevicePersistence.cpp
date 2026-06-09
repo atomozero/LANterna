@@ -21,6 +21,8 @@ static const char* kAttrType      = "LANterna:type";
 static const char* kAttrPorts     = "LANterna:ports";
 static const char* kAttrFirstSeen = "LANterna:firstSeen";
 static const char* kAttrLastSeen  = "LANterna:lastSeen";
+static const char* kAttrAlias     = "LANterna:alias";
+static const char* kAttrNote      = "LANterna:note";
 
 // ── Helper: leggi stringa da attributo BFS ─────────────────────────────
 static std::string ReadStringAttr(BNode& node, const char* name) {
@@ -93,6 +95,8 @@ bool DevicePersistence::Load(const std::string& ip,
     out.ports     = ReadStringAttr(node, kAttrPorts);
     out.firstSeen = static_cast<std::time_t>(ReadTimeAttr(node, kAttrFirstSeen));
     out.lastSeen  = static_cast<std::time_t>(ReadTimeAttr(node, kAttrLastSeen));
+    out.alias     = ReadStringAttr(node, kAttrAlias);
+    out.note      = ReadStringAttr(node, kAttrNote);
     return true;
 }
 
@@ -136,6 +140,8 @@ void DevicePersistence::Save(const PersistedDevice& dev) {
     WriteStringAttr(node, kAttrPorts,    dev.ports);
     WriteTimeAttr(node,   kAttrFirstSeen, dev.firstSeen);
     WriteTimeAttr(node,   kAttrLastSeen,  dev.lastSeen);
+    WriteStringAttr(node, kAttrAlias,    dev.alias);
+    WriteStringAttr(node, kAttrNote,     dev.note);
 }
 
 } // namespace lanterna

@@ -20,6 +20,10 @@ struct PersistedDevice {
     std::string ports;
     std::time_t firstSeen = 0;
     std::time_t lastSeen  = 0;
+
+    // Personalizzazione utente (modificabile dalla finestra Dettagli).
+    std::string alias;       // nome custom (es. "NAS Mario")
+    std::string note;        // testo libero, multilinea
 };
 
 class DevicePersistence {

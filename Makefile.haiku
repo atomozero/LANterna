@@ -42,6 +42,7 @@ UI_SRCS := \
   src/ui/MainWindow.cpp \
   src/ui/PivotWindow.cpp \
   src/ui/PingWindow.cpp \
+  src/ui/DeviceDetailsWindow.cpp \
   src/ui/SettingsWindow.cpp \
   src/ui/TopologyView.cpp \
   src/ui/NetworkReplicant.cpp \

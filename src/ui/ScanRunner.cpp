@@ -100,8 +100,9 @@ int32 ScanThread(void* arg) {
         std::time_t firstSeen = isNew ? now : known[d.ip].firstSeen;
         std::time_t lastSeen  = now;
 
-        // Persisti su BFS.
+        // Persisti su BFS, preservando alias/note utente esistenti.
         PersistedDevice pd;
+        if (!isNew) pd = known[d.ip];  // preserva alias/note
         pd.ip         = d.ip;
         pd.mac        = d.mac;
         pd.vendor     = d.vendor;
@@ -129,6 +130,8 @@ int32 ScanThread(void* arg) {
         msg.AddString(LANTERNA_FIELD_PORTS, ports.c_str());
         msg.AddString(LANTERNA_FIELD_FIRST_SEEN, fsBuf);
         msg.AddString(LANTERNA_FIELD_LAST_SEEN, lsBuf);
+        msg.AddString(LANTERNA_FIELD_ALIAS, pd.alias.c_str());
+        msg.AddString(LANTERNA_FIELD_NOTE,  pd.note.c_str());
         msg.AddBool(LANTERNA_FIELD_IS_NEW, isNew);
         target.SendMessage(&msg);
     };

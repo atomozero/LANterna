@@ -26,6 +26,8 @@ enum {
     kMsgCtxOpenSmb      = 'cxsm', // menu contestuale: apri SMB
     kMsgCtxWakeOnLan    = 'cxwl', // menu contestuale: invia magic packet WoL
     kMsgCtxPing         = 'cxpg', // menu contestuale: avvia ping continuo
+    kMsgCtxDetails      = 'cxdt', // menu contestuale: apri finestra dettagli
+    kMsgDeviceUpdated   = 'dvup', // DeviceDetailsWindow -> MainWindow: salva
     kMsgShowTopology    = 'topo', // UI -> finestra: mostra topologia
     kMsgReplicantUpdate = 'rpup', // MainWindow -> replicant: aggiorna conteggio
     kMsgAutoScanTick    = 'astk'  // BMessageRunner -> finestra: tick periodico
@@ -40,6 +42,8 @@ enum {
 #define LANTERNA_FIELD_PORTS    "ports"
 #define LANTERNA_FIELD_FIRST_SEEN "firstSeen"
 #define LANTERNA_FIELD_LAST_SEEN  "lastSeen"
+#define LANTERNA_FIELD_ALIAS      "alias"
+#define LANTERNA_FIELD_NOTE       "note"
 #define LANTERNA_FIELD_IS_NEW     "isNew"
 #define LANTERNA_FIELD_PROGRESS   "percent"
 #define LANTERNA_FIELD_FOUND      "found"

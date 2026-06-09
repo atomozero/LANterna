@@ -41,6 +41,8 @@ struct DeviceInfo {
     BString ports;
     BString firstSeen;
     BString lastSeen;
+    BString alias;       // nome custom utente
+    BString note;        // testo libero
     bool    isNew = false;
 };
 

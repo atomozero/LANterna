@@ -29,6 +29,7 @@
 
 #include "Locale.h"
 #include "Messages.h"
+#include "DeviceDetailsWindow.h"
 #include "PingWindow.h"
 #include "PivotWindow.h"
 #include "ScanRunner.h"
@@ -380,6 +381,45 @@ void MainWindow::MessageReceived(BMessage* message) {
             }
             break;
         }
+        case kMsgCtxDetails:
+        {
+            const DeviceInfo* sel = _SelectedDeviceInfo();
+            if (sel) {
+                DeviceDetailsWindow* dw = new DeviceDetailsWindow(
+                    *sel, BMessenger(this));
+                dw->Show();
+            }
+            break;
+        }
+        case kMsgDeviceUpdated:
+        {
+            BString ip, alias, note;
+            message->FindString("ip", &ip);
+            message->FindString("alias", &alias);
+            message->FindString("note", &note);
+
+            // Aggiorna il vettore in memoria.
+            for (DeviceInfo& dev : fDevices) {
+                if (dev.ip == ip) {
+                    dev.alias = alias;
+                    dev.note = note;
+                    break;
+                }
+            }
+
+            // Persisti su BFS (legge l'esistente, aggiorna i campi utente).
+            DevicePersistence persist;
+            PersistedDevice pd;
+            if (persist.Load(std::string(ip.String()), pd)) {
+                pd.alias = alias.String();
+                pd.note = note.String();
+                persist.Save(pd);
+            }
+
+            // Ridisegna la lista per riflettere il nuovo alias.
+            _RebuildList();
+            break;
+        }
         case kMsgCtxWakeOnLan:
         {
             const DeviceInfo* sel = _SelectedDeviceInfo();
@@ -603,6 +643,8 @@ void MainWindow::_StoreDevice(const BMessage* message) {
     message->FindString(LANTERNA_FIELD_PORTS, &dev.ports);
     message->FindString(LANTERNA_FIELD_FIRST_SEEN, &dev.firstSeen);
     message->FindString(LANTERNA_FIELD_LAST_SEEN, &dev.lastSeen);
+    message->FindString(LANTERNA_FIELD_ALIAS, &dev.alias);
+    message->FindString(LANTERNA_FIELD_NOTE, &dev.note);
     message->FindBool(LANTERNA_FIELD_IS_NEW, &dev.isNew);
     fDevices.push_back(dev);
     fCurrentScanIps.insert(dev.ip);
@@ -616,11 +658,24 @@ void MainWindow::_StoreDevice(const BMessage* message) {
 }
 
 void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
+    // Se l'utente ha settato un alias, mostralo al posto dell'hostname,
+    // con l'hostname rilevato tra parentesi.
+    BString name;
+    if (dev.alias.Length() > 0) {
+        name = dev.alias;
+        if (dev.host.Length() > 0)
+            name << " (" << dev.host << ")";
+    } else if (dev.host.Length() > 0) {
+        name = dev.host;
+    } else {
+        name = "-";
+    }
+
     BRow* parent = new BRow();
     if (dev.isNew) {
         // Device nuovo: evidenzia con sfondo verde.
         parent->SetField(new ColoredField(dev.ip.String(), kNewDevBg, kNewDevFg), kColIp);
-        parent->SetField(new ColoredField(dev.host.Length() ? dev.host.String() : "-", kNewDevBg, kNewDevFg), kColHost);
+        parent->SetField(new ColoredField(name.String(), kNewDevBg, kNewDevFg), kColHost);
         parent->SetField(new ColoredField(dev.mac.Length() ? dev.mac.String() : "-", kNewDevBg, kNewDevFg), kColMac);
         parent->SetField(new ColoredField(dev.vendor.Length() ? dev.vendor.String() : "-", kNewDevBg, kNewDevFg), kColVendor);
         parent->SetField(new ColoredField(dev.type.Length() ? dev.type.String() : "-", kNewDevBg, kNewDevFg), kColType);
@@ -629,7 +684,7 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
         parent->SetField(new ColoredField(dev.lastSeen.Length() ? dev.lastSeen.String() : "-", kNewDevBg, kNewDevFg), kColLastSeen);
     } else {
         parent->SetField(new BStringField(dev.ip.String()), kColIp);
-        parent->SetField(new BStringField(dev.host.Length() ? dev.host.String() : "-"), kColHost);
+        parent->SetField(new BStringField(name.String()), kColHost);
         parent->SetField(new BStringField(dev.mac.Length() ? dev.mac.String() : "-"), kColMac);
         parent->SetField(new BStringField(dev.vendor.Length() ? dev.vendor.String() : "-"), kColVendor);
         parent->SetField(new BStringField(dev.type.Length() ? dev.type.String() : "-"), kColType);
@@ -843,6 +898,10 @@ void MainWindow::_ShowContextMenu(BPoint where) {
                                     new BMessage(kMsgCtxPing)));
     }
 
+    menu->AddSeparatorItem();
+    menu->AddItem(new BMenuItem("Modifica dettagli (alias, note)...",
+                                new BMessage(kMsgCtxDetails)));
+
     menu->SetTargetForItems(this);
     ConvertToScreen(&where);
     menu->Go(where, true, true, true);
@@ -880,6 +939,8 @@ void MainWindow::_LoadPersistedDevices() {
         dev.vendor = pd.vendor.c_str();
         dev.type = pd.deviceType.c_str();
         dev.ports = pd.ports.c_str();
+        dev.alias = pd.alias.c_str();
+        dev.note = pd.note.c_str();
         dev.isNew = false; // i device persistiti non sono "nuovi"
 
         // Formatta i timestamp.
