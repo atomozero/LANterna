@@ -38,7 +38,34 @@ std::map<std::string, std::string> ReadArpCache() {
     return result;
 }
 
-#else // backend non implementato (incluso Haiku, da verificare)
+#elif defined(__HAIKU__)
+
+bool ArpCacheSupported() { return true; }
+
+std::map<std::string, std::string> ReadArpCache() {
+    std::map<std::string, std::string> result;
+    // `arp -a` su Haiku: righe "IP  MAC  stato", campi separati da spazi.
+    std::FILE* f = popen("arp -a", "r");
+    if (f == nullptr)
+        return result;
+
+    char line[256];
+    char ip[64], mac[64], state[32];
+    while (std::fgets(line, sizeof(line), f) != nullptr) {
+        if (std::sscanf(line, "%63s %63s %31s", ip, mac, state) < 2)
+            continue;
+        if (std::strcmp(mac, "00:00:00:00:00:00") == 0)
+            continue;
+        // Scarta entry 0.0.0.0 (gateway placeholder incomplete).
+        if (std::strcmp(ip, "0.0.0.0") == 0)
+            continue;
+        result[ip] = mac;
+    }
+    pclose(f);
+    return result;
+}
+
+#else // piattaforma non supportata
 
 bool ArpCacheSupported() { return false; }
 
