@@ -59,6 +59,9 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
     // Campi editabili.
     fAliasField = new BTextControl("alias", "Alias:",
                                     dev.alias.String(), nullptr);
+    fTagsField  = new BTextControl("tags",
+                                    "Tag (separati da virgola):",
+                                    dev.tags.String(), nullptr);
 
     fNoteView = new BTextView("note");
     fNoteView->SetText(dev.note.String());
@@ -89,6 +92,7 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
         .AddStrut(B_USE_ITEM_SPACING)
         .Add(SectionLabel("Personalizzazione"))
         .Add(fAliasField)
+        .Add(fTagsField)
         .Add(new BStringView("", "Note:"))
         .Add(noteScroll, 1.0f)
         .AddGroup(B_HORIZONTAL)
@@ -107,7 +111,8 @@ void DeviceDetailsWindow::MessageReceived(BMessage* message) {
             BMessage update(kMsgDeviceUpdated);
             update.AddString("ip", fIp.String());
             update.AddString("alias", fAliasField->Text());
-            update.AddString("note", fNoteView->Text());
+            update.AddString("tags",  fTagsField->Text());
+            update.AddString("note",  fNoteView->Text());
             fTarget.SendMessage(&update);
             PostMessage(B_QUIT_REQUESTED);
             break;

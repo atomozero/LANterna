@@ -43,6 +43,7 @@ struct DeviceInfo {
     BString lastSeen;
     BString alias;       // nome custom utente
     BString note;        // testo libero
+    BString tags;        // tag separati da virgola
     bool    isNew = false;
 };
 
@@ -107,6 +108,7 @@ private:
     BTextControl* fFilterVendor = nullptr;
     BTextControl* fFilterType = nullptr;
     BTextControl* fFilterPorts = nullptr;
+    BTextControl* fFilterTags = nullptr;
 
     // Tutti i device trovati nella scansione corrente.
     std::vector<DeviceInfo> fDevices;

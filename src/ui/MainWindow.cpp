@@ -49,7 +49,8 @@ enum {
     kColType,
     kColPorts,
     kColFirstSeen,
-    kColLastSeen
+    kColLastSeen,
+    kColTags
 };
 
 // ── Campo stringa con colore di sfondo/testo e flag "primo" ───────────
@@ -227,6 +228,9 @@ MainWindow::MainWindow()
     fListView->AddColumn(
         new ColoredColumn(Tr(S_COL_LAST_SEEN), 130, 80, 200, B_TRUNCATE_END),
         kColLastSeen);
+    fListView->AddColumn(
+        new ColoredColumn("Tag", 100, 60, 200, B_TRUNCATE_END),
+        kColTags);
 
     // Filtri per colonna: ricerca case-insensitive su sottostringa.
     fFilterIp     = new BTextControl("flt_ip",     "IP:",          "", nullptr);
@@ -235,6 +239,7 @@ MainWindow::MainWindow()
     fFilterVendor = new BTextControl("flt_vendor", "Produttore:",  "", nullptr);
     fFilterType   = new BTextControl("flt_type",   "Tipo:",        "", nullptr);
     fFilterPorts  = new BTextControl("flt_ports",  "Porte:",       "", nullptr);
+    fFilterTags   = new BTextControl("flt_tags",   "Tag:",         "", nullptr);
 
     // Invia notifica ad ogni modifica per filtraggio live.
     fFilterIp->SetModificationMessage(new BMessage(kMsgFilterChanged));
@@ -243,6 +248,7 @@ MainWindow::MainWindow()
     fFilterVendor->SetModificationMessage(new BMessage(kMsgFilterChanged));
     fFilterType->SetModificationMessage(new BMessage(kMsgFilterChanged));
     fFilterPorts->SetModificationMessage(new BMessage(kMsgFilterChanged));
+    fFilterTags->SetModificationMessage(new BMessage(kMsgFilterChanged));
 
     BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
         .AddGroup(B_HORIZONTAL)
@@ -264,6 +270,7 @@ MainWindow::MainWindow()
             .Add(fFilterVendor)
             .Add(fFilterType)
             .Add(fFilterPorts)
+            .Add(fFilterTags)
             .SetInsets(B_USE_WINDOW_SPACING, 0,
                        B_USE_WINDOW_SPACING, B_USE_HALF_ITEM_SPACING)
         .End()
@@ -393,16 +400,18 @@ void MainWindow::MessageReceived(BMessage* message) {
         }
         case kMsgDeviceUpdated:
         {
-            BString ip, alias, note;
+            BString ip, alias, note, tags;
             message->FindString("ip", &ip);
             message->FindString("alias", &alias);
             message->FindString("note", &note);
+            message->FindString("tags", &tags);
 
             // Aggiorna il vettore in memoria.
             for (DeviceInfo& dev : fDevices) {
                 if (dev.ip == ip) {
                     dev.alias = alias;
                     dev.note = note;
+                    dev.tags = tags;
                     break;
                 }
             }
@@ -413,6 +422,7 @@ void MainWindow::MessageReceived(BMessage* message) {
             if (persist.Load(std::string(ip.String()), pd)) {
                 pd.alias = alias.String();
                 pd.note = note.String();
+                pd.tags = tags.String();
                 persist.Save(pd);
             }
 
@@ -645,6 +655,7 @@ void MainWindow::_StoreDevice(const BMessage* message) {
     message->FindString(LANTERNA_FIELD_LAST_SEEN, &dev.lastSeen);
     message->FindString(LANTERNA_FIELD_ALIAS, &dev.alias);
     message->FindString(LANTERNA_FIELD_NOTE, &dev.note);
+    message->FindString(LANTERNA_FIELD_TAGS, &dev.tags);
     message->FindBool(LANTERNA_FIELD_IS_NEW, &dev.isNew);
     fDevices.push_back(dev);
     fCurrentScanIps.insert(dev.ip);
@@ -682,6 +693,7 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
         parent->SetField(new ColoredField(dev.ports.Length() ? dev.ports.String() : "-", kNewDevBg, kNewDevFg), kColPorts);
         parent->SetField(new ColoredField(dev.firstSeen.Length() ? dev.firstSeen.String() : "-", kNewDevBg, kNewDevFg), kColFirstSeen);
         parent->SetField(new ColoredField(dev.lastSeen.Length() ? dev.lastSeen.String() : "-", kNewDevBg, kNewDevFg), kColLastSeen);
+        parent->SetField(new ColoredField(dev.tags.Length() ? dev.tags.String() : "-", kNewDevBg, kNewDevFg), kColTags);
     } else {
         parent->SetField(new BStringField(dev.ip.String()), kColIp);
         parent->SetField(new BStringField(name.String()), kColHost);
@@ -691,6 +703,7 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
         parent->SetField(new BStringField(dev.ports.Length() ? dev.ports.String() : "-"), kColPorts);
         parent->SetField(new BStringField(dev.firstSeen.Length() ? dev.firstSeen.String() : "-"), kColFirstSeen);
         parent->SetField(new BStringField(dev.lastSeen.Length() ? dev.lastSeen.String() : "-"), kColLastSeen);
+        parent->SetField(new BStringField(dev.tags.Length() ? dev.tags.String() : "-"), kColTags);
     }
     fListView->AddRow(parent);
 
@@ -728,6 +741,7 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
             child->SetField(new ColoredField(t, kActionBg, kActionFg, false, true), kColPorts);
             child->SetField(new ColoredField(t, kActionBg, kActionFg, false, true), kColFirstSeen);
             child->SetField(new ColoredField(t, kActionBg, kActionFg, false, true), kColLastSeen);
+            child->SetField(new ColoredField(t, kActionBg, kActionFg, false, true), kColTags);
             fListView->AddRow(child, parent);
         } else {
             label.SetToFormat("%s (porta %d)", pa->label, pa->port);
@@ -742,6 +756,7 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
             child->SetField(new ColoredField(t, kInfoBg, kInfoFg, false, true), kColPorts);
             child->SetField(new ColoredField(t, kInfoBg, kInfoFg, false, true), kColFirstSeen);
             child->SetField(new ColoredField(t, kInfoBg, kInfoFg, false, true), kColLastSeen);
+            child->SetField(new ColoredField(t, kInfoBg, kInfoFg, false, true), kColTags);
             fListView->AddRow(child, parent);
         }
     }
@@ -764,7 +779,8 @@ bool MainWindow::_MatchesFilters(const DeviceInfo& dev) const {
         && _Contains(dev.mac,    fFilterMac->Text())
         && _Contains(dev.vendor, fFilterVendor->Text())
         && _Contains(dev.type,   fFilterType->Text())
-        && _Contains(dev.ports,  fFilterPorts->Text());
+        && _Contains(dev.ports,  fFilterPorts->Text())
+        && _Contains(dev.tags,   fFilterTags->Text());
 }
 
 void MainWindow::_RebuildList() {
@@ -941,6 +957,7 @@ void MainWindow::_LoadPersistedDevices() {
         dev.ports = pd.ports.c_str();
         dev.alias = pd.alias.c_str();
         dev.note = pd.note.c_str();
+        dev.tags = pd.tags.c_str();
         dev.isNew = false; // i device persistiti non sono "nuovi"
 
         // Formatta i timestamp.

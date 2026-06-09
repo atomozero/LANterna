@@ -25,6 +25,7 @@ private:
     BString        fIp;          // chiave per ritrovare il device
     BMessenger     fTarget;
     BTextControl*  fAliasField;
+    BTextControl*  fTagsField;
     BTextView*     fNoteView;
 };
 

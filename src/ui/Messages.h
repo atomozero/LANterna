@@ -44,6 +44,7 @@ enum {
 #define LANTERNA_FIELD_LAST_SEEN  "lastSeen"
 #define LANTERNA_FIELD_ALIAS      "alias"
 #define LANTERNA_FIELD_NOTE       "note"
+#define LANTERNA_FIELD_TAGS       "tags"
 #define LANTERNA_FIELD_IS_NEW     "isNew"
 #define LANTERNA_FIELD_PROGRESS   "percent"
 #define LANTERNA_FIELD_FOUND      "found"

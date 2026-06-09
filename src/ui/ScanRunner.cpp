@@ -132,6 +132,7 @@ int32 ScanThread(void* arg) {
         msg.AddString(LANTERNA_FIELD_LAST_SEEN, lsBuf);
         msg.AddString(LANTERNA_FIELD_ALIAS, pd.alias.c_str());
         msg.AddString(LANTERNA_FIELD_NOTE,  pd.note.c_str());
+        msg.AddString(LANTERNA_FIELD_TAGS,  pd.tags.c_str());
         msg.AddBool(LANTERNA_FIELD_IS_NEW, isNew);
         target.SendMessage(&msg);
     };

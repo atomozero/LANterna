@@ -24,6 +24,7 @@ struct PersistedDevice {
     // Personalizzazione utente (modificabile dalla finestra Dettagli).
     std::string alias;       // nome custom (es. "NAS Mario")
     std::string note;        // testo libero, multilinea
+    std::string tags;        // tag separati da virgola (es. "casa,IoT")
 };
 
 class DevicePersistence {
