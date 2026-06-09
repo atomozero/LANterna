@@ -32,6 +32,7 @@
 #include "ScanRunner.h"
 #include "SettingsWindow.h"
 #include "TopologyView.h"
+#include "model/DevicePersistence.h"
 
 namespace lanterna {
 
@@ -265,6 +266,9 @@ MainWindow::MainWindow()
 
     if (fInterfaces.empty())
         fScanButton->SetEnabled(false);
+
+    // Carica i device persistiti dalle scansioni precedenti.
+    _LoadPersistedDevices();
 }
 
 void MainWindow::MessageReceived(BMessage* message) {
@@ -764,6 +768,46 @@ void MainWindow::_ShowTopology() {
         else
             fTopoWindow->Activate();
         fTopoWindow->Unlock();
+    }
+}
+
+void MainWindow::_LoadPersistedDevices() {
+    DevicePersistence persist;
+    auto all = persist.LoadAll();
+
+    for (const auto& kv : all) {
+        const PersistedDevice& pd = kv.second;
+
+        DeviceInfo dev;
+        dev.ip = pd.ip.c_str();
+        dev.host = pd.hostname.c_str();
+        dev.mac = pd.mac.c_str();
+        dev.vendor = pd.vendor.c_str();
+        dev.type = pd.deviceType.c_str();
+        dev.ports = pd.ports.c_str();
+        dev.isNew = false; // i device persistiti non sono "nuovi"
+
+        // Formatta i timestamp.
+        char buf[32] = {};
+        struct tm tmBuf;
+        if (pd.firstSeen != 0 && localtime_r(&pd.firstSeen, &tmBuf))
+            strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &tmBuf);
+        dev.firstSeen = buf;
+
+        buf[0] = '\0';
+        if (pd.lastSeen != 0 && localtime_r(&pd.lastSeen, &tmBuf))
+            strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M", &tmBuf);
+        dev.lastSeen = buf;
+
+        fDevices.push_back(dev);
+        _AddDeviceWithChildren(dev);
+    }
+
+    if (!all.empty()) {
+        BString status;
+        status.SetToFormat("%d device dalla cronologia.",
+                           static_cast<int>(all.size()));
+        fStatusView->SetText(status.String());
     }
 }
 

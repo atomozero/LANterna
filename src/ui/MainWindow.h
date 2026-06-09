@@ -73,6 +73,7 @@ private:
     void _ShowContextMenu(BPoint where);
     void _ShowTopology();
     void _NotifyNewDevice(const DeviceInfo& dev);
+    void _LoadPersistedDevices();
     const DeviceInfo* _SelectedDeviceInfo() const;
     std::string _DefaultOuiPath() const;
     std::string _GuessGatewayIp() const;
