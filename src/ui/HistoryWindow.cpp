@@ -114,10 +114,133 @@ void TimelineView::Draw(BRect updateRect) {
     DrawString("Sconosciuto", BPoint(barX + 220, lgY));
 }
 
+// ── HeatmapView ───────────────────────────────────────────────────────
+
+HeatmapView::HeatmapView()
+    : BView("heatmap", B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE),
+      fMaxCell(0)
+{
+    SetViewColor(250, 250, 250);
+    for (int d = 0; d < 7; d++)
+        for (int h = 0; h < 24; h++)
+            fCells[d][h] = 0;
+}
+
+void HeatmapView::SetEvents(const std::vector<HistoryEvent>& events) {
+    fEvents = events;
+    _Recompute();
+    Invalidate();
+}
+
+void HeatmapView::_Recompute() {
+    for (int d = 0; d < 7; d++)
+        for (int h = 0; h < 24; h++)
+            fCells[d][h] = 0;
+    fMaxCell = 0;
+
+    if (fEvents.empty()) return;
+
+    std::time_t now = std::time(nullptr);
+
+    // Itera sugli intervalli online (coppie consecutive di transizioni).
+    for (size_t i = 0; i < fEvents.size(); i++) {
+        const HistoryEvent& ev = fEvents[i];
+        if (!ev.online) continue;
+
+        std::time_t start = ev.ts;
+        std::time_t end = (i + 1 < fEvents.size())
+            ? fEvents[i + 1].ts : now;
+
+        // Distribuisci i secondi tra le celle (giorno, ora) attraversate.
+        // Avanza ora per ora.
+        std::time_t t = start;
+        while (t < end) {
+            struct tm tm;
+            localtime_r(&t, &tm);
+            int dayOfWeek = (tm.tm_wday + 6) % 7; // lun=0..dom=6
+            int hour = tm.tm_hour;
+
+            // Fine di questa ora.
+            tm.tm_min = 0;
+            tm.tm_sec = 0;
+            tm.tm_hour++;
+            std::time_t hourEnd = mktime(&tm);
+            if (hourEnd > end) hourEnd = end;
+
+            std::time_t secs = hourEnd - t;
+            fCells[dayOfWeek][hour] += secs;
+            if (fCells[dayOfWeek][hour] > fMaxCell)
+                fMaxCell = fCells[dayOfWeek][hour];
+
+            t = hourEnd;
+        }
+    }
+}
+
+void HeatmapView::Draw(BRect updateRect) {
+    BRect bounds = Bounds();
+
+    if (fMaxCell == 0) {
+        SetHighColor(150, 150, 150);
+        SetFont(be_plain_font);
+        DrawString("Dati insufficienti per la heatmap.",
+                   BPoint(bounds.left + 20, bounds.top + 30));
+        return;
+    }
+
+    const char* days[7] = { "Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom" };
+
+    float labelW = 40;
+    float topMargin = 25;
+    float gridX = bounds.left + labelW;
+    float gridY = bounds.top + topMargin;
+    float gridW = bounds.right - gridX - 10;
+    float gridH = bounds.bottom - gridY - 10;
+    if (gridW < 24 || gridH < 7) return;
+
+    float cellW = gridW / 24.0f;
+    float cellH = gridH / 7.0f;
+
+    SetFont(be_plain_font);
+
+    // Etichette ore in alto (ogni 3).
+    SetHighColor(80, 80, 80);
+    for (int h = 0; h < 24; h += 3) {
+        char buf[8];
+        snprintf(buf, sizeof(buf), "%02d", h);
+        DrawString(buf, BPoint(gridX + h * cellW + 1,
+                                gridY - 8));
+    }
+
+    // Celle.
+    for (int d = 0; d < 7; d++) {
+        for (int h = 0; h < 24; h++) {
+            float frac = static_cast<float>(fCells[d][h])
+                       / static_cast<float>(fMaxCell);
+            // Gradiente da grigio chiaro a verde scuro.
+            rgb_color c;
+            c.red   = static_cast<uint8>(245 - 165 * frac);
+            c.green = static_cast<uint8>(245 -  80 * frac);
+            c.blue  = static_cast<uint8>(245 - 165 * frac);
+            c.alpha = 255;
+            SetHighColor(c);
+            BRect cell(gridX + h * cellW + 1,
+                       gridY + d * cellH + 1,
+                       gridX + (h + 1) * cellW - 1,
+                       gridY + (d + 1) * cellH - 1);
+            FillRect(cell);
+        }
+        // Etichetta giorno a sinistra.
+        SetHighColor(80, 80, 80);
+        DrawString(days[d], BPoint(bounds.left + 5,
+                                    gridY + d * cellH + cellH / 2 + 4));
+    }
+}
+
 // ── HistoryWindow ─────────────────────────────────────────────────────
 
 HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
-    : BWindow(BRect(150, 150, 850, 450), "", B_TITLED_WINDOW,
+    : BWindow(BRect(150, 150, 850, 650), "", B_TITLED_WINDOW,
               B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE),
       fIp(ip)
 {
@@ -129,19 +252,33 @@ HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
     fTimeline = new TimelineView();
     fTimeline->SetExplicitMinSize(BSize(500, 120));
 
+    fHeatmap = new HeatmapView();
+    fHeatmap->SetExplicitMinSize(BSize(500, 180));
+
+    BStringView* tlLabel = new BStringView("", "Timeline online/offline");
+    tlLabel->SetFont(be_bold_font);
+    BStringView* hmLabel = new BStringView("",
+        "Heatmap settimanale (intensita' = tempo online per ora)");
+    hmLabel->SetFont(be_bold_font);
+
     fSummary = new BStringView("summary", "");
 
     BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
         .SetInsets(B_USE_WINDOW_INSETS)
+        .Add(tlLabel)
         .Add(fTimeline)
+        .AddStrut(B_USE_ITEM_SPACING)
+        .Add(hmLabel)
+        .Add(fHeatmap)
         .Add(fSummary)
         .AddGlue()
     .End();
 
-    // Carica eventi.
+    // Carica eventi e popola entrambe le view.
     DeviceHistory hist;
     auto events = hist.Load(std::string(ip.String()));
     fTimeline->SetEvents(events);
+    fHeatmap->SetEvents(events);
 
     // Riepilogo testuale.
     int online = 0, offline = 0;

@@ -28,6 +28,25 @@ private:
     std::vector<HistoryEvent> fEvents;
 };
 
+// Heatmap settimanale: 7 giorni x 24 ore. Ogni cella mostra l'intensita'
+// con cui il device era online in quella combinazione giorno/ora,
+// sommando i minuti online su tutto lo storico.
+class HeatmapView : public BView {
+public:
+    HeatmapView();
+
+    void Draw(BRect updateRect) override;
+    void SetEvents(const std::vector<HistoryEvent>& events);
+
+private:
+    void _Recompute();
+
+    std::vector<HistoryEvent> fEvents;
+    // [giorno][ora]: secondi online totali
+    int64 fCells[7][24];
+    int64 fMaxCell;
+};
+
 class HistoryWindow : public BWindow {
 public:
     HistoryWindow(const BString& ip, const BString& displayName);
@@ -37,6 +56,7 @@ public:
 private:
     BString       fIp;
     TimelineView* fTimeline;
+    HeatmapView*  fHeatmap;
     BStringView*  fSummary;
 };
 
