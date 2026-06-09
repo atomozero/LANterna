@@ -23,6 +23,7 @@ CORE_SRCS := \
   src/net/PortProbe.cpp \
   src/net/Resolver.cpp \
   src/net/ArpCache.cpp \
+  src/net/WakeOnLan.cpp \
   src/model/DeviceStore.cpp \
   src/model/DevicePersistence.cpp \
   src/enrich/ReverseDnsEnricher.cpp \

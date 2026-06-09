@@ -34,6 +34,7 @@
 #include "SettingsWindow.h"
 #include "TopologyView.h"
 #include "model/DevicePersistence.h"
+#include "net/WakeOnLan.h"
 
 namespace lanterna {
 
@@ -354,6 +355,31 @@ void MainWindow::MessageReceived(BMessage* message) {
                     be_clipboard->Commit();
                     be_clipboard->Unlock();
                 }
+            }
+            break;
+        }
+        case kMsgCtxWakeOnLan:
+        {
+            const DeviceInfo* sel = _SelectedDeviceInfo();
+            if (sel && sel->mac.Length() > 0) {
+                // Calcola il broadcast della subnet selezionata.
+                std::string bcast = "255.255.255.255";
+                if (fSelectedInterface >= 0
+                    && fSelectedInterface < static_cast<int32>(fInterfaces.size())) {
+                    const LocalInterface& iface =
+                        fInterfaces[fSelectedInterface];
+                    uint32_t bc = iface.address | ~iface.netmask;
+                    bcast = Ipv4ToString(bc);
+                }
+                bool ok = SendWakeOnLan(sel->mac.String(), bcast, 9);
+                BString status;
+                if (ok)
+                    status.SetToFormat("Magic packet inviato a %s",
+                                       sel->mac.String());
+                else
+                    status.SetToFormat("Errore invio WoL a %s",
+                                       sel->mac.String());
+                fStatusView->SetText(status.String());
             }
             break;
         }
@@ -767,6 +793,12 @@ void MainWindow::_ShowContextMenu(BPoint where) {
         menu->AddItem(new BMenuItem("Connetti SSH", new BMessage(kMsgCtxOpenSsh)));
     if (dev->ports.FindFirst("445") >= 0 || dev->ports.FindFirst("139") >= 0)
         menu->AddItem(new BMenuItem("Apri condivisione SMB", new BMessage(kMsgCtxOpenSmb)));
+
+    if (dev->mac.Length() > 0 && dev->mac != "-") {
+        menu->AddSeparatorItem();
+        menu->AddItem(new BMenuItem("Wake-on-LAN (sveglia)",
+                                    new BMessage(kMsgCtxWakeOnLan)));
+    }
 
     menu->SetTargetForItems(this);
     ConvertToScreen(&where);

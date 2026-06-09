@@ -17,6 +17,7 @@ SRCS := \
   src/net/PortProbe.cpp \
   src/net/Resolver.cpp \
   src/net/ArpCache.cpp \
+  src/net/WakeOnLan.cpp \
   src/model/DeviceStore.cpp \
   src/enrich/ReverseDnsEnricher.cpp \
   src/enrich/ArpMacEnricher.cpp \

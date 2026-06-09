@@ -24,6 +24,7 @@ enum {
     kMsgCtxOpenHttp     = 'cxht', // menu contestuale: apri HTTP
     kMsgCtxOpenSsh      = 'cxsh', // menu contestuale: apri SSH
     kMsgCtxOpenSmb      = 'cxsm', // menu contestuale: apri SMB
+    kMsgCtxWakeOnLan    = 'cxwl', // menu contestuale: invia magic packet WoL
     kMsgShowTopology    = 'topo', // UI -> finestra: mostra topologia
     kMsgReplicantUpdate = 'rpup', // MainWindow -> replicant: aggiorna conteggio
     kMsgAutoScanTick    = 'astk'  // BMessageRunner -> finestra: tick periodico
