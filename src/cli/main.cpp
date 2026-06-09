@@ -4,10 +4,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "enrich/ArpMacEnricher.h"
+#include "enrich/OuiVendorEnricher.h"
 #include "enrich/ReverseDnsEnricher.h"
+#include "enrich/TypeInferenceEnricher.h"
 #include "net/Subnet.h"
 #include "scan/Scanner.h"
 
@@ -24,6 +28,7 @@ void PrintUsage(const char* argv0) {
         "  --ports p1,p2,...      set di porte (default: set L0)\n"
         "  --timeout MS           timeout per connect (default 400)\n"
         "  --in-flight N          socket contemporanei (default 256)\n"
+        "  --oui FILE             database OUI IEEE per il vendor da MAC\n"
         "Senza --cidr/--host usa la prima interfaccia non loopback.\n",
         argv0);
 }
@@ -69,7 +74,7 @@ const char* ResultGlyph(const Device& d) {
 } // namespace
 
 int main(int argc, char** argv) {
-    std::string cidr, host, portsArg;
+    std::string cidr, host, portsArg, ouiFile;
     ScanConfig config;
     bool listOnly = false;
 
@@ -88,6 +93,7 @@ int main(int argc, char** argv) {
         else if (a == "--ports") portsArg = next("--ports");
         else if (a == "--timeout") config.probe.timeoutMs = std::atoi(next("--timeout").c_str());
         else if (a == "--in-flight") config.probe.maxInFlight = std::atoi(next("--in-flight").c_str());
+        else if (a == "--oui") ouiFile = next("--oui");
         else if (a == "-h" || a == "--help") { PrintUsage(argv[0]); return 0; }
         else { std::fprintf(stderr, "opzione sconosciuta: %s\n", a.c_str()); PrintUsage(argv[0]); return 2; }
     }
@@ -134,8 +140,25 @@ int main(int argc, char** argv) {
 
     std::printf("Scansione di %s (%zu host)...\n", label.c_str(), hosts.size());
 
+    // Pipeline L1. Ordine: prima il MAC (ARP), poi vendor (OUI), poi hostname
+    // e tipo. Gli enricher saltano i campi gia' valorizzati o non applicabili.
+    ArpMacEnricher arp;
     ReverseDnsEnricher dns;
-    Scanner scanner({&dns});
+    TypeInferenceEnricher type;
+    std::vector<Enricher*> pipeline = {&arp};
+
+    std::unique_ptr<OuiVendorEnricher> oui;
+    if (!ouiFile.empty()) {
+        oui.reset(new OuiVendorEnricher(ouiFile));
+        if (!oui->Ready())
+            std::fprintf(stderr, "Avviso: OUI '%s' vuoto o illeggibile.\n",
+                         ouiFile.c_str());
+        pipeline.push_back(oui.get());
+    }
+    pipeline.push_back(&dns);
+    pipeline.push_back(&type);
+
+    Scanner scanner(pipeline);
 
     auto onDevice = [](const Device& d) {
         std::string ports;
@@ -143,11 +166,13 @@ int main(int argc, char** argv) {
             if (!ports.empty()) ports += ",";
             ports += std::to_string(p);
         }
-        std::printf("  %-15s  %-30s  %s %s\n",
+        std::printf("  %-15s  %-17s  %-24s  %-18s  %s %s\n",
                     d.ip.c_str(),
+                    d.mac.empty() ? "-" : d.mac.c_str(),
+                    d.vendor.empty() ? "-" : d.vendor.c_str(),
+                    d.deviceType.empty() ? "-" : d.deviceType.c_str(),
                     d.hostname.empty() ? "-" : d.hostname.c_str(),
-                    ports.empty() ? "" : ports.c_str(),
-                    ResultGlyph(d));
+                    ports.empty() ? ResultGlyph(d) : ports.c_str());
     };
 
     DeviceStore store = scanner.Scan(hosts, config, nullptr, onDevice);

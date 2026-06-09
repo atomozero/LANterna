@@ -12,7 +12,10 @@ verifiche tecniche da fare su Haiku reale sono in
 
 - L0 Scoperta base: sottorete + TCP connect probe + reverse DNS (solo socket
   POSIX/BSD standard).
-- L1 Arricchimento: vendor da MAC (OUI IEEE), mDNS (mjansson/mdns), tipo device.
+- L1 Arricchimento: vendor da MAC (OUI IEEE), tipo device (fatto); mDNS
+  (mjansson/mdns) ancora da fare. Il MAC degli host on-link si ricava dalla
+  cache ARP di sistema dopo il connect, senza socket raw (backend Linux
+  `/proc/net/arp`; backend Haiku da verificare).
 - L2 Anima Haiku: device come oggetti con attributi BFS, query Tracker,
   Replicant/Deskbar.
 - L3 Sentinella: scansione periodica e notifica per device nuovi.

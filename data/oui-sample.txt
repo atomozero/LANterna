@@ -1,0 +1,13 @@
+#
+# Campione OUI per test, nel formato del registro IEEE (oui.txt).
+# NON e' il database completo. Per l'uso reale scaricare il registro IEEE
+# pubblico (https://standards-oui.ieee.org/oui/oui.txt) e puntarci con --oui.
+# NON usare il file `manuf` di Wireshark: eredita la licenza GPL.
+#
+
+00-50-C2   (hex)		IEEE Registration Authority
+3C-22-FB   (hex)		Apple, Inc.
+B8-27-EB   (hex)		Raspberry Pi Foundation
+DC-A6-32   (hex)		Raspberry Pi Trading Ltd
+00-1A-11   (hex)		Google, Inc.
+52-54-00   (hex)		QEMU/KVM (indirizzo amministrato localmente)

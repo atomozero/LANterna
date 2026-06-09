@@ -9,8 +9,13 @@ SRCS := \
   src/net/Subnet.cpp \
   src/net/PortProbe.cpp \
   src/net/Resolver.cpp \
+  src/net/ArpCache.cpp \
   src/model/DeviceStore.cpp \
   src/enrich/ReverseDnsEnricher.cpp \
+  src/enrich/ArpMacEnricher.cpp \
+  src/enrich/OuiDatabase.cpp \
+  src/enrich/OuiVendorEnricher.cpp \
+  src/enrich/TypeInferenceEnricher.cpp \
   src/scan/Scanner.cpp \
   src/cli/main.cpp
 
