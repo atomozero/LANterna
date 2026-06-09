@@ -12,6 +12,7 @@
 #include "Messages.h"
 #include "enrich/ArpMacEnricher.h"
 #include "enrich/MdnsEnricher.h"
+#include "enrich/NetBiosEnricher.h"
 #include "enrich/OuiVendorEnricher.h"
 #include "enrich/ReverseDnsEnricher.h"
 #include "enrich/TypeInferenceEnricher.h"
@@ -50,6 +51,7 @@ int32 ScanThread(void* arg) {
     // Pipeline di arricchimento.
     ArpMacEnricher arp;
     ReverseDnsEnricher dns;
+    NetBiosEnricher netbios;
     TypeInferenceEnricher type;
     std::vector<Enricher*> pipeline = {&arp};
     std::unique_ptr<OuiVendorEnricher> oui;
@@ -59,6 +61,7 @@ int32 ScanThread(void* arg) {
     }
     pipeline.push_back(&dns);
     pipeline.push_back(&mdns);
+    pipeline.push_back(&netbios);
     pipeline.push_back(&type);
 
     Scanner scanner(pipeline);

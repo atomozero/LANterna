@@ -24,6 +24,7 @@ SRCS := \
   src/enrich/OuiVendorEnricher.cpp \
   src/enrich/TypeInferenceEnricher.cpp \
   src/enrich/MdnsEnricher.cpp \
+  src/enrich/NetBiosEnricher.cpp \
   src/scan/Scanner.cpp \
   src/cli/main.cpp
 
