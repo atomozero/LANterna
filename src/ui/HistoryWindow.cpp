@@ -1,5 +1,7 @@
 #include "HistoryWindow.h"
 
+#include "Locale.h"
+
 #include <Font.h>
 #include <LayoutBuilder.h>
 #include <ListItem.h>
@@ -37,7 +39,7 @@ void TimelineView::Draw(BRect updateRect) {
     if (fEvents.empty()) {
         SetHighColor(150, 150, 150);
         SetFont(be_plain_font);
-        DrawString("Nessun evento registrato per questo device.",
+        DrawString(Tr(S_HISTORY_NO_EVENTS),
                    BPoint(bounds.left + 20, bounds.top + 30));
         return;
     }
@@ -97,24 +99,25 @@ void TimelineView::Draw(BRect updateRect) {
     DrawString(buf, BPoint(barX + barW - tw, barY - 5));
 
     // Etichetta sull'asse Y.
-    DrawString("Stato:", BPoint(bounds.left + 10, barY + barH / 2 + 4));
+    DrawString(Tr(S_HISTORY_STATE),
+               BPoint(bounds.left + 10, barY + barH / 2 + 4));
 
     // Legenda sotto la barra.
     float lgY = barY + barH + 25;
     SetHighColor(kOnlineCol);
     FillRect(BRect(barX, lgY - 8, barX + 14, lgY));
     SetHighColor(kAxisCol);
-    DrawString("Online", BPoint(barX + 20, lgY));
+    DrawString(Tr(S_HISTORY_ONLINE), BPoint(barX + 20, lgY));
 
     SetHighColor(kOfflineCol);
     FillRect(BRect(barX + 100, lgY - 8, barX + 114, lgY));
     SetHighColor(kAxisCol);
-    DrawString("Offline", BPoint(barX + 120, lgY));
+    DrawString(Tr(S_HISTORY_OFFLINE), BPoint(barX + 120, lgY));
 
     SetHighColor(kGapCol);
     FillRect(BRect(barX + 200, lgY - 8, barX + 214, lgY));
     SetHighColor(kAxisCol);
-    DrawString("Sconosciuto", BPoint(barX + 220, lgY));
+    DrawString(Tr(S_HISTORY_UNKNOWN), BPoint(barX + 220, lgY));
 }
 
 // ── HeatmapView ───────────────────────────────────────────────────────
@@ -186,12 +189,15 @@ void HeatmapView::Draw(BRect updateRect) {
     if (fMaxCell == 0) {
         SetHighColor(150, 150, 150);
         SetFont(be_plain_font);
-        DrawString("Dati insufficienti per la heatmap.",
+        DrawString(Tr(S_HISTORY_NO_DATA),
                    BPoint(bounds.left + 20, bounds.top + 30));
         return;
     }
 
-    const char* days[7] = { "Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom" };
+    const char* days[7] = {
+        Tr(S_DAY_MON), Tr(S_DAY_TUE), Tr(S_DAY_WED),
+        Tr(S_DAY_THU), Tr(S_DAY_FRI), Tr(S_DAY_SAT), Tr(S_DAY_SUN)
+    };
 
     float labelW = 40;
     float topMargin = 25;
@@ -248,7 +254,7 @@ HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
       fIp(ip)
 {
     BString title;
-    title.SetToFormat("Storico: %s (%s)",
+    title.SetToFormat("%s: %s (%s)", Tr(S_HISTORY_TITLE),
                       displayName.String(), ip.String());
     SetTitle(title.String());
 
@@ -258,12 +264,11 @@ HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
     fHeatmap = new HeatmapView();
     fHeatmap->SetExplicitMinSize(BSize(500, 180));
 
-    BStringView* tlLabel = new BStringView("", "Timeline online/offline");
+    BStringView* tlLabel = new BStringView("", Tr(S_HISTORY_TIMELINE));
     tlLabel->SetFont(be_bold_font);
-    BStringView* hmLabel = new BStringView("",
-        "Heatmap settimanale (intensita' = tempo online per ora)");
+    BStringView* hmLabel = new BStringView("", Tr(S_HISTORY_HEATMAP));
     hmLabel->SetFont(be_bold_font);
-    BStringView* lgLabel = new BStringView("", "Log eventi");
+    BStringView* lgLabel = new BStringView("", Tr(S_HISTORY_LOG));
     lgLabel->SetFont(be_bold_font);
 
     fEventLog = new BListView("eventlog");
@@ -310,9 +315,8 @@ HistoryWindow::HistoryWindow(const BString& ip, const BString& displayName)
     for (const auto& e : events)
         if (e.online) online++; else offline++;
 
-    char info[128];
-    snprintf(info, sizeof(info),
-             "%d eventi: %d online, %d offline",
+    char info[160];
+    snprintf(info, sizeof(info), Tr(S_HISTORY_EVENTS_SUMMARY),
              static_cast<int>(events.size()), online, offline);
     fSummary->SetText(info);
 }

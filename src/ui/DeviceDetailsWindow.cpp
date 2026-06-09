@@ -30,7 +30,7 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
       fTarget(target)
 {
     BString title;
-    title.SetToFormat("Dettagli: %s", dev.ip.String());
+    title.SetToFormat("%s: %s", Tr(S_DETAILS_TITLE), dev.ip.String());
     SetTitle(title.String());
 
     // Helper: etichetta-valore in coppia.
@@ -50,26 +50,28 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
 
     auto ipLV     = LabelValue("IP:",        dev.ip);
     auto macLV    = LabelValue("MAC:",       dev.mac);
-    auto hostLV   = LabelValue("Hostname:",  dev.host);
-    auto vendorLV = LabelValue("Produttore:", dev.vendor);
-    auto typeLV   = LabelValue("Tipo:",      dev.type);
-    auto portsLV  = LabelValue("Porte:",     dev.ports);
-    auto firstLV  = LabelValue("Primo avvistamento:", dev.firstSeen);
-    auto lastLV   = LabelValue("Ultimo avvistamento:", dev.lastSeen);
+    auto hostLV   = LabelValue(Tr(S_DETAILS_HOSTNAME),  dev.host);
+    BString lblVendor; lblVendor << Tr(S_COL_VENDOR) << ":";
+    auto vendorLV = LabelValue(lblVendor.String(), dev.vendor);
+    BString lblType;   lblType   << Tr(S_COL_TYPE)   << ":";
+    auto typeLV   = LabelValue(lblType.String(), dev.type);
+    BString lblPorts;  lblPorts  << Tr(S_COL_PORTS)  << ":";
+    auto portsLV  = LabelValue(lblPorts.String(), dev.ports);
+    BString lblFirst;  lblFirst  << Tr(S_COL_FIRST_SEEN) << ":";
+    auto firstLV  = LabelValue(lblFirst.String(), dev.firstSeen);
+    BString lblLast;   lblLast   << Tr(S_COL_LAST_SEEN)  << ":";
+    auto lastLV   = LabelValue(lblLast.String(), dev.lastSeen);
 
     // Campi editabili.
-    fAliasField = new BTextControl("alias", "Alias:",
+    fAliasField = new BTextControl("alias", Tr(S_DETAILS_ALIAS),
                                     dev.alias.String(), nullptr);
-    fTagsField  = new BTextControl("tags",
-                                    "Tag (separati da virgola):",
+    fTagsField  = new BTextControl("tags", Tr(S_DETAILS_TAGS_HINT),
                                     dev.tags.String(), nullptr);
 
-    fFavoriteBox  = new BCheckBox("favorite",  "Preferito (evidenziato)",
-                                    nullptr);
+    fFavoriteBox  = new BCheckBox("favorite", Tr(S_DETAILS_FAVORITE), nullptr);
     fFavoriteBox->SetValue(dev.favorite ? B_CONTROL_ON : B_CONTROL_OFF);
 
-    fBlacklistBox = new BCheckBox("blacklist", "Blacklist (sospetto)",
-                                    nullptr);
+    fBlacklistBox = new BCheckBox("blacklist", Tr(S_DETAILS_BLACKLIST), nullptr);
     fBlacklistBox->SetValue(dev.blacklist ? B_CONTROL_ON : B_CONTROL_OFF);
 
     fNoteView = new BTextView("note");
@@ -87,7 +89,7 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
 
     BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
         .SetInsets(B_USE_WINDOW_INSETS)
-        .Add(SectionLabel("Informazioni rilevate"))
+        .Add(SectionLabel(Tr(S_DETAILS_DETECTED_INFO)))
         .AddGrid(B_USE_ITEM_SPACING, 0)
             .Add(ipLV.first,     0, 0).Add(ipLV.second,     1, 0)
             .Add(macLV.first,    0, 1).Add(macLV.second,    1, 1)
@@ -99,7 +101,7 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
             .Add(lastLV.first,   0, 7).Add(lastLV.second,   1, 7)
         .End()
         .AddStrut(B_USE_ITEM_SPACING)
-        .Add(SectionLabel("Personalizzazione"))
+        .Add(SectionLabel(Tr(S_DETAILS_PERSONALIZATION)))
         .Add(fAliasField)
         .Add(fTagsField)
         .AddGroup(B_HORIZONTAL)
@@ -107,7 +109,7 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
             .Add(fBlacklistBox)
             .AddGlue()
         .End()
-        .Add(new BStringView("", "Note:"))
+        .Add(new BStringView("", Tr(S_DETAILS_NOTE)))
         .Add(noteScroll, 1.0f)
         .AddGroup(B_HORIZONTAL)
             .AddGlue()

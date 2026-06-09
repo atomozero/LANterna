@@ -93,6 +93,78 @@ enum StringId {
     S_TYPE_SSH,
     S_TYPE_WEB,
     S_TYPE_MDNS,
+    // Topologia
+    S_TOPOLOGY,
+    S_TOPOLOGY_TITLE,
+    S_TOPOLOGY_CLICK_NODE,
+    S_TOPOLOGY_NO_DEVICE,
+    S_GATEWAY,
+    // Menu contestuale
+    S_CTX_COPY_IP,
+    S_CTX_COPY_MAC,
+    S_CTX_OPEN_BROWSER,
+    S_CTX_CONNECT_SSH,
+    S_CTX_OPEN_SMB,
+    S_CTX_WOL,
+    S_CTX_PING,
+    S_CTX_DETAILS,
+    S_CTX_HISTORY,
+    // Notifiche
+    S_NOTIF_NEW_DEVICE,
+    S_NOTIF_OFFLINE,
+    S_NOTIF_BLACKLIST,
+    S_NOTIF_NO_RESPONSE,
+    // Wake-on-LAN
+    S_WOL_SENT,
+    S_WOL_ERROR,
+    // Ping
+    S_PING_TITLE,
+    S_PING_WAITING,
+    S_PING_NO_SAMPLES,
+    S_PING_LAST,
+    S_PING_AVG,
+    S_PING_MIN,
+    S_PING_MAX,
+    S_PING_LOSS,
+    S_PING_SAMPLES,
+    S_PING_TIMEOUT,
+    // Dettagli device
+    S_DETAILS_TITLE,
+    S_DETAILS_DETECTED_INFO,
+    S_DETAILS_PERSONALIZATION,
+    S_DETAILS_HOSTNAME,
+    S_DETAILS_ALIAS,
+    S_DETAILS_NOTE,
+    S_DETAILS_TAGS,
+    S_DETAILS_TAGS_HINT,
+    S_DETAILS_FAVORITE,
+    S_DETAILS_BLACKLIST,
+    // Storico
+    S_HISTORY_TITLE,
+    S_HISTORY_TIMELINE,
+    S_HISTORY_HEATMAP,
+    S_HISTORY_LOG,
+    S_HISTORY_NO_EVENTS,
+    S_HISTORY_NO_DATA,
+    S_HISTORY_ONLINE,
+    S_HISTORY_OFFLINE,
+    S_HISTORY_UNKNOWN,
+    S_HISTORY_STATE,
+    S_HISTORY_EVENTS_SUMMARY,
+    // Giorni della settimana (abbr.)
+    S_DAY_MON,
+    S_DAY_TUE,
+    S_DAY_WED,
+    S_DAY_THU,
+    S_DAY_FRI,
+    S_DAY_SAT,
+    S_DAY_SUN,
+    // Tag/categorie
+    S_COL_TAGS,
+    S_FILTER_TAGS,
+    // Cronologia caricata
+    S_LOADED_FROM_HISTORY,
+    S_AUTO_SCAN_STATUS,
     // Misc
     S_DEVICES_FOUND,
     S_COUNT_TOTAL
@@ -264,6 +336,158 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     { "Server web", "Web Server", "Servidor web", "Webserver", "Web\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x90\xe3\x83\xbc" },
     // S_TYPE_MDNS
     { "Servizio mDNS", "mDNS Service", "Servicio mDNS", "mDNS-Dienst", "mDNS\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x93\xe3\x82\xb9" },
+    // S_TOPOLOGY
+    { "Topologia", "Topology", "Topolog\xc3\xad" "a", "Topologie", "\xe3\x83\x88\xe3\x83\x9d\xe3\x83\xad\xe3\x82\xb8\xe3\x83\xbc" },
+    // S_TOPOLOGY_TITLE
+    { "Topologia di rete", "Network topology", "Topolog\xc3\xad" "a de red", "Netzwerktopologie", "\xe3\x83\x8d\xe3\x83\x83\xe3\x83\x88\xe3\x83\xaf\xe3\x83\xbc\xe3\x82\xaf" },
+    // S_TOPOLOGY_CLICK_NODE
+    { "Clicca su un nodo per vedere i dettagli.\nTrascina i nodi per riorganizzare la mappa.",
+      "Click a node for details.\nDrag nodes to rearrange the map.",
+      "Haga clic en un nodo para ver detalles.\nArrastre los nodos para reorganizar.",
+      "Klicke einen Knoten f\xc3\xbcr Details.\nKnoten zum Umordnen ziehen.",
+      "\xe3\x83\x8e\xe3\x83\xbc\xe3\x83\x89\xe3\x82\x92\xe3\x82\xaf\xe3\x83\xaa\xe3\x83\x83\xe3\x82\xaf\xe3\x81\x97\xe3\x81\xa6\xe8\xa9\xb3\xe7\xb4\xb0\xe8\xa1\xa8\xe7\xa4\xba" },
+    // S_TOPOLOGY_NO_DEVICE
+    { "Esegui una scansione per visualizzare la topologia",
+      "Run a scan to see the topology",
+      "Ejecute un escaneo para ver la topolog\xc3\xad" "a",
+      "F\xc3\xbchre einen Scan aus um die Topologie zu sehen",
+      "\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe5\xae\x9f\xe8\xa1\x8c" },
+    // S_GATEWAY
+    { "Gateway", "Gateway", "Puerta de enlace", "Gateway", "\xe3\x82\xb2\xe3\x83\xbc\xe3\x83\x88\xe3\x82\xa6\xe3\x82\xa7\xe3\x82\xa4" },
+    // S_CTX_COPY_IP
+    { "Copia IP", "Copy IP", "Copiar IP", "IP kopieren", "IP\xe3\x82\xb3\xe3\x83\x94\xe3\x83\xbc" },
+    // S_CTX_COPY_MAC
+    { "Copia MAC", "Copy MAC", "Copiar MAC", "MAC kopieren", "MAC\xe3\x82\xb3\xe3\x83\x94\xe3\x83\xbc" },
+    // S_CTX_OPEN_BROWSER
+    { "Apri nel browser", "Open in browser", "Abrir en navegador", "Im Browser \xc3\xb6\x66\x66nen", "\xe3\x83\x96\xe3\x83\xa9\xe3\x82\xa6\xe3\x82\xb6\xe3\x81\xa7\xe9\x96\x8b\xe3\x81\x8f" },
+    // S_CTX_CONNECT_SSH
+    { "Connetti SSH", "Connect SSH", "Conectar SSH", "SSH verbinden", "SSH\xe6\x8e\xa5\xe7\xb6\x9a" },
+    // S_CTX_OPEN_SMB
+    { "Apri condivisione SMB", "Open SMB share", "Abrir recurso SMB", "SMB-Freigabe \xc3\xb6\x66\x66nen", "SMB\xe5\x85\xb1\xe6\x9c\x89\xe3\x82\x92\xe9\x96\x8b\xe3\x81\x8f" },
+    // S_CTX_WOL
+    { "Wake-on-LAN (sveglia)", "Wake-on-LAN (wake up)", "Wake-on-LAN (despertar)", "Wake-on-LAN (wecken)", "Wake-on-LAN" },
+    // S_CTX_PING
+    { "Ping continuo (grafico latenza)", "Continuous ping (latency graph)", "Ping continuo (gr\xc3\xa1\x66ico latencia)", "Dauer-Ping (Latenzgraph)", "\xe9\x80\xa3\xe7\xb6\x9aPing" },
+    // S_CTX_DETAILS
+    { "Modifica dettagli (alias, note)...", "Edit details (alias, notes)...", "Editar detalles (alias, notas)...", "Details bearbeiten...", "\xe8\xa9\xb3\xe7\xb4\xb0\xe7\xb7\xa8\xe9\x9b\x86..." },
+    // S_CTX_HISTORY
+    { "Storico online/offline...", "Online/offline history...", "Historial online/offline...", "Online/Offline-Verlauf...", "\xe5\xb1\xa5\xe6\xad\xb4..." },
+    // S_NOTIF_NEW_DEVICE
+    { "Nuovo device in rete", "New device on network", "Nuevo dispositivo en red", "Neues Ger\xc3\xa4t im Netzwerk", "\xe6\x96\xb0\xe3\x81\x97\xe3\x81\x84\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9" },
+    // S_NOTIF_OFFLINE
+    { "Device offline", "Device offline", "Dispositivo offline", "Ger\xc3\xa4t offline", "\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x82\xaa\xe3\x83\x95" },
+    // S_NOTIF_BLACKLIST
+    { "Device in blacklist rilevato", "Blacklisted device detected", "Dispositivo en lista negra detectado", "Blacklist-Ger\xc3\xa4t erkannt", "\xe3\x83\x96\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xaf\xe3\x83\xaa\xe3\x82\xb9\xe3\x83\x88" },
+    // S_NOTIF_NO_RESPONSE
+    { "non risponde piu'.", "no longer responding.", "ya no responde.", "antwortet nicht mehr.", "\xe5\xbf\x9c\xe7\xad\x94\xe3\x81\xaa\xe3\x81\x97" },
+    // S_WOL_SENT
+    { "Magic packet inviato a %s", "Magic packet sent to %s", "Magic packet enviado a %s", "Magic Packet an %s gesendet", "Magic packet \xe9\x80\x81\xe4\xbf\xa1: %s" },
+    // S_WOL_ERROR
+    { "Errore invio WoL a %s", "WoL send error to %s", "Error envio WoL a %s", "WoL-Fehler an %s", "WoL\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc: %s" },
+    // S_PING_TITLE
+    { "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u" },
+    // S_PING_WAITING
+    { "In attesa...", "Waiting...", "Esperando...", "Warte...", "\xe5\xbe\x85\xe6\xa9\x9f\xe4\xb8\xad..." },
+    // S_PING_NO_SAMPLES
+    { "Nessun campione.", "No samples.", "Sin muestras.", "Keine Proben.", "\xe3\x82\xb5\xe3\x83\xb3\xe3\x83\x97\xe3\x83\xab\xe3\x81\xaa\xe3\x81\x97" },
+    // S_PING_LAST
+    { "Ultimo", "Last", "\xc3\x9altimo", "Letzte", "\xe6\x9c\x80\xe5\xbe\x8c" },
+    // S_PING_AVG
+    { "Media", "Avg", "Promedio", "Mittel", "\xe5\xb9\xb3\xe5\x9d\x87" },
+    // S_PING_MIN
+    { "Min", "Min", "M\xc3\xadn", "Min", "\xe6\x9c\x80\xe5\xb0\x8f" },
+    // S_PING_MAX
+    { "Max", "Max", "M\xc3\xa1x", "Max", "\xe6\x9c\x80\xe5\xa4\xa7" },
+    // S_PING_LOSS
+    { "Persi", "Loss", "Perdidos", "Verlust", "\xe6\x90\x8d\xe5\xa4\xb1" },
+    // S_PING_SAMPLES
+    { "Campioni", "Samples", "Muestras", "Proben", "\xe3\x82\xb5\xe3\x83\xb3\xe3\x83\x97\xe3\x83\xab" },
+    // S_PING_TIMEOUT
+    { "timeout", "timeout", "timeout", "Timeout", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\xa0\xe3\x82\xa2\xe3\x82\xa6\xe3\x83\x88" },
+    // S_DETAILS_TITLE
+    { "Dettagli", "Details", "Detalles", "Details", "\xe8\xa9\xb3\xe7\xb4\xb0" },
+    // S_DETAILS_DETECTED_INFO
+    { "Informazioni rilevate", "Detected info", "Informaci\xc3\xb3n detectada", "Erkannte Daten", "\xe6\xa4\x9c\xe5\x87\xba\xe6\x83\x85\xe5\xa0\xb1" },
+    // S_DETAILS_PERSONALIZATION
+    { "Personalizzazione", "Customization", "Personalizaci\xc3\xb3n", "Anpassung", "\xe3\x82\xab\xe3\x82\xb9\xe3\x82\xbf\xe3\x83\x9e\xe3\x82\xa4\xe3\x82\xba" },
+    // S_DETAILS_HOSTNAME
+    { "Hostname:", "Hostname:", "Nombre de host:", "Hostname:", "\xe3\x83\x9b\xe3\x82\xb9\xe3\x83\x88\xe5\x90\x8d:" },
+    // S_DETAILS_ALIAS
+    { "Alias:", "Alias:", "Alias:", "Alias:", "\xe3\x82\xa8\xe3\x82\xa4\xe3\x83\xaa\xe3\x82\xa2\xe3\x82\xb9:" },
+    // S_DETAILS_NOTE
+    { "Note:", "Notes:", "Notas:", "Notizen:", "\xe3\x83\xa1\xe3\x83\xa2:" },
+    // S_DETAILS_TAGS
+    { "Tag:", "Tags:", "Etiquetas:", "Tags:", "\xe3\x82\xbf\xe3\x82\xb0:" },
+    // S_DETAILS_TAGS_HINT
+    { "Tag (separati da virgola):", "Tags (comma-separated):", "Etiquetas (separadas por coma):", "Tags (kommagetrennt):", "\xe3\x82\xbf\xe3\x82\xb0 (\xe3\x82\xab\xe3\x83\xb3\xe3\x83\x9e):" },
+    // S_DETAILS_FAVORITE
+    { "Preferito (evidenziato)", "Favorite (highlighted)", "Favorito (destacado)", "Favorit (hervorgehoben)", "\xe3\x81\x8a\xe6\xb0\x97\xe3\x81\xab\xe5\x85\xa5\xe3\x82\x8a" },
+    // S_DETAILS_BLACKLIST
+    { "Blacklist (sospetto)", "Blacklist (suspicious)", "Lista negra (sospechoso)", "Blacklist (verd\xc3\xa4\x63htig)", "\xe3\x83\x96\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xaf\xe3\x83\xaa\xe3\x82\xb9\xe3\x83\x88" },
+    // S_HISTORY_TITLE
+    { "Storico", "History", "Historial", "Verlauf", "\xe5\xb1\xa5\xe6\xad\xb4" },
+    // S_HISTORY_TIMELINE
+    { "Timeline online/offline", "Online/offline timeline", "L\xc3\xadnea de tiempo online/offline", "Online/Offline-Zeitleiste", "\xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3\xe5\xb1\xa5\xe6\xad\xb4" },
+    // S_HISTORY_HEATMAP
+    { "Heatmap settimanale (intensita' = tempo online per ora)",
+      "Weekly heatmap (intensity = time online per hour)",
+      "Mapa de calor semanal (intensidad = tiempo online por hora)",
+      "Wochen-Heatmap (Intensit\xc3\xa4t = Online-Zeit pro Stunde)",
+      "\xe9\x80\xb1\xe9\x96\x93\xe3\x83\x92\xe3\x83\xbc\xe3\x83\x88\xe3\x83\x9e\xe3\x83\x83\xe3\x83\x97" },
+    // S_HISTORY_LOG
+    { "Log eventi", "Event log", "Registro de eventos", "Ereignisprotokoll", "\xe3\x82\xa4\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x88\xe3\x83\xad\xe3\x82\xb0" },
+    // S_HISTORY_NO_EVENTS
+    { "Nessun evento registrato per questo device.",
+      "No events recorded for this device.",
+      "Sin eventos para este dispositivo.",
+      "Keine Ereignisse f\xc3\xbcr dieses Ger\xc3\xa4t.",
+      "\xe3\x82\xa4\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x88\xe3\x81\xaa\xe3\x81\x97" },
+    // S_HISTORY_NO_DATA
+    { "Dati insufficienti per la heatmap.",
+      "Not enough data for heatmap.",
+      "Datos insuficientes para mapa de calor.",
+      "Zu wenig Daten f\xc3\xbcr Heatmap.",
+      "\xe3\x83\x87\xe3\x83\xbc\xe3\x82\xbf\xe4\xb8\x8d\xe8\xb6\xb3" },
+    // S_HISTORY_ONLINE
+    { "Online", "Online", "Online", "Online", "\xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3" },
+    // S_HISTORY_OFFLINE
+    { "Offline", "Offline", "Offline", "Offline", "\xe3\x82\xaa\xe3\x83\x95\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3" },
+    // S_HISTORY_UNKNOWN
+    { "Sconosciuto", "Unknown", "Desconocido", "Unbekannt", "\xe4\xb8\x8d\xe6\x98\x8e" },
+    // S_HISTORY_STATE
+    { "Stato:", "State:", "Estado:", "Status:", "\xe7\x8a\xb6\xe6\x85\x8b:" },
+    // S_HISTORY_EVENTS_SUMMARY
+    { "%d eventi: %d online, %d offline",
+      "%d events: %d online, %d offline",
+      "%d eventos: %d online, %d offline",
+      "%d Ereignisse: %d online, %d offline",
+      "%d\xe4\xbb\xb6" },
+    // S_DAY_MON
+    { "Lun", "Mon", "Lun", "Mo", "\xe6\x9c\x88" },
+    // S_DAY_TUE
+    { "Mar", "Tue", "Mar", "Di", "\xe7\x81\xab" },
+    // S_DAY_WED
+    { "Mer", "Wed", "Mi\xc3\xa9", "Mi", "\xe6\xb0\xb4" },
+    // S_DAY_THU
+    { "Gio", "Thu", "Jue", "Do", "\xe6\x9c\xa8" },
+    // S_DAY_FRI
+    { "Ven", "Fri", "Vie", "Fr", "\xe9\x87\x91" },
+    // S_DAY_SAT
+    { "Sab", "Sat", "S\xc3\xa1\x62", "Sa", "\xe5\x9c\x9f" },
+    // S_DAY_SUN
+    { "Dom", "Sun", "Dom", "So", "\xe6\x97\xa5" },
+    // S_COL_TAGS
+    { "Tag", "Tags", "Etiquetas", "Tags", "\xe3\x82\xbf\xe3\x82\xb0" },
+    // S_FILTER_TAGS
+    { "Tag:", "Tags:", "Etiquetas:", "Tags:", "\xe3\x82\xbf\xe3\x82\xb0:" },
+    // S_LOADED_FROM_HISTORY
+    { "%d device dalla cronologia.", "%d devices from history.", "%d dispositivos del historial.", "%d Ger\xc3\xa4te aus dem Verlauf.", "\xe5\xb1\xa5\xe6\xad\xb4\xe3\x81\x8b\xe3\x82\x89%d\xe5\x8f\xb0" },
+    // S_AUTO_SCAN_STATUS
+    { "Scansione automatica ogni %d min.",
+      "Auto-scan every %d min.",
+      "Auto-escaneo cada %d min.",
+      "Auto-Scan alle %d Min.",
+      "\xe8\x87\xaa\xe5\x8b\x95 %d\xe5\x88\x86\xe6\xaf\x8e" },
     // S_DEVICES_FOUND
     { "Fatto. %d device trovati.", "Done. %d devices found.", "Hecho. %d dispositivos.", "Fertig. %d Ger\xc3\xa4te.", "%d\xe5\x8f\xb0\xe7\x99\xba\xe8\xa6\x8b" },
 };

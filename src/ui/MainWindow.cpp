@@ -206,7 +206,7 @@ MainWindow::MainWindow()
                                 new BMessage(kMsgExportCSV));
     fSettingsButton = new BButton("settings", Tr(S_SETTINGS_TITLE),
                                   new BMessage(kMsgShowSettings));
-    fTopoButton = new BButton("topo", "Topologia",
+    fTopoButton = new BButton("topo", Tr(S_TOPOLOGY),
                               new BMessage(kMsgShowTopology));
     fAboutButton = new BButton("about", "?",
                                new BMessage(kMsgAbout));
@@ -235,7 +235,7 @@ MainWindow::MainWindow()
         new ColoredColumn(Tr(S_COL_LAST_SEEN), 130, 80, 200, B_TRUNCATE_END),
         kColLastSeen);
     fListView->AddColumn(
-        new ColoredColumn("Tag", 100, 60, 200, B_TRUNCATE_END),
+        new ColoredColumn(Tr(S_COL_TAGS), 100, 60, 200, B_TRUNCATE_END),
         kColTags);
 
     // Filtri per colonna: ricerca case-insensitive su sottostringa.
@@ -245,7 +245,7 @@ MainWindow::MainWindow()
     fFilterVendor = new BTextControl("flt_vendor", "Produttore:",  "", nullptr);
     fFilterType   = new BTextControl("flt_type",   "Tipo:",        "", nullptr);
     fFilterPorts  = new BTextControl("flt_ports",  "Porte:",       "", nullptr);
-    fFilterTags   = new BTextControl("flt_tags",   "Tag:",         "", nullptr);
+    fFilterTags   = new BTextControl("flt_tags",   Tr(S_FILTER_TAGS), "", nullptr);
 
     // Invia notifica ad ogni modifica per filtraggio live.
     fFilterIp->SetModificationMessage(new BMessage(kMsgFilterChanged));
@@ -471,10 +471,10 @@ void MainWindow::MessageReceived(BMessage* message) {
                 bool ok = SendWakeOnLan(sel->mac.String(), bcast, 9);
                 BString status;
                 if (ok)
-                    status.SetToFormat("Magic packet inviato a %s",
+                    status.SetToFormat(Tr(S_WOL_SENT),
                                        sel->mac.String());
                 else
-                    status.SetToFormat("Errore invio WoL a %s",
+                    status.SetToFormat(Tr(S_WOL_ERROR),
                                        sel->mac.String());
                 fStatusView->SetText(status.String());
             }
@@ -502,7 +502,7 @@ void MainWindow::MessageReceived(BMessage* message) {
             int32 percent = 0;
             message->FindInt32(LANTERNA_FIELD_PROGRESS, &percent);
             BString s;
-            s.SetToFormat("Scansione in corso... %d%%", static_cast<int>(percent));
+            s.SetToFormat(Tr(S_SCANNING), static_cast<int>(percent));
             fStatusView->SetText(s.String());
             break;
         }
@@ -511,7 +511,7 @@ void MainWindow::MessageReceived(BMessage* message) {
             int32 found = 0;
             message->FindInt32(LANTERNA_FIELD_FOUND, &found);
             BString s;
-            s.SetToFormat("Fatto. %d device trovati.", static_cast<int>(found));
+            s.SetToFormat(Tr(S_DEVICES_FOUND), static_cast<int>(found));
             fStatusView->SetText(s.String());
             _SetScanning(false);
             // Confronta IP pre/post per notificare device scomparsi.
@@ -912,7 +912,7 @@ void MainWindow::_SaveCSV(const entry_ref& dir, const char* name) {
     }
 
     BString status;
-    status.SetToFormat("Esportato: %s", path.Path());
+    status.SetToFormat(Tr(S_EXPORTED), path.Path());
     fStatusView->SetText(status.String());
 }
 
@@ -922,12 +922,12 @@ void MainWindow::_ShowContextMenu(BPoint where) {
 
     BPopUpMenu* menu = new BPopUpMenu("context", false, false);
     BString copyIpLabel;
-    copyIpLabel.SetToFormat("Copia IP (%s)", dev->ip.String());
+    copyIpLabel.SetToFormat("%s (%s)", Tr(S_CTX_COPY_IP), dev->ip.String());
     menu->AddItem(new BMenuItem(copyIpLabel.String(), new BMessage(kMsgCtxCopyIp)));
 
     if (dev->mac.Length() > 0) {
         BString copyMacLabel;
-        copyMacLabel.SetToFormat("Copia MAC (%s)", dev->mac.String());
+        copyMacLabel.SetToFormat("%s (%s)", Tr(S_CTX_COPY_MAC), dev->mac.String());
         menu->AddItem(new BMenuItem(copyMacLabel.String(), new BMessage(kMsgCtxCopyMac)));
     }
 
@@ -936,27 +936,27 @@ void MainWindow::_ShowContextMenu(BPoint where) {
     // Azioni basate sulle porte.
     if (dev->ports.FindFirst("80") >= 0 || dev->ports.FindFirst("443") >= 0
         || dev->ports.FindFirst("8080") >= 0)
-        menu->AddItem(new BMenuItem("Apri nel browser", new BMessage(kMsgCtxOpenHttp)));
+        menu->AddItem(new BMenuItem(Tr(S_CTX_OPEN_BROWSER), new BMessage(kMsgCtxOpenHttp)));
     if (dev->ports.FindFirst("22") >= 0)
-        menu->AddItem(new BMenuItem("Connetti SSH", new BMessage(kMsgCtxOpenSsh)));
+        menu->AddItem(new BMenuItem(Tr(S_CTX_CONNECT_SSH), new BMessage(kMsgCtxOpenSsh)));
     if (dev->ports.FindFirst("445") >= 0 || dev->ports.FindFirst("139") >= 0)
-        menu->AddItem(new BMenuItem("Apri condivisione SMB", new BMessage(kMsgCtxOpenSmb)));
+        menu->AddItem(new BMenuItem(Tr(S_CTX_OPEN_SMB), new BMessage(kMsgCtxOpenSmb)));
 
     if (dev->mac.Length() > 0 && dev->mac != "-") {
         menu->AddSeparatorItem();
-        menu->AddItem(new BMenuItem("Wake-on-LAN (sveglia)",
+        menu->AddItem(new BMenuItem(Tr(S_CTX_WOL),
                                     new BMessage(kMsgCtxWakeOnLan)));
     }
     if (dev->ports.Length() > 0 && dev->ports != "-") {
         menu->AddSeparatorItem();
-        menu->AddItem(new BMenuItem("Ping continuo (grafico latenza)",
+        menu->AddItem(new BMenuItem(Tr(S_CTX_PING),
                                     new BMessage(kMsgCtxPing)));
     }
 
     menu->AddSeparatorItem();
-    menu->AddItem(new BMenuItem("Modifica dettagli (alias, note)...",
+    menu->AddItem(new BMenuItem(Tr(S_CTX_DETAILS),
                                 new BMessage(kMsgCtxDetails)));
-    menu->AddItem(new BMenuItem("Storico online/offline...",
+    menu->AddItem(new BMenuItem(Tr(S_CTX_HISTORY),
                                 new BMessage(kMsgCtxHistory)));
 
     menu->SetTargetForItems(this);
@@ -1021,7 +1021,7 @@ void MainWindow::_LoadPersistedDevices() {
 
     if (!all.empty()) {
         BString status;
-        status.SetToFormat("%d device dalla cronologia.",
+        status.SetToFormat(Tr(S_LOADED_FROM_HISTORY),
                            static_cast<int>(all.size()));
         fStatusView->SetText(status.String());
     }
@@ -1058,12 +1058,12 @@ void MainWindow::_CheckOfflineDevices() {
 void MainWindow::_NotifyDeviceOffline(const BString& ip, const BString& host) {
     BNotification notification(B_INFORMATION_NOTIFICATION);
     notification.SetGroup("LANterna");
-    notification.SetTitle("Device offline");
+    notification.SetTitle(Tr(S_NOTIF_OFFLINE));
     BString body;
     body << ip;
     if (host.Length() > 0)
         body << " (" << host << ")";
-    body << "\nnon risponde piu'.";
+    body << "\n" << Tr(S_NOTIF_NO_RESPONSE);
     notification.SetContent(body.String());
     notification.Send();
 }
@@ -1084,7 +1084,7 @@ void MainWindow::_UpdateAutoScanRunner() {
                                           interval, -1);
 
     BString s;
-    s.SetToFormat("Scansione automatica ogni %d min.",
+    s.SetToFormat(Tr(S_AUTO_SCAN_STATUS),
                   fAppSettings.autoScanMinutes);
     fStatusView->SetText(s.String());
 }
@@ -1094,8 +1094,8 @@ void MainWindow::_NotifyNewDevice(const DeviceInfo& dev) {
                                               : B_INFORMATION_NOTIFICATION);
     notification.SetGroup("LANterna");
     notification.SetTitle(dev.blacklist
-        ? "Device in blacklist rilevato"
-        : "Nuovo device in rete");
+        ? Tr(S_NOTIF_BLACKLIST)
+        : Tr(S_NOTIF_NEW_DEVICE));
     BString body;
     body << dev.ip;
     if (dev.host.Length() > 0)

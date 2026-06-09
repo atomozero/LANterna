@@ -1,4 +1,5 @@
 #include "TopologyView.h"
+#include "Locale.h"
 #include "MainWindow.h"
 #include "Messages.h"
 
@@ -228,7 +229,7 @@ void TopologyView::Draw(BRect updateRect) {
     if (fNodes.empty()) {
         SetHighColor(kTextCol);
         SetFont(be_bold_font);
-        DrawString("Esegui una scansione per visualizzare la topologia",
+        DrawString(Tr(S_TOPOLOGY_NO_DEVICE),
                    BPoint(20, 30));
         return;
     }
@@ -342,7 +343,7 @@ void TopologyView::_DrawNode(const TopoNode& node, bool selected) {
 // ── TopologyWindow ────────────────────────────────────────────────────
 
 TopologyWindow::TopologyWindow()
-    : BWindow(BRect(100, 100, 850, 550), "Topologia di rete",
+    : BWindow(BRect(100, 100, 850, 550), Tr(S_TOPOLOGY_TITLE),
               B_TITLED_WINDOW,
               B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE)
 {
@@ -354,8 +355,7 @@ TopologyWindow::TopologyWindow()
     fInfoView->MakeEditable(false);
     fInfoView->MakeSelectable(true);
     fInfoView->SetViewColor(250, 250, 250);
-    fInfoView->SetText("Clicca su un nodo per vedere i dettagli.\n"
-                       "Trascina i nodi per riorganizzare la mappa.");
+    fInfoView->SetText(Tr(S_TOPOLOGY_CLICK_NODE));
 
     BScrollView* infoScroll = new BScrollView("infoscroll", fInfoView,
                                                0, false, true);
@@ -371,8 +371,7 @@ TopologyWindow::TopologyWindow()
 void TopologyWindow::SetDevices(const std::vector<DeviceInfo>& devices,
                                 const char* gatewayIp) {
     fTopoView->SetDevices(devices, gatewayIp);
-    fInfoView->SetText("Clicca su un nodo per vedere i dettagli.\n"
-                       "Trascina i nodi per riorganizzare la mappa.");
+    fInfoView->SetText(Tr(S_TOPOLOGY_CLICK_NODE));
 }
 
 void TopologyWindow::AddDevice(const DeviceInfo& dev,

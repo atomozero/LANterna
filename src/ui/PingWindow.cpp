@@ -14,6 +14,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "Locale.h"
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -227,13 +229,13 @@ PingWindow::PingWindow(const BString& ip, uint16_t port)
       fIp(ip), fPort(port), fThread(-1), fRunning(true)
 {
     BString title;
-    title.SetToFormat("Ping %s:%u", ip.String(), port);
+    title.SetToFormat(Tr(S_PING_TITLE), ip.String(), port);
     SetTitle(title.String());
 
     fGraph = new PingGraphView();
     fGraph->SetExplicitMinSize(BSize(400, 200));
 
-    fStatsView = new BStringView("stats", "In attesa...");
+    fStatsView = new BStringView("stats", Tr(S_PING_WAITING));
 
     BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
         .SetInsets(B_USE_WINDOW_INSETS)
@@ -295,14 +297,20 @@ void PingWindow::_UpdateStats() {
 
     if (last < 0)
         snprintf(buf, sizeof(buf),
-                 "Ultimo: timeout   Avg: %.1f ms   Min: %.1f ms   "
-                 "Max: %.1f ms   Loss: %d%%   Samples: %d",
-                 avg, mn, mx, fGraph->Loss(), fGraph->Count());
+                 "%s: %s   %s: %.1f ms   %s: %.1f ms   "
+                 "%s: %.1f ms   %s: %d%%   %s: %d",
+                 Tr(S_PING_LAST), Tr(S_PING_TIMEOUT),
+                 Tr(S_PING_AVG), avg, Tr(S_PING_MIN), mn,
+                 Tr(S_PING_MAX), mx, Tr(S_PING_LOSS), fGraph->Loss(),
+                 Tr(S_PING_SAMPLES), fGraph->Count());
     else
         snprintf(buf, sizeof(buf),
-                 "Ultimo: %.1f ms   Avg: %.1f ms   Min: %.1f ms   "
-                 "Max: %.1f ms   Loss: %d%%   Samples: %d",
-                 last, avg, mn, mx, fGraph->Loss(), fGraph->Count());
+                 "%s: %.1f ms   %s: %.1f ms   %s: %.1f ms   "
+                 "%s: %.1f ms   %s: %d%%   %s: %d",
+                 Tr(S_PING_LAST), last, Tr(S_PING_AVG), avg,
+                 Tr(S_PING_MIN), mn, Tr(S_PING_MAX), mx,
+                 Tr(S_PING_LOSS), fGraph->Loss(),
+                 Tr(S_PING_SAMPLES), fGraph->Count());
 
     fStatsView->SetText(buf);
 }
