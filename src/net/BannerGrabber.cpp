@@ -1,4 +1,5 @@
 #include "BannerGrabber.h"
+#include "TlsCertGrabber.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -303,9 +304,9 @@ std::string BuildHttpBanner(const char* buf, size_t len) {
 
 std::string GrabBanner(uint32_t ip, uint16_t port,
                        const BannerConfig& config) {
-    // TLS: senza OpenSSL non possiamo leggere il banner applicativo.
+    // TLS: usa il modulo OpenSSL per leggere il certificato.
     if (IsTlsPort(port))
-        return "TLS service";
+        return TlsCertSummary(ip, port, config.readTimeoutMs + 1000);
 
     int fd = ConnectWithTimeout(ip, port, config.connectTimeoutMs);
     if (fd < 0) return {};

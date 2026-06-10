@@ -15,7 +15,8 @@ PRIVATE  := /system/develop/headers/private
 BSD_HDR  := /boot/system/develop/headers/bsd
 CXXFLAGS ?= -std=c++17 -Wall -O2 -Isrc -D_DEFAULT_SOURCE -MMD -MP \
             -I$(PRIVATE)/interface -I$(PRIVATE)/shared -I$(BSD_HDR)
-LIBS     := -lbe -lnetwork -lbsd -lcolumnlistview -lshared -ltracker
+LIBS     := -lbe -lnetwork -lbsd -lcolumnlistview -lshared -ltracker \
+            -lssl -lcrypto
 APP      := LANterna
 
 CORE_SRCS := \
@@ -25,6 +26,7 @@ CORE_SRCS := \
   src/net/ArpCache.cpp \
   src/net/WakeOnLan.cpp \
   src/net/BannerGrabber.cpp \
+  src/net/TlsCertGrabber.cpp \
   src/model/DeviceStore.cpp \
   src/model/DevicePersistence.cpp \
   src/model/DeviceHistory.cpp \
