@@ -393,8 +393,7 @@ void TopologyWindow::MessageReceived(BMessage* message) {
             message->FindInt32("index", &idx);
 
             if (idx < 0) {
-                fInfoView->SetText("Clicca su un nodo per vedere i dettagli.\n"
-                                   "Trascina i nodi per riorganizzare la mappa.");
+                fInfoView->SetText(Tr(S_TOPOLOGY_CLICK_NODE));
                 break;
             }
 
@@ -410,25 +409,25 @@ void TopologyWindow::MessageReceived(BMessage* message) {
             info << "=== " << node.ip << " ===\n\n";
 
             if (node.host.Length() > 0)
-                info << "Nome:  " << node.host << "\n";
+                info << Tr(S_COL_NAME) << ":  " << node.host << "\n";
             if (node.mac.Length() > 0)
-                info << "MAC:  " << node.mac << "\n";
+                info << Tr(S_COL_MAC) << ":  " << node.mac << "\n";
             if (node.vendor.Length() > 0)
-                info << "Produttore:  " << node.vendor << "\n";
+                info << Tr(S_COL_VENDOR) << ":  " << node.vendor << "\n";
             if (node.type.Length() > 0)
-                info << "Tipo:  " << node.type << "\n";
+                info << Tr(S_COL_TYPE) << ":  " << node.type << "\n";
             if (node.ports.Length() > 0)
-                info << "Porte:  " << node.ports << "\n";
+                info << Tr(S_COL_PORTS) << ":  " << node.ports << "\n";
 
             info << "\n";
 
             if (node.firstSeen.Length() > 0)
-                info << "Primo avvistamento:\n  " << node.firstSeen << "\n";
+                info << Tr(S_COL_FIRST_SEEN) << ":\n  " << node.firstSeen << "\n";
             if (node.lastSeen.Length() > 0)
-                info << "Ultimo avvistamento:\n  " << node.lastSeen << "\n";
+                info << Tr(S_COL_LAST_SEEN) << ":\n  " << node.lastSeen << "\n";
 
             if (node.isGateway)
-                info << "\n[Gateway]";
+                info << "\n[" << Tr(S_GATEWAY) << "]";
 
             fInfoView->SetText(info.String());
             break;

@@ -98,7 +98,7 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
             BString text;
             if (end) text.SetTo(sep + 1, end - sep - 1);
             else     text.SetTo(sep + 1);
-            pretty << "Porta " << port << ":  " << text << "\n";
+            pretty << Tr(S_PORT) << " " << port << ":  " << text << "\n";
             if (!end) break;
             s = end + 1;
         }

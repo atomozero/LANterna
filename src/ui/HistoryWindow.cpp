@@ -298,7 +298,8 @@ void HeatmapView::Draw(BRect updateRect) {
     float lgX = bounds.right - lgTotalW - 38;
 
     SetHighColor(kAxisCol);
-    DrawString("meno", BPoint(lgX - StringWidth("meno") - 6, lgY + 9));
+    DrawString(Tr(S_HEATMAP_LESS),
+               BPoint(lgX - StringWidth(Tr(S_HEATMAP_LESS)) - 6, lgY + 9));
     for (int i = 0; i < lgSteps; i++) {
         float frac = static_cast<float>(i) / (lgSteps - 1);
         rgb_color c;
@@ -316,7 +317,7 @@ void HeatmapView::Draw(BRect updateRect) {
         FillRoundRect(cell, 2.5f, 2.5f);
     }
     SetHighColor(kAxisCol);
-    DrawString("pi\xc3\xb9", BPoint(lgX + lgTotalW + 6, lgY + 9));
+    DrawString(Tr(S_HEATMAP_MORE), BPoint(lgX + lgTotalW + 6, lgY + 9));
 }
 
 // ── HistoryWindow ─────────────────────────────────────────────────────

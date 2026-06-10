@@ -106,7 +106,7 @@ void PingGraphView::Draw(BRect updateRect) {
         BFont small(be_plain_font);
         small.SetSize(11);
         SetFont(&small);
-        DrawString("Nessun campione.",
+        DrawString(Tr(S_NO_SAMPLES),
                    BPoint(plotX + 12, plotY + plotH / 2));
         return;
     }

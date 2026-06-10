@@ -1,4 +1,5 @@
 #include "PivotWindow.h"
+#include "Locale.h"
 #include "MainWindow.h"   // per DeviceInfo
 #include "Messages.h"
 
@@ -26,7 +27,7 @@ enum {
 };
 
 PivotWindow::PivotWindow()
-    : BWindow(BRect(200, 150, 620, 480), "Riepilogo",
+    : BWindow(BRect(200, 150, 620, 480), Tr(S_SUMMARY),
               B_TITLED_WINDOW,
               B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE) {
 
@@ -35,28 +36,28 @@ PivotWindow::PivotWindow()
 
     BMessage* m0 = new BMessage(kMsgPivotFieldChanged);
     m0->AddInt32("field", 0);
-    fPopUp->AddItem(new BMenuItem("Produttore", m0));
+    fPopUp->AddItem(new BMenuItem(Tr(S_VENDOR), m0));
 
     BMessage* m1 = new BMessage(kMsgPivotFieldChanged);
     m1->AddInt32("field", 1);
-    fPopUp->AddItem(new BMenuItem("Tipo", m1));
+    fPopUp->AddItem(new BMenuItem(Tr(S_TYPE), m1));
 
     BMessage* m2 = new BMessage(kMsgPivotFieldChanged);
     m2->AddInt32("field", 2);
-    fPopUp->AddItem(new BMenuItem("Porta", m2));
+    fPopUp->AddItem(new BMenuItem(Tr(S_PORT), m2));
 
     fPopUp->ItemAt(0)->SetMarked(true);
 
-    fFieldMenu = new BMenuField("pivotfield", "Raggruppa per:", fPopUp);
+    fFieldMenu = new BMenuField("pivotfield", Tr(S_PIVOT_GROUP_BY), fPopUp);
 
     fTotalView = new BStringView("total", "");
 
     fListView = new BColumnListView("pivot", 0);
     fListView->AddColumn(
-        new BStringColumn("Valore", 180, 80, 400, B_TRUNCATE_END),
+        new BStringColumn(Tr(S_VALUE), 180, 80, 400, B_TRUNCATE_END),
         kPivotColValue);
     fListView->AddColumn(
-        new BIntegerColumn("N.", 60, 40, 100),
+        new BIntegerColumn(Tr(S_COUNT_LABEL), 60, 40, 100),
         kPivotColCount);
     fListView->AddColumn(
         new BStringColumn("%", 70, 40, 120, B_TRUNCATE_END),
@@ -118,7 +119,7 @@ void PivotWindow::_Rebuild() {
     fListView->Clear();
 
     if (fDevices.empty()) {
-        fTotalView->SetText("Nessun device.");
+        fTotalView->SetText(Tr(S_NO_DEVICES));
         return;
     }
 
@@ -133,7 +134,7 @@ void PivotWindow::_Rebuild() {
             {
                 BString p(dev.ports);
                 if (p.Length() == 0) {
-                    groups["(nessuna)"]++;
+                    groups[Tr(S_PIVOT_NONE)]++;
                 } else {
                     // Le porte sono separate da ", "
                     const char* s = p.String();
@@ -152,7 +153,8 @@ void PivotWindow::_Rebuild() {
             }
         }
         if (src != nullptr) {
-            std::string key = src->Length() ? std::string(src->String()) : "(sconosciuto)";
+            std::string key = src->Length() ? std::string(src->String())
+                                            : std::string(Tr(S_PIVOT_UNKNOWN));
             groups[key]++;
         }
     }
@@ -189,7 +191,7 @@ void PivotWindow::_Rebuild() {
     }
 
     BString info;
-    info.SetToFormat("%d device, %d gruppi",
+    info.SetToFormat(Tr(S_DEVICES_GROUPS),
                      static_cast<int>(fDevices.size()),
                      static_cast<int>(entries.size()));
     fTotalView->SetText(info.String());
