@@ -7,17 +7,19 @@
 #include <Messenger.h>
 
 #include <string>
+#include <vector>
 
 #include "net/Subnet.h"
 #include "scan/Scanner.h"
 
 namespace lanterna {
 
-// Lancia la scansione di iface in un thread. I risultati (device, progresso,
-// fine) arrivano come BMessage a target. ouiFile vuoto => nessun vendor.
+// Lancia la scansione delle interfacce in un thread, in sequenza.
+// Per ogni interfaccia il discovery (mDNS/SSDP) e i probe vengono ripetuti.
+// I device sono aggregati nel BMessage protocol come al solito.
 // Ritorna true se il thread e' partito.
 bool StartScan(const BMessenger& target,
-               const LocalInterface& iface,
+               const std::vector<LocalInterface>& interfaces,
                const ScanConfig& config,
                const std::string& ouiFile);
 

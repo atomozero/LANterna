@@ -184,6 +184,15 @@ MainWindow::MainWindow()
         none->SetEnabled(false);
         fInterfaceMenu->AddItem(none);
     } else {
+        // Solo se c'e' piu' di una interfaccia: voce "Tutte" in cima.
+        // index = -1 indica scansione multi-interfaccia.
+        if (fInterfaces.size() > 1) {
+            BMessage* allMsg = new BMessage(kMsgInterfacePicked);
+            allMsg->AddInt32("index", -1);
+            fInterfaceMenu->AddItem(new BMenuItem(Tr(S_ALL_INTERFACES),
+                                                  allMsg));
+            fInterfaceMenu->AddSeparatorItem();
+        }
         for (size_t i = 0; i < fInterfaces.size(); ++i) {
             const LocalInterface& li = fInterfaces[i];
             int prefix = PrefixLength(li.netmask);
@@ -195,7 +204,11 @@ MainWindow::MainWindow()
             BMenuItem* item = new BMenuItem(label.String(), msg);
             fInterfaceMenu->AddItem(item);
         }
-        fInterfaceMenu->ItemAt(0)->SetMarked(true);
+        // Marca la prima voce reale come default.
+        if (fInterfaces.size() > 1)
+            fInterfaceMenu->ItemAt(2)->SetMarked(true);
+        else
+            fInterfaceMenu->ItemAt(0)->SetMarked(true);
     }
 
     fInterfaceField = new BMenuField("iffield", Tr(S_INTERFACE), fInterfaceMenu);
@@ -584,7 +597,8 @@ bool MainWindow::QuitRequested() {
 void MainWindow::_StartScan() {
     if (fScanning || fInterfaces.empty())
         return;
-    if (fSelectedInterface < 0
+    // fSelectedInterface == -1 -> tutte le interfacce.
+    if (fSelectedInterface < -1
         || fSelectedInterface >= static_cast<int32>(fInterfaces.size()))
         return;
 
@@ -616,7 +630,14 @@ void MainWindow::_StartScan() {
     config.probe.timeoutMs = fAppSettings.timeoutMs;
     config.probe.maxInFlight = fAppSettings.maxInFlight;
     config.grabBanners = fAppSettings.grabBanners;
-    bool ok = StartScan(BMessenger(this), fInterfaces[fSelectedInterface],
+    std::vector<LocalInterface> selected;
+    if (fSelectedInterface == -1) {
+        // Tutte le interfacce.
+        selected = fInterfaces;
+    } else {
+        selected.push_back(fInterfaces[fSelectedInterface]);
+    }
+    bool ok = StartScan(BMessenger(this), selected,
                         config, _DefaultOuiPath());
     if (!ok) {
         fStatusView->SetText(Tr(S_CANNOT_START_SCAN));
@@ -1155,10 +1176,12 @@ const DeviceInfo* MainWindow::_SelectedDeviceInfo() const {
 
 std::string MainWindow::_GuessGatewayIp() const {
     // Euristica: il primo IP della subnet (tipicamente .1) e' spesso il gateway.
-    if (fSelectedInterface < 0
-        || fSelectedInterface >= static_cast<int32>(fInterfaces.size()))
+    // Per "tutte le interfacce" (-1) usa la prima.
+    int32 idx = fSelectedInterface;
+    if (idx == -1) idx = 0;
+    if (idx < 0 || idx >= static_cast<int32>(fInterfaces.size()))
         return "";
-    const LocalInterface& iface = fInterfaces[fSelectedInterface];
+    const LocalInterface& iface = fInterfaces[idx];
     uint32_t network = iface.address & iface.netmask;
     uint32_t gw = network + 1; // es. 192.168.1.1
     return Ipv4ToString(gw);

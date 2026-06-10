@@ -147,6 +147,8 @@ enum StringId {
     S_TRACE_START,
     S_TRACE_STOP,
     S_CTX_TRACEROUTE,
+    // Multi-interface
+    S_ALL_INTERFACES,
     // Ping
     S_PING_TITLE,
     S_PING_WAITING,
@@ -465,6 +467,8 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     { "Ferma", "Stop", "Detener", "Stopp", "\xe5\x81\x9c\xe6\xad\xa2" },
     // S_CTX_TRACEROUTE
     { "Traceroute", "Traceroute", "Traceroute", "Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9" },
+    // S_ALL_INTERFACES
+    { "Tutte le interfacce", "All interfaces", "Todas las interfaces", "Alle Schnittstellen", "\xe3\x81\x99\xe3\x81\xb9\xe3\x81\xa6" },
     // S_PING_TITLE
     { "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u" },
     // S_PING_WAITING

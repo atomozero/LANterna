@@ -27,7 +27,7 @@ namespace {
 
 struct ScanJob {
     BMessenger target;
-    LocalInterface iface;
+    std::vector<LocalInterface> interfaces;
     ScanConfig config;
     std::string ouiFile;
 };
@@ -57,18 +57,16 @@ std::string FormatBanners(const Device& d) {
 int32 ScanThread(void* arg) {
     std::unique_ptr<ScanJob> job(static_cast<ScanJob*>(arg));
 
-    std::vector<uint32_t> hosts = EnumerateHosts(job->iface);
+    BMessenger target = job->target;
 
-    // Esegui discovery mDNS multicast prima della scansione. Le risposte
-    // riempiono una cache che l'enricher consultera' per ogni device.
+    // Discovery multicast: vale per tutte le interfacce ed e' fatto una volta
+    // sola (i pacchetti multicast vengono comunque ricevuti su tutte le NIC).
     MdnsEnricher mdns;
     mdns.Discover(1500);
-
-    // Discovery SSDP/UPnP multicast (smart TV, Sonos, NAS, router IGD).
     SsdpEnricher ssdp;
     ssdp.Discover(2000);
 
-    // Pipeline di arricchimento.
+    // Pipeline di arricchimento condivisa.
     ArpMacEnricher arp;
     ReverseDnsEnricher dns;
     NetBiosEnricher netbios;
@@ -89,13 +87,35 @@ int32 ScanThread(void* arg) {
 
     Scanner scanner(pipeline);
 
-    BMessenger target = job->target;
+    // Calcola il totale di probe per dare una percentuale aggregata.
+    size_t totalHosts = 0;
+    std::vector<std::vector<uint32_t>> hostsPerIface;
+    hostsPerIface.reserve(job->interfaces.size());
+    for (const LocalInterface& iface : job->interfaces) {
+        auto hosts = EnumerateHosts(iface);
+        totalHosts += hosts.size();
+        hostsPerIface.push_back(std::move(hosts));
+    }
+
+    // Progresso globale: somma probesDone delle interfacce gia' completate
+    // + probesDone dell'iface corrente.
+    size_t baseDone = 0;
+    size_t grandTotal = 0;
+    for (const auto& h : hostsPerIface)
+        grandTotal += h.size();
+    // Stima: ogni host viene sondato su tutte le porte configurate.
+    size_t portsCount = job->config.ports.empty()
+        ? Scanner::DefaultPorts().size()
+        : job->config.ports.size();
+    grandTotal *= portsCount;
 
     int lastPercent = -1;
     auto onProgress = [&](const ScanProgress& p) {
-        if (p.probesTotal == 0) return;
-        int percent = static_cast<int>(p.probesDone * 100 / p.probesTotal);
-        if (percent == lastPercent) return; // non floodare la finestra
+        if (grandTotal == 0) return;
+        size_t done = baseDone + p.probesDone;
+        int percent = static_cast<int>(done * 100 / grandTotal);
+        if (percent > 100) percent = 100;
+        if (percent == lastPercent) return;
         lastPercent = percent;
         BMessage msg(kMsgScanProgress);
         msg.AddInt32(LANTERNA_FIELD_PROGRESS, percent);
@@ -160,10 +180,18 @@ int32 ScanThread(void* arg) {
         target.SendMessage(&msg);
     };
 
-    DeviceStore store = scanner.Scan(hosts, job->config, onProgress, onDevice);
+    size_t totalFound = 0;
+    for (size_t i = 0; i < job->interfaces.size(); i++) {
+        const auto& hosts = hostsPerIface[i];
+        if (hosts.empty()) continue;
+        DeviceStore store = scanner.Scan(hosts, job->config,
+                                          onProgress, onDevice);
+        totalFound += store.Count();
+        baseDone += hosts.size() * portsCount;
+    }
 
     BMessage done(kMsgScanDone);
-    done.AddInt32(LANTERNA_FIELD_FOUND, static_cast<int32>(store.Count()));
+    done.AddInt32(LANTERNA_FIELD_FOUND, static_cast<int32>(totalFound));
     target.SendMessage(&done);
     return 0;
 }
@@ -171,10 +199,11 @@ int32 ScanThread(void* arg) {
 } // namespace
 
 bool StartScan(const BMessenger& target,
-               const LocalInterface& iface,
+               const std::vector<LocalInterface>& interfaces,
                const ScanConfig& config,
                const std::string& ouiFile) {
-    ScanJob* job = new ScanJob{target, iface, config, ouiFile};
+    if (interfaces.empty()) return false;
+    ScanJob* job = new ScanJob{target, interfaces, config, ouiFile};
     thread_id tid = spawn_thread(ScanThread, "lanterna_scan",
                                  B_NORMAL_PRIORITY, job);
     if (tid < B_OK) {
