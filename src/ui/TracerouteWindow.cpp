@@ -1,5 +1,6 @@
 #include "TracerouteWindow.h"
 #include "Locale.h"
+#include "net/Subnet.h"
 
 #include <Button.h>
 #include <ColumnListView.h>
@@ -74,9 +75,14 @@ static bool ParseLine(const char* line, int& hop, BString& ip, float& rtt) {
 static int32 TrThread(void* arg) {
     std::unique_ptr<TrJob> job(static_cast<TrJob*>(arg));
 
+    // Forza IPv6 se l'IP target lo e'.
+    const char* family = "";
+    if (IsIpv6Address(job->ip.String()))
+        family = "-6 ";
+
     BString cmd;
-    cmd.SetToFormat("traceroute -n -w 2 -q 1 -m 20 %s 2>&1",
-                    job->ip.String());
+    cmd.SetToFormat("traceroute %s-n -w 2 -q 1 -m 20 %s 2>&1",
+                    family, job->ip.String());
 
     FILE* p = popen(cmd.String(), "r");
     if (!p) {

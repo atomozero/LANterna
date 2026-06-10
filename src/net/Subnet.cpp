@@ -27,6 +27,23 @@ bool StringToIpv4(const std::string& s, uint32_t& out) {
     return true;
 }
 
+bool IsIpv4Address(const std::string& s) {
+    if (s.empty()) return false;
+    struct in_addr in;
+    return inet_pton(AF_INET, s.c_str(), &in) == 1;
+}
+
+bool IsIpv6Address(const std::string& s) {
+    if (s.empty()) return false;
+    // Rimuovi eventuale scope id "fe80::1%eth0" prima del check.
+    std::string clean = s;
+    auto pct = clean.find('%');
+    if (pct != std::string::npos)
+        clean.erase(pct);
+    struct in6_addr in6;
+    return inet_pton(AF_INET6, clean.c_str(), &in6) == 1;
+}
+
 int PrefixLength(uint32_t netmask) {
     // Conta i bit a 1 e verifica che siano contigui in testa.
     int bits = 0;

@@ -33,4 +33,8 @@ std::string Ipv4ToString(uint32_t addr);          // host byte order -> "a.b.c.d
 bool StringToIpv4(const std::string& s, uint32_t& out);
 int PrefixLength(uint32_t netmask);               // netmask -> /N, -1 se non contigua
 
+// Detection del formato dell'IP. IsIpv6Address ignora interface suffix (%eth0).
+bool IsIpv6Address(const std::string& s);
+bool IsIpv4Address(const std::string& s);
+
 } // namespace lanterna

@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
 #include <sys/socket.h>
@@ -242,9 +243,25 @@ static int32 PingThread(void* arg) {
     while (*job->runFlag) {
         auto t0 = std::chrono::steady_clock::now();
 
-        int sock = socket(AF_INET, SOCK_STREAM, 0);
+        // getaddrinfo: gestisce sia IPv4 sia IPv6 in modo trasparente.
+        struct addrinfo hints{};
+        hints.ai_family   = AF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
+        struct addrinfo* res = nullptr;
+        char portStr[8];
+        std::snprintf(portStr, sizeof(portStr), "%u", job->port);
+        if (getaddrinfo(job->ip.c_str(), portStr, &hints, &res) != 0
+            || res == nullptr) {
+            BMessage m(kMsgPingSample);
+            m.AddFloat("latency", -1.0f);
+            job->target.SendMessage(&m);
+            snooze(1000000);
+            continue;
+        }
+
+        int sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (sock < 0) {
-            // Errore irreversibile.
+            freeaddrinfo(res);
             BMessage m(kMsgPingSample);
             m.AddFloat("latency", -1.0f);
             job->target.SendMessage(&m);
@@ -255,12 +272,8 @@ static int32 PingThread(void* arg) {
         int flags = fcntl(sock, F_GETFL, 0);
         fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 
-        struct sockaddr_in addr{};
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(job->port);
-        inet_pton(AF_INET, job->ip.c_str(), &addr.sin_addr);
-
-        connect(sock, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr));
+        connect(sock, res->ai_addr, res->ai_addrlen);
+        freeaddrinfo(res);
 
         struct pollfd p{};
         p.fd = sock;
