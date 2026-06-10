@@ -14,7 +14,7 @@ namespace lanterna {
 
 struct BannerConfig {
     int    connectTimeoutMs = 800;
-    int    readTimeoutMs    = 1200;
+    int    readTimeoutMs    = 1500;
     size_t maxBytes         = 1024;
 };
 
