@@ -81,6 +81,35 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
                                                0, false, true);
     noteScroll->SetExplicitMinSize(BSize(B_SIZE_UNSET, 100));
 
+    // ── Banner servizi ──
+    // I banners arrivano serializzati come "port\x1ebanner\x1fport\x1ebanner".
+    BTextView* bannerView = new BTextView("banners");
+    bannerView->MakeEditable(false);
+    bannerView->MakeSelectable(true);
+    bannerView->SetWordWrap(true);
+    if (dev.banners.Length() > 0) {
+        BString pretty;
+        const char* s = dev.banners.String();
+        while (*s) {
+            const char* sep = strchr(s, '\x1e');
+            if (!sep) break;
+            BString port(s, sep - s);
+            const char* end = strchr(sep + 1, '\x1f');
+            BString text;
+            if (end) text.SetTo(sep + 1, end - sep - 1);
+            else     text.SetTo(sep + 1);
+            pretty << "Porta " << port << ":  " << text << "\n";
+            if (!end) break;
+            s = end + 1;
+        }
+        bannerView->SetText(pretty.String());
+    } else {
+        bannerView->SetText("-");
+    }
+    BScrollView* bannerScroll = new BScrollView("bannerscroll", bannerView,
+                                                 0, false, true);
+    bannerScroll->SetExplicitMinSize(BSize(B_SIZE_UNSET, 80));
+
     BButton* saveBtn   = new BButton(Tr(S_SAVE),
                                      new BMessage(kMsgDetailsSave));
     BButton* cancelBtn = new BButton(Tr(S_CANCEL),
@@ -111,6 +140,9 @@ DeviceDetailsWindow::DeviceDetailsWindow(const DeviceInfo& dev,
         .End()
         .Add(new BStringView("", Tr(S_DETAILS_NOTE)))
         .Add(noteScroll, 1.0f)
+        .AddStrut(B_USE_ITEM_SPACING)
+        .Add(SectionLabel(Tr(S_DETAILS_SERVICES)))
+        .Add(bannerScroll, 1.0f)
         .AddGroup(B_HORIZONTAL)
             .AddGlue()
             .Add(cancelBtn)

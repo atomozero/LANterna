@@ -21,6 +21,7 @@ struct AppSettings {
     int         timeoutMs  = 400;
     int         maxInFlight = 256;
     int         autoScanMinutes = 0;  // 0 = disabilitata
+    bool        grabBanners = false;  // legge i banner dalle porte aperte
 
     void Load(const std::string& path);
     void Save(const std::string& path) const;
@@ -45,6 +46,7 @@ private:
     BTextControl*  fTimeoutField = nullptr;
     BTextControl*  fConcField   = nullptr;
     BTextControl*  fAutoScanField = nullptr;
+    BCheckBox*     fBannersBox = nullptr;
 };
 
 } // namespace lanterna

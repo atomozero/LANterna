@@ -4,6 +4,7 @@
 
 #include <Alert.h>
 #include <Button.h>
+#include <CheckBox.h>
 #include <Directory.h>
 #include <FindDirectory.h>
 #include <LayoutBuilder.h>
@@ -65,6 +66,7 @@ void AppSettings::Load(const std::string& path) {
         else if (key == "timeout") timeoutMs = atoi(val.c_str());
         else if (key == "maxconn") maxInFlight = atoi(val.c_str());
         else if (key == "autoscan") autoScanMinutes = atoi(val.c_str());
+        else if (key == "banners")  grabBanners = (val == "1");
     }
     SetLanguageFromCode(language.c_str());
 }
@@ -82,6 +84,7 @@ void AppSettings::Save(const std::string& path) const {
     std::fprintf(f, "timeout=%d\n", timeoutMs);
     std::fprintf(f, "maxconn=%d\n", maxInFlight);
     std::fprintf(f, "autoscan=%d\n", autoScanMinutes);
+    std::fprintf(f, "banners=%d\n", grabBanners ? 1 : 0);
     std::fclose(f);
 }
 
@@ -126,6 +129,9 @@ SettingsWindow::SettingsWindow(AppSettings* settings, BWindow* target)
     concStr << settings->maxInFlight;
     fConcField = new BTextControl(Tr(S_MAX_CONCURRENT), concStr.String(), nullptr);
 
+    fBannersBox = new BCheckBox("banners", Tr(S_GRAB_BANNERS), nullptr);
+    fBannersBox->SetValue(settings->grabBanners ? B_CONTROL_ON : B_CONTROL_OFF);
+
     BString autoStr;
     autoStr << settings->autoScanMinutes;
     fAutoScanField = new BTextControl(Tr(S_AUTO_SCAN_MINUTES),
@@ -151,6 +157,7 @@ SettingsWindow::SettingsWindow(AppSettings* settings, BWindow* target)
         .Add(fPortsField)
         .Add(fTimeoutField)
         .Add(fConcField)
+        .Add(fBannersBox)
         .AddStrut(B_USE_ITEM_SPACING)
         .Add(MakeLabel(Tr(S_MONITORING)))
         .Add(fAutoScanField)
@@ -188,6 +195,7 @@ void SettingsWindow::MessageReceived(BMessage* message) {
             if (fSettings->timeoutMs <= 0) fSettings->timeoutMs = 400;
             fSettings->maxInFlight = atoi(fConcField->Text());
             if (fSettings->maxInFlight <= 0) fSettings->maxInFlight = 256;
+            fSettings->grabBanners = (fBannersBox->Value() == B_CONTROL_ON);
 
             // Monitoraggio
             fSettings->autoScanMinutes = atoi(fAutoScanField->Text());

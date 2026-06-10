@@ -602,6 +602,7 @@ void MainWindow::_StartScan() {
     }
     config.probe.timeoutMs = fAppSettings.timeoutMs;
     config.probe.maxInFlight = fAppSettings.maxInFlight;
+    config.grabBanners = fAppSettings.grabBanners;
     bool ok = StartScan(BMessenger(this), fInterfaces[fSelectedInterface],
                         config, _DefaultOuiPath());
     if (!ok) {
@@ -681,6 +682,7 @@ void MainWindow::_StoreDevice(const BMessage* message) {
     message->FindString(LANTERNA_FIELD_ALIAS, &dev.alias);
     message->FindString(LANTERNA_FIELD_NOTE, &dev.note);
     message->FindString(LANTERNA_FIELD_TAGS, &dev.tags);
+    message->FindString(LANTERNA_FIELD_BANNERS, &dev.banners);
     message->FindBool(LANTERNA_FIELD_FAVORITE, &dev.favorite);
     message->FindBool(LANTERNA_FIELD_BLACKLIST, &dev.blacklist);
     message->FindBool(LANTERNA_FIELD_IS_NEW, &dev.isNew);

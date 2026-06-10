@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <map>
 #include <set>
 #include <string>
 
@@ -31,6 +32,10 @@ struct Device {
     std::string vendor;              // da OUI, richiede mac
     std::string mdnsName;
     std::string deviceType;          // inferito da porte/servizi
+
+    // Banner letti dalle porte aperte (port -> banner).
+    // Es. {22 -> "SSH-2.0-OpenSSH_9.6", 80 -> "HTTP - nginx/1.24"}.
+    std::map<uint16_t, std::string> banners;
 
     // L2
     std::time_t firstSeen = 0;

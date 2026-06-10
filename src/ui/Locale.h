@@ -78,6 +78,7 @@ enum StringId {
     S_MAX_CONCURRENT,
     S_MONITORING,
     S_AUTO_SCAN_MINUTES,
+    S_GRAB_BANNERS,
     S_SAVE,
     S_CANCEL,
     S_OK,
@@ -139,6 +140,7 @@ enum StringId {
     S_DETAILS_TAGS_HINT,
     S_DETAILS_FAVORITE,
     S_DETAILS_BLACKLIST,
+    S_DETAILS_SERVICES,
     // Storico
     S_HISTORY_TITLE,
     S_HISTORY_TIMELINE,
@@ -284,6 +286,8 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     { "Monitoraggio", "Monitoring", "Monitoreo", "\xc3\x9c\x62\x65rwachung", "\xe7\x9b\xa3\xe8\xa6\x96" },
     // S_AUTO_SCAN_MINUTES
     { "Scansione automatica (min, 0=off):", "Auto-scan (min, 0=off):", "Auto-escaneo (min, 0=off):", "Auto-Scan (min, 0=aus):", "\xe8\x87\xaa\xe5\x8b\x95\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3 (\xe5\x88\x86):" },
+    // S_GRAB_BANNERS
+    { "Leggi banner servizi (HTTP, SSH, ...)", "Read service banners (HTTP, SSH, ...)", "Leer banners de servicios", "Service-Banner lesen", "\xe3\x83\x90\xe3\x83\x8a\xe3\x83\xbc\xe5\x8f\x96\xe5\xbe\x97" },
     // S_SAVE
     { "Salva", "Save", "Guardar", "Speichern", "\xe4\xbf\x9d\xe5\xad\x98" },
     // S_CANCEL
@@ -424,6 +428,8 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     { "Preferito (evidenziato)", "Favorite (highlighted)", "Favorito (destacado)", "Favorit (hervorgehoben)", "\xe3\x81\x8a\xe6\xb0\x97\xe3\x81\xab\xe5\x85\xa5\xe3\x82\x8a" },
     // S_DETAILS_BLACKLIST
     { "Blacklist (sospetto)", "Blacklist (suspicious)", "Lista negra (sospechoso)", "Blacklist (verd\xc3\xa4\x63htig)", "\xe3\x83\x96\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xaf\xe3\x83\xaa\xe3\x82\xb9\xe3\x83\x88" },
+    // S_DETAILS_SERVICES
+    { "Servizi rilevati", "Detected services", "Servicios detectados", "Erkannte Dienste", "\xe6\xa4\x9c\xe5\x87\xba\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x93\xe3\x82\xb9" },
     // S_HISTORY_TITLE
     { "Storico", "History", "Historial", "Verlauf", "\xe5\xb1\xa5\xe6\xad\xb4" },
     // S_HISTORY_TIMELINE

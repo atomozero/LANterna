@@ -44,6 +44,7 @@ struct DeviceInfo {
     BString alias;       // nome custom utente
     BString note;        // testo libero
     BString tags;        // tag separati da virgola
+    BString banners;     // "port\x1ebanner\x1fport\x1ebanner..."
     bool    favorite = false;
     bool    blacklist = false;
     bool    isNew = false;

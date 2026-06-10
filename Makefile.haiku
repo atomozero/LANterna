@@ -24,6 +24,7 @@ CORE_SRCS := \
   src/net/Resolver.cpp \
   src/net/ArpCache.cpp \
   src/net/WakeOnLan.cpp \
+  src/net/BannerGrabber.cpp \
   src/model/DeviceStore.cpp \
   src/model/DevicePersistence.cpp \
   src/model/DeviceHistory.cpp \

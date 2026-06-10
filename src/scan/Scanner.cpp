@@ -1,7 +1,9 @@
 #include "Scanner.h"
 
+#include <arpa/inet.h>
 #include <ctime>
 
+#include "net/BannerGrabber.h"
 #include "net/Subnet.h"
 
 namespace lanterna {
@@ -70,6 +72,16 @@ DeviceStore Scanner::Scan(
                 Device d = dit->second;
                 d.firstSeen = now;
                 d.lastSeen = now;
+
+                // Banner grabbing opzionale per ogni porta aperta.
+                if (config.grabBanners) {
+                    for (uint16_t port : d.openPorts) {
+                        std::string banner = GrabBanner(o.ip, port);
+                        if (!banner.empty())
+                            d.banners[port] = banner;
+                    }
+                }
+
                 for (Enricher* e : fEnrichers)
                     if (e) e->Enrich(d);
                 Device& stored = store.Upsert(d);

@@ -48,6 +48,7 @@ enum {
 #define LANTERNA_FIELD_TAGS       "tags"
 #define LANTERNA_FIELD_FAVORITE   "favorite"
 #define LANTERNA_FIELD_BLACKLIST  "blacklist"
+#define LANTERNA_FIELD_BANNERS    "banners"
 #define LANTERNA_FIELD_IS_NEW     "isNew"
 #define LANTERNA_FIELD_PROGRESS   "percent"
 #define LANTERNA_FIELD_FOUND      "found"

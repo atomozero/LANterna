@@ -41,6 +41,19 @@ std::string FormatPorts(const Device& d) {
     return ports;
 }
 
+// Serializza i banner: "port1\x1ebanner1\x1fport2\x1ebanner2".
+// Separatori non stampabili per evitare collisioni con il contenuto.
+std::string FormatBanners(const Device& d) {
+    std::string out;
+    for (const auto& kv : d.banners) {
+        if (!out.empty()) out += '\x1f';
+        out += std::to_string(kv.first);
+        out += '\x1e';
+        out += kv.second;
+    }
+    return out;
+}
+
 int32 ScanThread(void* arg) {
     std::unique_ptr<ScanJob> job(static_cast<ScanJob*>(arg));
 
@@ -133,6 +146,9 @@ int32 ScanThread(void* arg) {
         msg.AddString(LANTERNA_FIELD_TYPE, d.deviceType.c_str());
         msg.AddString(LANTERNA_FIELD_HOSTNAME, d.hostname.c_str());
         msg.AddString(LANTERNA_FIELD_PORTS, ports.c_str());
+        std::string banners = FormatBanners(d);
+        if (!banners.empty())
+            msg.AddString(LANTERNA_FIELD_BANNERS, banners.c_str());
         msg.AddString(LANTERNA_FIELD_FIRST_SEEN, fsBuf);
         msg.AddString(LANTERNA_FIELD_LAST_SEEN, lsBuf);
         msg.AddString(LANTERNA_FIELD_ALIAS, pd.alias.c_str());

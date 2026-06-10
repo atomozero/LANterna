@@ -19,6 +19,7 @@ namespace lanterna {
 struct ScanConfig {
     std::vector<uint16_t> ports;     // porte da sondare per host
     ProbeConfig probe;               // concorrenza e timeout
+    bool grabBanners = false;        // se true legge banner dalle porte aperte
 };
 
 struct ScanProgress {
