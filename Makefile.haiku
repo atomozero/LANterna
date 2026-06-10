@@ -27,6 +27,7 @@ CORE_SRCS := \
   src/net/WakeOnLan.cpp \
   src/net/BannerGrabber.cpp \
   src/net/TlsCertGrabber.cpp \
+  src/net/DnsLookup.cpp \
   src/model/DeviceStore.cpp \
   src/model/DevicePersistence.cpp \
   src/model/DeviceHistory.cpp \
@@ -51,6 +52,7 @@ UI_SRCS := \
   src/ui/SettingsWindow.cpp \
   src/ui/TopologyView.cpp \
   src/ui/TracerouteWindow.cpp \
+  src/ui/DnsLookupWindow.cpp \
   src/ui/NetworkReplicant.cpp \
   src/ui/main_gui.cpp
 

@@ -32,7 +32,8 @@ enum {
     kMsgDeviceUpdated   = 'dvup', // DeviceDetailsWindow -> MainWindow: salva
     kMsgShowTopology    = 'topo', // UI -> finestra: mostra topologia
     kMsgReplicantUpdate = 'rpup', // MainWindow -> replicant: aggiorna conteggio
-    kMsgAutoScanTick    = 'astk'  // BMessageRunner -> finestra: tick periodico
+    kMsgAutoScanTick    = 'astk', // BMessageRunner -> finestra: tick periodico
+    kMsgShowDnsLookup   = 'dnsl'  // UI -> finestra: apri DNS lookup
 };
 
 // Campi del messaggio kMsgDeviceFound.

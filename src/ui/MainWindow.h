@@ -99,6 +99,7 @@ private:
     BButton* fExportButton = nullptr;
     BButton* fSettingsButton = nullptr;
     BButton* fTopoButton = nullptr;
+    BButton* fDnsButton = nullptr;
     BButton* fAboutButton = nullptr;
     BColumnListView* fListView = nullptr;
     BStringView* fStatusView = nullptr;

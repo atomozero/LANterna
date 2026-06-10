@@ -149,6 +149,20 @@ enum StringId {
     S_CTX_TRACEROUTE,
     // Multi-interface
     S_ALL_INTERFACES,
+    // DNS lookup
+    S_DNS_TITLE,
+    S_DNS_NAME,
+    S_DNS_TYPE,
+    S_DNS_RESOLVER,
+    S_DNS_VALUE,
+    S_DNS_TTL,
+    S_DNS_LOOKUP,
+    S_DNS_QUERYING,
+    S_DNS_EMPTY,
+    S_DNS_ERROR,
+    S_DNS_NO_RESULT,
+    S_DNS_FOUND,
+    S_DNS_BUTTON,
     // Ping
     S_PING_TITLE,
     S_PING_WAITING,
@@ -469,6 +483,32 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     { "Traceroute", "Traceroute", "Traceroute", "Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9" },
     // S_ALL_INTERFACES
     { "Tutte le interfacce", "All interfaces", "Todas las interfaces", "Alle Schnittstellen", "\xe3\x81\x99\xe3\x81\xb9\xe3\x81\xa6" },
+    // S_DNS_TITLE
+    { "DNS lookup", "DNS lookup", "B\xc3\xbasqueda DNS", "DNS-Abfrage", "DNS\xe6\xa4\x9c\xe7\xb4\xa2" },
+    // S_DNS_NAME
+    { "Nome:", "Name:", "Nombre:", "Name:", "\xe5\x90\x8d\xe5\x89\x8d:" },
+    // S_DNS_TYPE
+    { "Tipo:", "Type:", "Tipo:", "Typ:", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\x97:" },
+    // S_DNS_RESOLVER
+    { "Resolver:", "Resolver:", "Resolutor:", "Resolver:", "\xe3\x83\xaa\xe3\x82\xbe\xe3\x83\xab\xe3\x83\x90:" },
+    // S_DNS_VALUE
+    { "Valore", "Value", "Valor", "Wert", "\xe5\x80\xa4" },
+    // S_DNS_TTL
+    { "TTL", "TTL", "TTL", "TTL", "TTL" },
+    // S_DNS_LOOKUP
+    { "Cerca", "Lookup", "Buscar", "Suchen", "\xe6\xa4\x9c\xe7\xb4\xa2" },
+    // S_DNS_QUERYING
+    { "Query in corso...", "Querying...", "Consultando...", "Abfrage...", "\xe6\xa4\x9c\xe7\xb4\xa2\xe4\xb8\xad..." },
+    // S_DNS_EMPTY
+    { "Inserisci un nome.", "Enter a name.", "Ingrese un nombre.", "Namen eingeben.", "\xe5\x90\x8d\xe5\x89\x8d\xe5\xbf\x85\xe9\xa0\x88" },
+    // S_DNS_ERROR
+    { "Errore.", "Error.", "Error.", "Fehler.", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc" },
+    // S_DNS_NO_RESULT
+    { "Nessun risultato.", "No results.", "Sin resultados.", "Keine Treffer.", "\xe7\xb5\x90\xe6\x9e\x9c\xe3\x81\xaa\xe3\x81\x97" },
+    // S_DNS_FOUND
+    { "%d record.", "%d records.", "%d registros.", "%d Eintr\xc3\xa4ge.", "%d\xe4\xbb\xb6" },
+    // S_DNS_BUTTON
+    { "DNS", "DNS", "DNS", "DNS", "DNS" },
     // S_PING_TITLE
     { "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u" },
     // S_PING_WAITING

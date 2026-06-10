@@ -37,6 +37,7 @@
 #include "SettingsWindow.h"
 #include "TopologyView.h"
 #include "TracerouteWindow.h"
+#include "DnsLookupWindow.h"
 #include "model/DeviceHistory.h"
 #include "model/DevicePersistence.h"
 #include "net/WakeOnLan.h"
@@ -222,6 +223,8 @@ MainWindow::MainWindow()
                                   new BMessage(kMsgShowSettings));
     fTopoButton = new BButton("topo", Tr(S_TOPOLOGY),
                               new BMessage(kMsgShowTopology));
+    fDnsButton = new BButton("dns", Tr(S_DNS_BUTTON),
+                              new BMessage(kMsgShowDnsLookup));
     fAboutButton = new BButton("about", "?",
                                new BMessage(kMsgAbout));
     fStatusView = new BStringView("status", Tr(S_READY));
@@ -277,6 +280,7 @@ MainWindow::MainWindow()
             .Add(fPivotButton)
             .Add(fExportButton)
             .Add(fTopoButton)
+            .Add(fDnsButton)
             .Add(fSettingsButton)
             .Add(fAboutButton)
             .AddGlue()
@@ -377,6 +381,12 @@ void MainWindow::MessageReceived(BMessage* message) {
         case kMsgShowTopology:
             _ShowTopology();
             break;
+        case kMsgShowDnsLookup:
+        {
+            DnsLookupWindow* dw = new DnsLookupWindow();
+            dw->Show();
+            break;
+        }
         case kMsgCtxCopyIp:
         case kMsgCtxCopyMac:
         {
