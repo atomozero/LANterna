@@ -94,18 +94,35 @@ static std::string BuildServiceQuery(const char* service) {
 
 // ── Parsing risposta ───────────────────────────────────────────────────
 //
-// Per ogni answer record, estrae:
-//  - PTR -> servizio (_ipp._tcp.local -> "stampante._ipp._tcp.local")
-//  - A   -> IPv4 di un hostname
+// Per ogni record (Answer + Additional), estrae:
+//  - A   -> IPv4 di un hostname  (es. "appletv.local" -> "192.168.1.50")
+//  - PTR -> servizio "_xxx._tcp.local" -> "Salotto AppleTV._xxx._tcp.local"
+//  - SRV -> nome istanza -> hostname target (es. "appletv.local")
 //
-// Salva tutto in due mappe temporanee, poi le riconcilia.
+// I record sono spesso correlati: PTR dichiara il servizio, SRV nei record
+// Additional ne dichiara hostname/porta, A nei record Additional dà l'IP.
+// Vanno tutti parsati per ricostruire il nome leggibile.
 struct ParsedResponse {
     std::string sourceIp;
-    // hostname -> ip
+    // hostname.local -> ip
     std::map<std::string, std::string> hostnames;
-    // service-type -> instance-name
+    // instance fqdn -> hostname target (dal SRV)
+    std::map<std::string, std::string> srvTargets;
+    // service-type -> [instance fqdn, ...]
     std::vector<MdnsService> services;
 };
+
+// Estrae il nome "friendly" dall'instance FQDN.
+// Es. "Salotto AppleTV._airplay._tcp.local" -> "Salotto AppleTV"
+static std::string ExtractFriendly(const std::string& fqdn,
+                                   const std::string& serviceType) {
+    // Cerca il prefisso del service type (es. "._airplay._tcp.local")
+    std::string suffix = "." + serviceType;
+    if (fqdn.size() > suffix.size()
+        && fqdn.compare(fqdn.size() - suffix.size(), suffix.size(), suffix) == 0)
+        return fqdn.substr(0, fqdn.size() - suffix.size());
+    return fqdn;
+}
 
 static bool ParseResponse(const uint8_t* buf, size_t len,
                           const std::string& sourceIp,
@@ -113,7 +130,10 @@ static bool ParseResponse(const uint8_t* buf, size_t len,
     if (len < 12) return false;
     uint16_t qd = (buf[4] << 8) | buf[5];
     uint16_t an = (buf[6] << 8) | buf[7];
-    if (an == 0) return false;
+    uint16_t ns = (buf[8] << 8) | buf[9];
+    uint16_t ar = (buf[10] << 8) | buf[11];
+    int totalRecords = an + ns + ar;
+    if (totalRecords == 0) return false;
 
     size_t offset = 12;
 
@@ -128,8 +148,8 @@ static bool ParseResponse(const uint8_t* buf, size_t len,
 
     out.sourceIp = sourceIp;
 
-    // Parsa answer records.
-    for (int i = 0; i < an && offset < len; i++) {
+    // Parsa tutti i record (Answer + Authority + Additional).
+    for (int i = 0; i < totalRecords && offset < len; i++) {
         std::string name;
         size_t c = DecodeDnsName(buf, len, offset, name);
         if (c == 0) return false;
@@ -137,26 +157,30 @@ static bool ParseResponse(const uint8_t* buf, size_t len,
         if (offset + 10 > len) return false;
 
         uint16_t type   = (buf[offset] << 8) | buf[offset + 1];
-        uint16_t cls    = (buf[offset + 2] << 8) | buf[offset + 3];
-        (void)cls;
-        // TTL = 4 byte, ignorato.
+        // class + TTL ignorati.
         uint16_t rdlen  = (buf[offset + 8] << 8) | buf[offset + 9];
         offset += 10;
         if (offset + rdlen > len) return false;
 
         if (type == 1 && rdlen == 4) {
-            // A record: ip -> hostname.
+            // A record: hostname -> ipv4.
             char ipBuf[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, buf + offset, ipBuf, sizeof(ipBuf));
             out.hostnames[name] = ipBuf;
         } else if (type == 12) {
-            // PTR record: name (es. "_ipp._tcp.local") -> instance.
+            // PTR record: service-type -> instance fqdn.
             std::string target;
             DecodeDnsName(buf, len, offset, target);
             MdnsService svc;
             svc.serviceType = name;
             svc.instanceName = target;
+            svc.friendlyName = ExtractFriendly(target, name);
             out.services.push_back(svc);
+        } else if (type == 33 && rdlen > 6) {
+            // SRV record: priority(2) + weight(2) + port(2) + target.
+            std::string target;
+            DecodeDnsName(buf, len, offset + 6, target);
+            out.srvTargets[name] = target;
         }
 
         offset += rdlen;
@@ -252,18 +276,42 @@ void MdnsEnricher::Discover(int timeoutMs) {
         if (!ParseResponse(buf, n, ipBuf, pr))
             continue;
 
-        // Mappa A records (hostname -> ip) e servizi.
+        // Riconcilia SRV con A records per ottenere hostname dei servizi.
+        // PTR ci dà l'instance fqdn, SRV ne dà il target hostname,
+        // A dà l'IP per quel hostname.
         DeviceMdns& dm = fByIp[ipBuf];
+
+        // Hostname principale del device (A record che matcha l'IP sorgente).
         for (const auto& kv : pr.hostnames) {
-            // Cerca un hostname tipo "*.local" - di solito unico.
             if (dm.hostname.empty()
                 && kv.second == ipBuf
                 && kv.first.find(".local") != std::string::npos) {
                 dm.hostname = kv.first;
             }
         }
-        for (const auto& svc : pr.services)
-            dm.services.push_back(svc);
+
+        // Per ogni servizio annunciato, cerca il SRV target -> hostname
+        // -> IP. Se il SRV punta al nostro IP sorgente, e' un servizio
+        // di questo device.
+        for (auto& svc : pr.services) {
+            auto srvIt = pr.srvTargets.find(svc.instanceName);
+            if (srvIt != pr.srvTargets.end())
+                svc.hostname = srvIt->second;
+
+            // Verifica che il servizio appartenga davvero a questo IP.
+            bool ourService = false;
+            if (!svc.hostname.empty()) {
+                auto hostIt = pr.hostnames.find(svc.hostname);
+                if (hostIt != pr.hostnames.end() && hostIt->second == ipBuf)
+                    ourService = true;
+            } else {
+                // Senza SRV nei record additional, assumiamo che sia nostro
+                // (il device che risponde è il proprietario).
+                ourService = true;
+            }
+            if (ourService)
+                dm.services.push_back(svc);
+        }
     }
 
     close(sock);
@@ -293,14 +341,48 @@ std::string MdnsEnricher::TypeFromServices(
     return {};
 }
 
+// Sceglie il nome friendly piu' rappresentativo tra i servizi annunciati.
+// AirPlay/Chromecast spesso hanno un nome utente-friendly (es. "Salotto").
+static const char* kPriorityServices[] = {
+    "_airplay",  "_googlecast", "_hap", "_homekit",
+    "_ipp", "_printer",
+    "_afpovertcp", "_smb",
+    "_workstation", "_ssh",
+    nullptr
+};
+
+static std::string BestFriendlyName(const std::vector<MdnsService>& svc) {
+    for (int i = 0; kPriorityServices[i]; i++) {
+        for (const auto& s : svc) {
+            if (s.serviceType.find(kPriorityServices[i]) != std::string::npos
+                && !s.friendlyName.empty())
+                return s.friendlyName;
+        }
+    }
+    // Fallback: primo nome friendly non vuoto.
+    for (const auto& s : svc) {
+        if (!s.friendlyName.empty())
+            return s.friendlyName;
+    }
+    return {};
+}
+
 void MdnsEnricher::Enrich(Device& device) {
     auto it = fByIp.find(device.ip);
     if (it == fByIp.end()) return;
 
     const DeviceMdns& dm = it->second;
 
-    if (device.mdnsName.empty() && !dm.hostname.empty())
-        device.mdnsName = dm.hostname;
+    // mdnsName: preferisci il nome friendly del servizio prioritario.
+    if (device.mdnsName.empty()) {
+        std::string friendly = BestFriendlyName(dm.services);
+        if (!friendly.empty())
+            device.mdnsName = friendly;
+        else if (!dm.hostname.empty())
+            device.mdnsName = dm.hostname;
+    }
+
+    // hostname: usa il .local del device se non c'e' reverse DNS.
     if (device.hostname.empty() && !dm.hostname.empty())
         device.hostname = dm.hostname;
 

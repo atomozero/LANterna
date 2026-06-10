@@ -31,10 +31,20 @@ static const uint32 kMsgPingStop   = 'pgsp';
 
 // ── PingGraphView ─────────────────────────────────────────────────────
 
+// Palette moderna.
+static const rgb_color kPingBg       = { 252, 253, 254, 255 };
+static const rgb_color kPingGrid     = { 232, 236, 242, 255 };
+static const rgb_color kPingAxis     = { 130, 145, 165, 255 };
+static const rgb_color kPingText     = {  50,  60,  80, 255 };
+static const rgb_color kPingLine     = {  76, 142, 220, 255 };
+static const rgb_color kPingFill     = { 142, 187, 240, 110 }; // semitrasparente
+static const rgb_color kPingDot      = {  46, 110, 195, 255 };
+static const rgb_color kPingLoss     = { 235,  95, 105, 255 };
+
 PingGraphView::PingGraphView()
     : BView("graph", B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE)
 {
-    SetViewColor(250, 250, 250);
+    SetViewColor(kPingBg);
 }
 
 void PingGraphView::AddSample(float latencyMs) {
@@ -77,85 +87,144 @@ int PingGraphView::Loss() const {
 void PingGraphView::Draw(BRect updateRect) {
     BRect bounds = Bounds();
 
-    // Sfondo griglia.
-    SetHighColor(220, 220, 220);
-    for (float y = bounds.top + 20; y < bounds.bottom - 20; y += 30)
-        StrokeLine(BPoint(bounds.left + 40, y),
-                   BPoint(bounds.right, y));
+    SetDrawingMode(B_OP_ALPHA);
+    SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
+
+    // Layout con padding generoso.
+    float padLeft = 46;
+    float padRight = 10;
+    float padTop = 14;
+    float padBottom = 22;
+    float plotX = bounds.left + padLeft;
+    float plotW = bounds.right - plotX - padRight;
+    float plotY = bounds.top + padTop;
+    float plotH = bounds.bottom - plotY - padBottom;
+    if (plotW < 10 || plotH < 10) return;
 
     if (fSamples.empty()) {
-        SetHighColor(150, 150, 150);
-        DrawString("Nessun campione.", BPoint(bounds.left + 50, bounds.top + 30));
+        SetHighColor(kPingAxis);
+        BFont small(be_plain_font);
+        small.SetSize(11);
+        SetFont(&small);
+        DrawString("Nessun campione.",
+                   BPoint(plotX + 12, plotY + plotH / 2));
         return;
     }
 
-    // Calcola scala in base al massimo (clamp a 100ms min per leggibilita').
+    // Calcola scala in base al massimo (clamp a 50ms min per leggibilita').
     float maxMs = std::max(Max(), 50.0f);
 
-    // Asse verticale: latenza in ms.
-    SetHighColor(80, 80, 80);
+    // Griglia orizzontale leggera (4 linee + asse base).
+    SetHighColor(kPingGrid);
+    SetPenSize(1.0f);
+    int nGrid = 4;
+    for (int i = 0; i <= nGrid; i++) {
+        float y = plotY + plotH * i / nGrid;
+        StrokeLine(BPoint(plotX, y), BPoint(plotX + plotW, y));
+    }
+
+    // Etichette asse Y.
     BFont small(be_plain_font);
-    small.SetSize(9);
+    small.SetSize(9.5f);
     SetFont(&small);
+    SetHighColor(kPingAxis);
     char buf[16];
-    snprintf(buf, sizeof(buf), "%.0f", maxMs);
-    DrawString(buf, BPoint(bounds.left + 4, bounds.top + 14));
-    snprintf(buf, sizeof(buf), "%.0f", maxMs / 2);
-    DrawString(buf, BPoint(bounds.left + 4,
-                            bounds.top + (bounds.Height() - 20) / 2 + 10));
-    DrawString("0", BPoint(bounds.left + 4, bounds.bottom - 22));
+    for (int i = 0; i <= nGrid; i++) {
+        float ms = maxMs * (nGrid - i) / nGrid;
+        snprintf(buf, sizeof(buf), "%.0f", ms);
+        float tw = StringWidth(buf);
+        float y = plotY + plotH * i / nGrid;
+        DrawString(buf, BPoint(plotX - 6 - tw, y + 3));
+    }
+    SetHighColor(kPingText);
+    DrawString("ms", BPoint(bounds.left + 4, plotY - 2));
 
-    // Disegna grafico con scorrimento: ogni campione occupa una larghezza
-    // fissa (dx), il piu' recente e' sempre ancorato al bordo destro.
-    // Quando il grafico e' pieno, i campioni piu' vecchi scorrono fuori
-    // dal bordo sinistro.
-    float plotX = bounds.left + 40;
-    float plotW = bounds.right - plotX - 5;
-    float plotY = bounds.top + 10;
-    float plotH = bounds.bottom - plotY - 20;
-
-    if (fSamples.empty()) return;
-
+    // Scorrimento: campioni ancorati a destra, dx fisso.
     const float dx = 6.0f;
     size_t n = fSamples.size();
     size_t maxFit = static_cast<size_t>(plotW / dx);
     if (maxFit == 0) maxFit = 1;
     size_t visible = std::min(n, maxFit);
     size_t startIdx = n - visible;
+    float rightX = bounds.right - padRight;
 
-    float rightX = bounds.right - 5;
+    // Calcola i punti visibili (segmenti separati dove ci sono perdite).
+    struct Pt { float x, y; bool ok; };
+    std::vector<Pt> pts;
+    pts.reserve(visible);
 
-    BPoint prev(-1, -1);
     for (size_t i = startIdx; i < n; i++) {
         float s = fSamples[i];
-        // X = bordo destro - (campioni rimanenti dopo i) * dx
         float x = rightX - (n - 1 - i) * dx;
         if (x < plotX) continue;
 
         if (s < 0) {
-            // Persa: marker rosso, no linea.
-            SetHighColor(220, 60, 60);
-            FillRect(BRect(x - 1, plotY + plotH - 4,
-                            x + 1, plotY + plotH));
-            prev = BPoint(-1, -1);
-            continue;
+            pts.push_back({x, plotY + plotH, false});
+        } else {
+            float y = plotY + plotH - (s / maxMs) * plotH;
+            pts.push_back({x, y, true});
         }
-        float y = plotY + plotH - (s / maxMs) * plotH;
-        BPoint cur(x, y);
-
-        // Linea dal punto precedente.
-        if (prev.x >= 0) {
-            SetHighColor(60, 130, 200);
-            SetPenSize(1.5f);
-            StrokeLine(prev, cur);
-            SetPenSize(1.0f);
-        }
-        // Punto.
-        SetHighColor(40, 100, 180);
-        FillEllipse(BRect(cur.x - 2, cur.y - 2, cur.x + 2, cur.y + 2));
-
-        prev = cur;
     }
+
+    // Disegna area chart (poligono sotto la curva), spezzato dai gap.
+    SetHighColor(kPingFill);
+    size_t segStart = 0;
+    while (segStart < pts.size()) {
+        // Trova fine segmento (run di punti validi).
+        if (!pts[segStart].ok) { segStart++; continue; }
+        size_t segEnd = segStart;
+        while (segEnd + 1 < pts.size() && pts[segEnd + 1].ok) segEnd++;
+
+        if (segEnd > segStart) {
+            // Costruisci poligono: punti curva + chiusura in basso.
+            std::vector<BPoint> poly;
+            poly.reserve(segEnd - segStart + 3);
+            for (size_t i = segStart; i <= segEnd; i++)
+                poly.push_back(BPoint(pts[i].x, pts[i].y));
+            poly.push_back(BPoint(pts[segEnd].x, plotY + plotH));
+            poly.push_back(BPoint(pts[segStart].x, plotY + plotH));
+            FillPolygon(poly.data(), poly.size());
+        }
+        segStart = segEnd + 1;
+    }
+
+    // Linea della curva.
+    SetHighColor(kPingLine);
+    SetPenSize(1.6f);
+    for (size_t i = 1; i < pts.size(); i++) {
+        if (!pts[i].ok || !pts[i - 1].ok) continue;
+        StrokeLine(BPoint(pts[i - 1].x, pts[i - 1].y),
+                   BPoint(pts[i].x, pts[i].y));
+    }
+    SetPenSize(1.0f);
+
+    // Marker per perdite (X rossa).
+    SetHighColor(kPingLoss);
+    SetPenSize(1.5f);
+    for (const Pt& p : pts) {
+        if (p.ok) continue;
+        float yMark = plotY + plotH - 3;
+        StrokeLine(BPoint(p.x - 3, yMark - 3), BPoint(p.x + 3, yMark + 3));
+        StrokeLine(BPoint(p.x - 3, yMark + 3), BPoint(p.x + 3, yMark - 3));
+    }
+    SetPenSize(1.0f);
+
+    // Solo l'ultimo punto evidenziato con un anello.
+    if (!pts.empty() && pts.back().ok) {
+        const Pt& last = pts.back();
+        SetHighColor(255, 255, 255);
+        FillEllipse(BRect(last.x - 3, last.y - 3, last.x + 3, last.y + 3));
+        SetHighColor(kPingDot);
+        SetPenSize(1.8f);
+        StrokeEllipse(BRect(last.x - 3, last.y - 3, last.x + 3, last.y + 3));
+        SetPenSize(1.0f);
+    }
+
+    // Asse X (base) un po' piu' scuro.
+    SetHighColor(kPingAxis);
+    SetPenSize(1.0f);
+    StrokeLine(BPoint(plotX, plotY + plotH),
+               BPoint(plotX + plotW, plotY + plotH));
 }
 
 // ── Worker thread di ping ──────────────────────────────────────────────

@@ -19,8 +19,9 @@ namespace lanterna {
 // Servizio annunciato via DNS-SD (es. _ipp._tcp -> "stampante.local").
 struct MdnsService {
     std::string serviceType;   // es. "_ipp._tcp", "_airplay._tcp"
-    std::string instanceName;  // es. "Salotto AppleTV"
-    std::string hostname;      // es. "appletv.local"
+    std::string instanceName;  // es. "Salotto AppleTV._airplay._tcp.local"
+    std::string friendlyName;  // es. "Salotto AppleTV"  (estratto dal PTR)
+    std::string hostname;      // es. "appletv.local"   (dal record SRV)
 };
 
 class MdnsEnricher : public Enricher {

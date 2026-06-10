@@ -6,6 +6,7 @@
 #include <LayoutBuilder.h>
 #include <ListItem.h>
 #include <ListView.h>
+#include <Region.h>
 #include <ScrollView.h>
 #include <StringView.h>
 
@@ -15,17 +16,20 @@
 
 namespace lanterna {
 
-static const rgb_color kOnlineCol  = {  80, 180,  80, 255 };
-static const rgb_color kOfflineCol = { 200,  80,  80, 255 };
-static const rgb_color kGapCol     = { 220, 220, 220, 255 };
-static const rgb_color kAxisCol    = {  80,  80,  80, 255 };
+// Palette moderna (stile dashboard).
+static const rgb_color kOnlineCol  = {  52, 185, 132, 255 }; // verde menta
+static const rgb_color kOfflineCol = { 235,  95, 105, 255 }; // rosso corallo
+static const rgb_color kGapCol     = { 232, 236, 242, 255 }; // grigio molto chiaro
+static const rgb_color kAxisCol    = { 130, 145, 165, 255 }; // grigio-blu
+static const rgb_color kTextCol    = {  50,  60,  80, 255 }; // testo principale
+static const rgb_color kBgCol      = { 252, 253, 254, 255 }; // sfondo quasi bianco
 
 // ── TimelineView ──────────────────────────────────────────────────────
 
 TimelineView::TimelineView()
     : BView("timeline", B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE)
 {
-    SetViewColor(250, 250, 250);
+    SetViewColor(kBgCol);
 }
 
 void TimelineView::SetEvents(const std::vector<HistoryEvent>& events) {
@@ -36,11 +40,14 @@ void TimelineView::SetEvents(const std::vector<HistoryEvent>& events) {
 void TimelineView::Draw(BRect updateRect) {
     BRect bounds = Bounds();
 
+    SetDrawingMode(B_OP_ALPHA);
+    SetBlendingMode(B_PIXEL_ALPHA, B_ALPHA_OVERLAY);
+
     if (fEvents.empty()) {
-        SetHighColor(150, 150, 150);
+        SetHighColor(kAxisCol);
         SetFont(be_plain_font);
         DrawString(Tr(S_HISTORY_NO_EVENTS),
-                   BPoint(bounds.left + 20, bounds.top + 30));
+                   BPoint(bounds.left + 20, bounds.top + 40));
         return;
     }
 
@@ -49,21 +56,32 @@ void TimelineView::Draw(BRect updateRect) {
     std::time_t tMax = std::time(nullptr);
     if (tMax <= tMin) tMax = tMin + 1;
 
-    float barX = bounds.left + 60;
-    float barW = bounds.right - barX - 20;
-    float barY = bounds.top + 30;
-    float barH = 30;
+    // Layout con padding generoso.
+    float padLeft = 70;
+    float padRight = 20;
+    float padTop = 38;
+    float barX = bounds.left + padLeft;
+    float barW = bounds.right - barX - padRight;
+    float barY = bounds.top + padTop;
+    float barH = 28;
+    float radius = 6;
 
     auto tToX = [&](std::time_t t) -> float {
         double frac = static_cast<double>(t - tMin) / (tMax - tMin);
         return barX + static_cast<float>(frac * barW);
     };
 
-    // Sfondo grigio (intervalli sconosciuti).
-    SetHighColor(kGapCol);
-    FillRect(BRect(barX, barY, barX + barW, barY + barH));
+    BRect barRect(barX, barY, barX + barW, barY + barH);
 
-    // Disegna ogni intervallo come segmento colorato.
+    // Sfondo barra con angoli arrotondati (intervallo sconosciuto).
+    SetHighColor(kGapCol);
+    FillRoundRect(barRect, radius, radius);
+
+    // Segmenti colorati (clip al RoundRect tramite ConstrainClippingRegion).
+    BRegion clipRegion;
+    clipRegion.Include(barRect);
+    ConstrainClippingRegion(&clipRegion);
+
     for (size_t i = 0; i < fEvents.size(); i++) {
         const HistoryEvent& ev = fEvents[i];
         std::time_t end = (i + 1 < fEvents.size())
@@ -77,12 +95,18 @@ void TimelineView::Draw(BRect updateRect) {
         FillRect(BRect(x1, barY, x2, barY + barH));
     }
 
-    // Bordo della barra.
-    SetHighColor(kAxisCol);
-    StrokeRect(BRect(barX, barY, barX + barW, barY + barH));
+    ConstrainClippingRegion(nullptr);
 
-    // Etichette temporali sopra la barra.
-    SetFont(be_plain_font);
+    // Bordo sottile.
+    rgb_color border = { 215, 222, 232, 255 };
+    SetHighColor(border);
+    SetPenSize(1.0f);
+    StrokeRoundRect(barRect, radius, radius);
+
+    // Etichette temporali sopra la barra (font piu' piccolo, grigio).
+    BFont smallFont(be_plain_font);
+    smallFont.SetSize(10.5f);
+    SetFont(&smallFont);
     SetHighColor(kAxisCol);
 
     auto FmtTime = [](std::time_t t, char* buf, size_t bufLen) {
@@ -93,31 +117,38 @@ void TimelineView::Draw(BRect updateRect) {
 
     char buf[32];
     FmtTime(tMin, buf, sizeof(buf));
-    DrawString(buf, BPoint(barX, barY - 5));
+    DrawString(buf, BPoint(barX, barY - 8));
     FmtTime(tMax, buf, sizeof(buf));
     float tw = StringWidth(buf);
-    DrawString(buf, BPoint(barX + barW - tw, barY - 5));
+    DrawString(buf, BPoint(barX + barW - tw, barY - 8));
 
-    // Etichetta sull'asse Y.
+    // Etichetta sull'asse Y (in grassetto, allineata).
+    BFont labelFont(be_bold_font);
+    labelFont.SetSize(10.5f);
+    SetFont(&labelFont);
+    SetHighColor(kTextCol);
     DrawString(Tr(S_HISTORY_STATE),
                BPoint(bounds.left + 10, barY + barH / 2 + 4));
 
-    // Legenda sotto la barra.
-    float lgY = barY + barH + 25;
-    SetHighColor(kOnlineCol);
-    FillRect(BRect(barX, lgY - 8, barX + 14, lgY));
-    SetHighColor(kAxisCol);
-    DrawString(Tr(S_HISTORY_ONLINE), BPoint(barX + 20, lgY));
+    // Legenda con pillole arrotondate.
+    SetFont(&smallFont);
+    float lgY = barY + barH + 28;
+    float pillH = 14;
+    float pillW = 14;
 
-    SetHighColor(kOfflineCol);
-    FillRect(BRect(barX + 100, lgY - 8, barX + 114, lgY));
-    SetHighColor(kAxisCol);
-    DrawString(Tr(S_HISTORY_OFFLINE), BPoint(barX + 120, lgY));
+    auto DrawLegend = [&](float x, rgb_color col, const char* text) {
+        BRect pill(x, lgY - pillH + 2, x + pillW, lgY + 2);
+        SetHighColor(col);
+        FillRoundRect(pill, 4, 4);
+        SetHighColor(kTextCol);
+        DrawString(text, BPoint(x + pillW + 6, lgY));
+        return x + pillW + 6 + StringWidth(text) + 24;
+    };
 
-    SetHighColor(kGapCol);
-    FillRect(BRect(barX + 200, lgY - 8, barX + 214, lgY));
-    SetHighColor(kAxisCol);
-    DrawString(Tr(S_HISTORY_UNKNOWN), BPoint(barX + 220, lgY));
+    float nextX = barX;
+    nextX = DrawLegend(nextX, kOnlineCol, Tr(S_HISTORY_ONLINE));
+    nextX = DrawLegend(nextX, kOfflineCol, Tr(S_HISTORY_OFFLINE));
+    DrawLegend(nextX, kGapCol, Tr(S_HISTORY_UNKNOWN));
 }
 
 // ── HeatmapView ───────────────────────────────────────────────────────
@@ -126,7 +157,7 @@ HeatmapView::HeatmapView()
     : BView("heatmap", B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE),
       fMaxCell(0)
 {
-    SetViewColor(250, 250, 250);
+    SetViewColor(kBgCol);
     for (int d = 0; d < 7; d++)
         for (int h = 0; h < 24; h++)
             fCells[d][h] = 0;
@@ -187,7 +218,7 @@ void HeatmapView::Draw(BRect updateRect) {
     BRect bounds = Bounds();
 
     if (fMaxCell == 0) {
-        SetHighColor(150, 150, 150);
+        SetHighColor(kAxisCol);
         SetFont(be_plain_font);
         DrawString(Tr(S_HISTORY_NO_DATA),
                    BPoint(bounds.left + 20, bounds.top + 30));
@@ -199,51 +230,93 @@ void HeatmapView::Draw(BRect updateRect) {
         Tr(S_DAY_THU), Tr(S_DAY_FRI), Tr(S_DAY_SAT), Tr(S_DAY_SUN)
     };
 
-    float labelW = 40;
-    float topMargin = 25;
+    // Layout con margini piu' generosi e spazio per legenda in basso.
+    float labelW = 38;
+    float topMargin = 20;
+    float bottomLegend = 28;
     float gridX = bounds.left + labelW;
     float gridY = bounds.top + topMargin;
-    float gridW = bounds.right - gridX - 10;
-    float gridH = bounds.bottom - gridY - 10;
+    float gridW = bounds.right - gridX - 14;
+    float gridH = bounds.bottom - gridY - bottomLegend;
     if (gridW < 24 || gridH < 7) return;
 
     float cellW = gridW / 24.0f;
     float cellH = gridH / 7.0f;
+    // Gap costante tra celle (stile GitHub contribution graph).
+    float gap = 2.0f;
+    float radius = 2.5f;
 
-    SetFont(be_plain_font);
+    BFont smallFont(be_plain_font);
+    smallFont.SetSize(10.0f);
+    SetFont(&smallFont);
 
-    // Etichette ore in alto (ogni 3).
-    SetHighColor(80, 80, 80);
+    // Etichette ore in alto (ogni 3) in grigio chiaro.
+    SetHighColor(kAxisCol);
     for (int h = 0; h < 24; h += 3) {
         char buf[8];
         snprintf(buf, sizeof(buf), "%02d", h);
-        DrawString(buf, BPoint(gridX + h * cellW + 1,
-                                gridY - 8));
+        float tw = StringWidth(buf);
+        DrawString(buf, BPoint(gridX + h * cellW + cellW / 2 - tw / 2,
+                                gridY - 6));
     }
 
-    // Celle.
+    // Celle con corner radius e gap (palette verde stile dashboard).
     for (int d = 0; d < 7; d++) {
         for (int h = 0; h < 24; h++) {
             float frac = static_cast<float>(fCells[d][h])
                        / static_cast<float>(fMaxCell);
-            // Gradiente da grigio chiaro a verde scuro.
             rgb_color c;
-            c.red   = static_cast<uint8>(245 - 165 * frac);
-            c.green = static_cast<uint8>(245 -  80 * frac);
-            c.blue  = static_cast<uint8>(245 - 165 * frac);
-            c.alpha = 255;
+            if (frac == 0) {
+                // Cella vuota: grigio molto chiaro.
+                c = {235, 239, 245, 255};
+            } else {
+                // Gradiente verde menta: chiaro -> scuro.
+                c.red   = static_cast<uint8>(200 - 148 * frac);
+                c.green = static_cast<uint8>(232 -  47 * frac);
+                c.blue  = static_cast<uint8>(214 - 82  * frac);
+                c.alpha = 255;
+            }
             SetHighColor(c);
-            BRect cell(gridX + h * cellW + 1,
-                       gridY + d * cellH + 1,
-                       gridX + (h + 1) * cellW - 1,
-                       gridY + (d + 1) * cellH - 1);
-            FillRect(cell);
+            BRect cell(gridX + h * cellW + gap,
+                       gridY + d * cellH + gap,
+                       gridX + (h + 1) * cellW - gap,
+                       gridY + (d + 1) * cellH - gap);
+            FillRoundRect(cell, radius, radius);
         }
-        // Etichetta giorno a sinistra.
-        SetHighColor(80, 80, 80);
-        DrawString(days[d], BPoint(bounds.left + 5,
+        // Etichetta giorno a sinistra in grigio.
+        SetHighColor(kAxisCol);
+        DrawString(days[d], BPoint(bounds.left + 6,
                                     gridY + d * cellH + cellH / 2 + 4));
     }
+
+    // Legenda gradiente in basso a destra: "meno" → quadratini → "piu'".
+    float lgY = bounds.bottom - 14;
+    float lgCellW = 12;
+    float lgGap = 3;
+    int   lgSteps = 5;
+    float lgTotalW = lgSteps * (lgCellW + lgGap) - lgGap;
+    float lgX = bounds.right - lgTotalW - 38;
+
+    SetHighColor(kAxisCol);
+    DrawString("meno", BPoint(lgX - StringWidth("meno") - 6, lgY + 9));
+    for (int i = 0; i < lgSteps; i++) {
+        float frac = static_cast<float>(i) / (lgSteps - 1);
+        rgb_color c;
+        if (i == 0) {
+            c = {235, 239, 245, 255};
+        } else {
+            c.red   = static_cast<uint8>(200 - 148 * frac);
+            c.green = static_cast<uint8>(232 -  47 * frac);
+            c.blue  = static_cast<uint8>(214 -  82 * frac);
+            c.alpha = 255;
+        }
+        SetHighColor(c);
+        BRect cell(lgX + i * (lgCellW + lgGap), lgY,
+                   lgX + i * (lgCellW + lgGap) + lgCellW, lgY + 12);
+        FillRoundRect(cell, 2.5f, 2.5f);
+    }
+    SetHighColor(kAxisCol);
+    DrawString("pi\xc3\xb9", BPoint(lgX + lgTotalW + 6, lgY + 9));
 }
 
 // ── HistoryWindow ─────────────────────────────────────────────────────
