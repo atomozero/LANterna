@@ -242,7 +242,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     // S_EXPORTED
     { "Esportato: %s", "Exported: %s", "Exportado: %s", "Exportiert: %s", "\xe3\x82\xa8\xe3\x82\xaf\xe3\x82\xb9\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88: %s" },
     // S_ERROR_CREATE_FILE
-    { "Errore: impossibile creare il file.", "Error: cannot create file.", "Error: no se puede crear.", "Fehler: Datei nicht erstellt.", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc" },
+    { "Errore: impossibile creare il file.", "Error: cannot create file.", "Error: no se puede crear el archivo.", "Fehler: Datei nicht erstellt.", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc: \xe3\x83\x95\xe3\x82\xa1\xe3\x82\xa4\xe3\x83\xab\xe3\x82\x92\xe4\xbd\x9c\xe6\x88\x90\xe3\x81\xa7\xe3\x81\x8d\xe3\x81\xbe\xe3\x81\x9b\xe3\x82\x93" },
     // S_COL_IP
     { "IP", "IP", "IP", "IP", "IP" },
     // S_COL_NAME
@@ -298,7 +298,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     // S_HTTP_SERVICE
     { "HTTP servizio", "HTTP service", "HTTP servicio", "HTTP Dienst", "HTTP\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x93\xe3\x82\xb9" },
     // S_PRINTER_PANEL
-    { "Pannello stampante", "Printer panel", "Panel impresora", "Druckerverwaltung", "\xe3\x83\x97\xe3\x83\xaa\xe3\x83\xb3\xe3\x82\xbf" },
+    { "Pannello stampante", "Printer panel", "Panel impresora", "Druckerverwaltung", "\xe3\x83\x97\xe3\x83\xaa\xe3\x83\xb3\xe3\x82\xbf\xe7\xae\xa1\xe7\x90\x86" },
     // S_SSH_TERMINAL
     { "Terminale SSH", "SSH terminal", "Terminal SSH", "SSH-Terminal", "SSH\xe7\xab\xaf\xe6\x9c\xab" },
     // S_SMB_SHARE
@@ -359,15 +359,28 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
       "https://github.com/atomozero/LANterna\n\n"
       "MIT License",
       "LANterna para Haiku v1.0 beta 1\n\n"
-      "Esc\xc3\xa1ner de red local nativo.\n\n"
+      "Esc\xc3\xa1ner de red local nativo.\n"
+      "Descubre dispositivos LAN mediante sondas TCP,\n"
+      "enriquece con MAC, fabricante OUI, DNS y tipo.\n"
+      "Persistencia en atributos BFS nativos.\n\n"
       "por atomozero\n"
+      "https://github.com/atomozero/LANterna\n\n"
       "Licencia MIT",
       "LANterna f\xc3\xbcr Haiku v1.0 Beta 1\n\n"
-      "Nativer lokaler Netzwerkscanner.\n\n"
+      "Nativer lokaler Netzwerkscanner.\n"
+      "Erkennt LAN-Ger\xc3\xa4te mittels TCP-Probes,\n"
+      "reichert mit MAC, OUI-Hersteller, DNS und Typ an.\n"
+      "Persistenz \xc3\xbc" "ber native BFS-Attribute.\n\n"
       "von atomozero\n"
+      "https://github.com/atomozero/LANterna\n\n"
       "MIT-Lizenz",
       "LANterna for Haiku v1.0 beta 1\n\n"
+      "\xe3\x83\x8d\xe3\x82\xa4\xe3\x83\x86\xe3\x82\xa3\xe3\x83\x96LAN\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\x8a\xe3\x83\xbc\xe3\x80\x82\n"
+      "TCP\xe3\x83\x97\xe3\x83\xad\xe3\x83\xbc\xe3\x83\x96\xe3\x81\xa7LAN\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x82\x92\xe7\x99\xba\xe8\xa6\x8b\xe3\x81\x97\xe3\x80\x81\n"
+      "MAC\xe3\x80\x81OUI\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x80\xe3\x83\xbc\xe3\x80\x81" "DNS\xe3\x80\x81\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\x97\xe3\x81\xa7\xe6\x8b\xa1\xe5\xbc\xb5\xe3\x80\x82\n"
+      "BFS\xe5\xb1\x9e\xe6\x80\xa7\xe3\x81\xab\xe6\xb0\xb8\xe7\xb6\x9a\xe5\x8c\x96\xe3\x80\x82\n\n"
       "by atomozero\n"
+      "https://github.com/atomozero/LANterna\n\n"
       "MIT License" },
     // S_TYPE_LOCALSEND
     { "LocalSend", "LocalSend", "LocalSend", "LocalSend", "LocalSend" },
@@ -388,19 +401,19 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     // S_TOPOLOGY
     { "Topologia", "Topology", "Topolog\xc3\xad" "a", "Topologie", "\xe3\x83\x88\xe3\x83\x9d\xe3\x83\xad\xe3\x82\xb8\xe3\x83\xbc" },
     // S_TOPOLOGY_TITLE
-    { "Topologia di rete", "Network topology", "Topolog\xc3\xad" "a de red", "Netzwerktopologie", "\xe3\x83\x8d\xe3\x83\x83\xe3\x83\x88\xe3\x83\xaf\xe3\x83\xbc\xe3\x82\xaf" },
+    { "Topologia di rete", "Network topology", "Topolog\xc3\xad" "a de red", "Netzwerktopologie", "\xe3\x83\x8d\xe3\x83\x83\xe3\x83\x88\xe3\x83\xaf\xe3\x83\xbc\xe3\x82\xaf\xe3\x83\x88\xe3\x83\x9d\xe3\x83\xad\xe3\x82\xb8\xe3\x83\xbc" },
     // S_TOPOLOGY_CLICK_NODE
     { "Clicca su un nodo per vedere i dettagli.\nTrascina i nodi per riorganizzare la mappa.",
       "Click a node for details.\nDrag nodes to rearrange the map.",
       "Haga clic en un nodo para ver detalles.\nArrastre los nodos para reorganizar.",
       "Klicke einen Knoten f\xc3\xbcr Details.\nKnoten zum Umordnen ziehen.",
-      "\xe3\x83\x8e\xe3\x83\xbc\xe3\x83\x89\xe3\x82\x92\xe3\x82\xaf\xe3\x83\xaa\xe3\x83\x83\xe3\x82\xaf\xe3\x81\x97\xe3\x81\xa6\xe8\xa9\xb3\xe7\xb4\xb0\xe8\xa1\xa8\xe7\xa4\xba" },
+      "\xe3\x83\x8e\xe3\x83\xbc\xe3\x83\x89\xe3\x82\x92\xe3\x82\xaf\xe3\x83\xaa\xe3\x83\x83\xe3\x82\xaf\xe3\x81\x97\xe3\x81\xa6\xe8\xa9\xb3\xe7\xb4\xb0\xe3\x82\x92\xe8\xa1\xa8\xe7\xa4\xba\xe3\x80\x82\n\xe3\x83\x8e\xe3\x83\xbc\xe3\x83\x89\xe3\x82\x92\xe3\x83\x89\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xb0\xe3\x81\x97\xe3\x81\xa6\xe9\x85\x8d\xe7\xbd\xae\xe5\xa4\x89\xe6\x9b\xb4\xe3\x80\x82" },
     // S_TOPOLOGY_NO_DEVICE
     { "Esegui una scansione per visualizzare la topologia",
       "Run a scan to see the topology",
       "Ejecute un escaneo para ver la topolog\xc3\xad" "a",
       "F\xc3\xbchre einen Scan aus um die Topologie zu sehen",
-      "\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe5\xae\x9f\xe8\xa1\x8c" },
+      "\xe3\x83\x88\xe3\x83\x9d\xe3\x83\xad\xe3\x82\xb8\xe3\x83\xbc\xe3\x82\x92\xe8\xa1\xa8\xe7\xa4\xba\xe3\x81\x99\xe3\x82\x8b\xe3\x81\xab\xe3\x81\xaf\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe3\x82\x92\xe5\xae\x9f\xe8\xa1\x8c\xe3\x81\x97\xe3\x81\xa6\xe3\x81\x8f\xe3\x81\xa0\xe3\x81\x95\xe3\x81\x84" },
     // S_GATEWAY
     { "Gateway", "Gateway", "Puerta de enlace", "Gateway", "\xe3\x82\xb2\xe3\x83\xbc\xe3\x83\x88\xe3\x82\xa6\xe3\x82\xa7\xe3\x82\xa4" },
     // S_TOPOLOGY_NO_DEVICES_LABEL
@@ -452,7 +465,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     // S_NOTIF_OFFLINE
     { "Device offline", "Device offline", "Dispositivo offline", "Ger\xc3\xa4t offline", "\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x82\xaa\xe3\x83\x95" },
     // S_NOTIF_BLACKLIST
-    { "Device in blacklist rilevato", "Blacklisted device detected", "Dispositivo en lista negra detectado", "Blacklist-Ger\xc3\xa4t erkannt", "\xe3\x83\x96\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xaf\xe3\x83\xaa\xe3\x82\xb9\xe3\x83\x88" },
+    { "Device in blacklist rilevato", "Blacklisted device detected", "Dispositivo en lista negra detectado", "Blacklist-Ger\xc3\xa4t erkannt", "\xe3\x83\x96\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xaf\xe3\x83\xaa\xe3\x82\xb9\xe3\x83\x88\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe6\xa4\x9c\xe5\x87\xba" },
     // S_NOTIF_NO_RESPONSE
     { "non risponde piu'.", "no longer responding.", "ya no responde.", "antwortet nicht mehr.", "\xe5\xbf\x9c\xe7\xad\x94\xe3\x81\xaa\xe3\x81\x97" },
     // S_WOL_SENT
@@ -474,7 +487,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     // S_TRACE_DONE
     { "Completato.", "Done.", "Completado.", "Fertig.", "\xe5\xae\x8c\xe4\xba\x86" },
     // S_TRACE_ERROR
-    { "Errore avvio traceroute", "Cannot start traceroute", "Error al iniciar", "Fehler beim Start", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc" },
+    { "Errore avvio traceroute", "Cannot start traceroute", "Error al iniciar traceroute", "Fehler beim Start von Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9\xe9\x96\x8b\xe5\xa7\x8b\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc" },
     // S_TRACE_START
     { "Avvia", "Start", "Iniciar", "Start", "\xe9\x96\x8b\xe5\xa7\x8b" },
     // S_TRACE_STOP
@@ -482,7 +495,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     // S_CTX_TRACEROUTE
     { "Traceroute", "Traceroute", "Traceroute", "Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9" },
     // S_ALL_INTERFACES
-    { "Tutte le interfacce", "All interfaces", "Todas las interfaces", "Alle Schnittstellen", "\xe3\x81\x99\xe3\x81\xb9\xe3\x81\xa6" },
+    { "Tutte le interfacce", "All interfaces", "Todas las interfaces", "Alle Schnittstellen", "\xe3\x81\x99\xe3\x81\xb9\xe3\x81\xa6\xe3\x81\xae\xe3\x82\xa4\xe3\x83\xb3\xe3\x82\xbf\xe3\x83\xbc\xe3\x83\x95\xe3\x82\xa7\xe3\x83\xbc\xe3\x82\xb9" },
     // S_DNS_TITLE
     { "DNS lookup", "DNS lookup", "B\xc3\xbasqueda DNS", "DNS-Abfrage", "DNS\xe6\xa4\x9c\xe7\xb4\xa2" },
     // S_DNS_NAME
@@ -502,7 +515,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     // S_DNS_EMPTY
     { "Inserisci un nome.", "Enter a name.", "Ingrese un nombre.", "Namen eingeben.", "\xe5\x90\x8d\xe5\x89\x8d\xe5\xbf\x85\xe9\xa0\x88" },
     // S_DNS_ERROR
-    { "Errore.", "Error.", "Error.", "Fehler.", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc" },
+    { "Errore.", "Error.", "Error.", "Fehler.", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc\xe3\x80\x82" },
     // S_DNS_NO_RESULT
     { "Nessun risultato.", "No results.", "Sin resultados.", "Keine Treffer.", "\xe7\xb5\x90\xe6\x9e\x9c\xe3\x81\xaa\xe3\x81\x97" },
     // S_DNS_FOUND
@@ -560,7 +573,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
       "Weekly heatmap (intensity = time online per hour)",
       "Mapa de calor semanal (intensidad = tiempo online por hora)",
       "Wochen-Heatmap (Intensit\xc3\xa4t = Online-Zeit pro Stunde)",
-      "\xe9\x80\xb1\xe9\x96\x93\xe3\x83\x92\xe3\x83\xbc\xe3\x83\x88\xe3\x83\x9e\xe3\x83\x83\xe3\x83\x97" },
+      "\xe9\x80\xb1\xe9\x96\x93\xe3\x83\x92\xe3\x83\xbc\xe3\x83\x88\xe3\x83\x9e\xe3\x83\x83\xe3\x83\x97 (\xe6\xbf\x83\xe5\xba\xa6 = \xe6\x99\x82\xe9\x96\x93\xe5\xb8\xaf\xe3\x81\x94\xe3\x81\xa8\xe3\x81\xae\xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3\xe6\x99\x82\xe9\x96\x93)" },
     // S_HISTORY_LOG
     { "Log eventi", "Event log", "Registro de eventos", "Ereignisprotokoll", "\xe3\x82\xa4\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x88\xe3\x83\xad\xe3\x82\xb0" },
     // S_HISTORY_NO_EVENTS
@@ -588,7 +601,7 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
       "%d events: %d online, %d offline",
       "%d eventos: %d online, %d offline",
       "%d Ereignisse: %d online, %d offline",
-      "%d\xe4\xbb\xb6" },
+      "%d\xe4\xbb\xb6: \xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3%d, \xe3\x82\xaa\xe3\x83\x95\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3%d" },
     // S_DAY_MON
     { "Lun", "Mon", "Lun", "Mo", "\xe6\x9c\x88" },
     // S_DAY_TUE
