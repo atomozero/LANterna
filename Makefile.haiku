@@ -16,7 +16,7 @@ BSD_HDR  := /boot/system/develop/headers/bsd
 CXXFLAGS ?= -std=c++17 -Wall -O2 -Isrc -D_DEFAULT_SOURCE -MMD -MP \
             -I$(PRIVATE)/interface -I$(PRIVATE)/shared -I$(BSD_HDR)
 LIBS     := -lbe -lnetwork -lbsd -lcolumnlistview -lshared -ltracker \
-            -lssl -lcrypto
+            -lbnetapi -lssl -lcrypto
 APP      := LANterna
 
 CORE_SRCS := \
@@ -53,6 +53,7 @@ UI_SRCS := \
   src/ui/TopologyView.cpp \
   src/ui/TracerouteWindow.cpp \
   src/ui/DnsLookupWindow.cpp \
+  src/ui/WifiInfo.cpp \
   src/ui/NetworkReplicant.cpp \
   src/ui/main_gui.cpp
 

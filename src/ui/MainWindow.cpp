@@ -38,6 +38,7 @@
 #include "TopologyView.h"
 #include "TracerouteWindow.h"
 #include "DnsLookupWindow.h"
+#include "WifiInfo.h"
 #include "model/DeviceHistory.h"
 #include "model/DevicePersistence.h"
 #include "net/WakeOnLan.h"
@@ -200,6 +201,18 @@ MainWindow::MainWindow()
             BString label;
             label.SetToFormat("%s  (%s/%d)", li.name.c_str(),
                               Ipv4ToString(li.address).c_str(), prefix);
+            // Info wireless: SSID + segnale se disponibili.
+            WifiInfo wifi = GetWifiInfo(li.name.c_str());
+            if (wifi.isWireless && wifi.ssid.Length() > 0) {
+                BString extra;
+                if (wifi.signalPercent >= 0)
+                    extra.SetToFormat("  -  %s (%d%%)",
+                                       wifi.ssid.String(),
+                                       wifi.signalPercent);
+                else
+                    extra.SetToFormat("  -  %s", wifi.ssid.String());
+                label.Append(extra);
+            }
             BMessage* msg = new BMessage(kMsgInterfacePicked);
             msg->AddInt32("index", static_cast<int32>(i));
             BMenuItem* item = new BMenuItem(label.String(), msg);
