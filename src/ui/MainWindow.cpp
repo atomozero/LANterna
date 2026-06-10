@@ -36,6 +36,7 @@
 #include "ScanRunner.h"
 #include "SettingsWindow.h"
 #include "TopologyView.h"
+#include "TracerouteWindow.h"
 #include "model/DeviceHistory.h"
 #include "model/DevicePersistence.h"
 #include "net/WakeOnLan.h"
@@ -239,12 +240,12 @@ MainWindow::MainWindow()
         kColTags);
 
     // Filtri per colonna: ricerca case-insensitive su sottostringa.
-    fFilterIp     = new BTextControl("flt_ip",     "IP:",          "", nullptr);
-    fFilterHost   = new BTextControl("flt_host",   "Nome:",        "", nullptr);
-    fFilterMac    = new BTextControl("flt_mac",    "MAC:",         "", nullptr);
-    fFilterVendor = new BTextControl("flt_vendor", "Produttore:",  "", nullptr);
-    fFilterType   = new BTextControl("flt_type",   "Tipo:",        "", nullptr);
-    fFilterPorts  = new BTextControl("flt_ports",  "Porte:",       "", nullptr);
+    fFilterIp     = new BTextControl("flt_ip",     Tr(S_FILTER_IP),     "", nullptr);
+    fFilterHost   = new BTextControl("flt_host",   Tr(S_FILTER_NAME),   "", nullptr);
+    fFilterMac    = new BTextControl("flt_mac",    Tr(S_FILTER_MAC),    "", nullptr);
+    fFilterVendor = new BTextControl("flt_vendor", Tr(S_FILTER_VENDOR), "", nullptr);
+    fFilterType   = new BTextControl("flt_type",   Tr(S_FILTER_TYPE),   "", nullptr);
+    fFilterPorts  = new BTextControl("flt_ports",  Tr(S_FILTER_PORTS),  "", nullptr);
     fFilterTags   = new BTextControl("flt_tags",   Tr(S_FILTER_TAGS), "", nullptr);
 
     // Invia notifica ad ogni modifica per filtraggio live.
@@ -401,6 +402,18 @@ void MainWindow::MessageReceived(BMessage* message) {
                 DeviceDetailsWindow* dw = new DeviceDetailsWindow(
                     *sel, BMessenger(this));
                 dw->Show();
+            }
+            break;
+        }
+        case kMsgCtxTraceroute:
+        {
+            const DeviceInfo* sel = _SelectedDeviceInfo();
+            if (sel) {
+                BString name = sel->alias.Length() > 0
+                    ? sel->alias
+                    : (sel->host.Length() > 0 ? sel->host : sel->ip);
+                TracerouteWindow* tw = new TracerouteWindow(sel->ip, name);
+                tw->Show();
             }
             break;
         }
@@ -612,27 +625,28 @@ void MainWindow::_StartScan() {
 }
 
 // Descrizione e URL per ciascuna porta azionabile.
+// labelId punta alla tabella Tr(): risolto a runtime in base alla lingua.
 struct PortAction {
     int         port;
-    const char* label;     // descrizione mostrata nella riga figlia
+    StringId    labelId;   // descrizione mostrata nella riga figlia
     const char* scheme;    // schema URL (nullptr = non azionabile)
     bool        showPort;  // true se va aggiunto :port all'URL
 };
 
 static const PortAction kPortActions[] = {
-    {   80, "HTTP",              "http",  false },
-    {  443, "HTTPS",             "https", false },
-    { 8080, "HTTP alternativo",  "http",  true  },
-    { 5000, "HTTP servizio",     "http",  true  },
-    {  631, "Pannello stampante","http",  true  },
-    {   22, "Terminale SSH",     "ssh",   false },
-    {  445, "Condivisione SMB",  "smb",   false },
-    {  139, "Condivisione SMB",  "smb",   false },
-    {  548, "Condivisione AFP",  "afp",   false },
-    { 3389, "Desktop remoto",    "rdp",   false },
-    { 9100, "Stampa RAW",       nullptr,  false },
-    { 5353, "mDNS",             nullptr,  false },
-    {53317, "LocalSend",        nullptr,  false },
+    {   80, S_HTTP,               "http",  false },
+    {  443, S_HTTPS,              "https", false },
+    { 8080, S_HTTP_ALT,           "http",  true  },
+    { 5000, S_HTTP_SERVICE,       "http",  true  },
+    {  631, S_SVC_PRINTER_PANEL,  "http",  true  },
+    {   22, S_SVC_SSH_TERMINAL,   "ssh",   false },
+    {  445, S_SVC_SMB_SHARE,      "smb",   false },
+    {  139, S_SVC_SMB_SHARE,      "smb",   false },
+    {  548, S_SVC_AFP_SHARE,      "afp",   false },
+    { 3389, S_SVC_REMOTE_DESKTOP, "rdp",   false },
+    { 9100, S_SVC_RAW_PRINT,     nullptr,  false },
+    { 5353, S_MDNS,              nullptr,  false },
+    {53317, S_LOCALSEND,         nullptr,  false },
 };
 
 static const PortAction* FindPortAction(int port) {
@@ -769,8 +783,9 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
         BString label;
         if (pa->scheme != nullptr) {
             BString url = BuildUrl(dev.ip.String(), *pa);
-            label.SetToFormat("%s  %s  (doppio click per aprire)",
-                              pa->label, url.String());
+            label.SetToFormat("%s  %s  %s",
+                              Tr(pa->labelId), url.String(),
+                              Tr(S_DOUBLE_CLICK_OPEN));
 
             ActionRow* child = new ActionRow(url.String());
             const char* t = label.String();
@@ -785,7 +800,8 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
             child->SetField(new ColoredField(t, kActionBg, kActionFg, false, true), kColTags);
             fListView->AddRow(child, parent);
         } else {
-            label.SetToFormat("%s (porta %d)", pa->label, pa->port);
+            label.SetToFormat("%s (%s %d)", Tr(pa->labelId),
+                              Tr(S_PORT), pa->port);
 
             BRow* child = new BRow();
             const char* t = label.String();
@@ -954,6 +970,8 @@ void MainWindow::_ShowContextMenu(BPoint where) {
         menu->AddItem(new BMenuItem(Tr(S_CTX_PING),
                                     new BMessage(kMsgCtxPing)));
     }
+    menu->AddItem(new BMenuItem(Tr(S_CTX_TRACEROUTE),
+                                new BMessage(kMsgCtxTraceroute)));
 
     menu->AddSeparatorItem();
     menu->AddItem(new BMenuItem(Tr(S_CTX_DETAILS),

@@ -100,6 +100,23 @@ enum StringId {
     S_TOPOLOGY_CLICK_NODE,
     S_TOPOLOGY_NO_DEVICE,
     S_GATEWAY,
+    S_TOPOLOGY_NO_DEVICES_LABEL,
+    // Labels riepilogo
+    S_PIVOT_NONE,
+    S_PIVOT_UNKNOWN,
+    S_PIVOT_GROUP_BY,
+    // Servizi (label porte azione)
+    S_SVC_PRINTER_PANEL,
+    S_SVC_SSH_TERMINAL,
+    S_SVC_SMB_SHARE,
+    S_SVC_AFP_SHARE,
+    S_SVC_REMOTE_DESKTOP,
+    S_SVC_RAW_PRINT,
+    // Heatmap
+    S_HEATMAP_LESS,
+    S_HEATMAP_MORE,
+    // Misc
+    S_NO_SAMPLES,
     // Menu contestuale
     S_CTX_COPY_IP,
     S_CTX_COPY_MAC,
@@ -118,6 +135,18 @@ enum StringId {
     // Wake-on-LAN
     S_WOL_SENT,
     S_WOL_ERROR,
+    // Traceroute
+    S_TRACE_TITLE,
+    S_TRACE_HOP,
+    S_TRACE_RTT,
+    S_TRACE_READY,
+    S_TRACE_RUNNING,
+    S_TRACE_STOPPED,
+    S_TRACE_DONE,
+    S_TRACE_ERROR,
+    S_TRACE_START,
+    S_TRACE_STOP,
+    S_CTX_TRACEROUTE,
     // Ping
     S_PING_TITLE,
     S_PING_WAITING,
@@ -358,6 +387,32 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
       "\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe5\xae\x9f\xe8\xa1\x8c" },
     // S_GATEWAY
     { "Gateway", "Gateway", "Puerta de enlace", "Gateway", "\xe3\x82\xb2\xe3\x83\xbc\xe3\x83\x88\xe3\x82\xa6\xe3\x82\xa7\xe3\x82\xa4" },
+    // S_TOPOLOGY_NO_DEVICES_LABEL
+    { "Nessun device", "No devices", "Sin dispositivos", "Keine Ger\xc3\xa4te", "\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x81\xaa\xe3\x81\x97" },
+    // S_PIVOT_NONE
+    { "(nessuna)", "(none)", "(ninguna)", "(keine)", "(\xe3\x81\xaa\xe3\x81\x97)" },
+    // S_PIVOT_UNKNOWN
+    { "(sconosciuto)", "(unknown)", "(desconocido)", "(unbekannt)", "(\xe4\xb8\x8d\xe6\x98\x8e)" },
+    // S_PIVOT_GROUP_BY
+    { "Raggruppa per:", "Group by:", "Agrupar por:", "Gruppieren nach:", "\xe3\x82\xb0\xe3\x83\xab\xe3\x83\xbc\xe3\x83\x97:" },
+    // S_SVC_PRINTER_PANEL
+    { "Pannello stampante", "Printer panel", "Panel impresora", "Druckerverwaltung", "\xe3\x83\x97\xe3\x83\xaa\xe3\x83\xb3\xe3\x82\xbf\xe7\xae\xa1\xe7\x90\x86" },
+    // S_SVC_SSH_TERMINAL
+    { "Terminale SSH", "SSH terminal", "Terminal SSH", "SSH-Terminal", "SSH\xe7\xab\xaf\xe6\x9c\xab" },
+    // S_SVC_SMB_SHARE
+    { "Condivisione SMB", "SMB share", "Compartir SMB", "SMB-Freigabe", "SMB\xe5\x85\xb1\xe6\x9c\x89" },
+    // S_SVC_AFP_SHARE
+    { "Condivisione AFP", "AFP share", "Compartir AFP", "AFP-Freigabe", "AFP\xe5\x85\xb1\xe6\x9c\x89" },
+    // S_SVC_REMOTE_DESKTOP
+    { "Desktop remoto", "Remote desktop", "Escritorio remoto", "Remotedesktop", "\xe3\x83\xaa\xe3\x83\xa2\xe3\x83\xbc\xe3\x83\x88" },
+    // S_SVC_RAW_PRINT
+    { "Stampa RAW", "RAW print", "Impresi\xc3\xb3n RAW", "RAW-Druck", "RAW\xe5\x8d\xb0\xe5\x88\xb7" },
+    // S_HEATMAP_LESS
+    { "meno", "less", "menos", "weniger", "\xe5\xb0\x91" },
+    // S_HEATMAP_MORE
+    { "pi\xc3\xb9", "more", "m\xc3\xa1s", "mehr", "\xe5\xa4\x9a" },
+    // S_NO_SAMPLES
+    { "Nessun campione.", "No samples.", "Sin muestras.", "Keine Daten.", "\xe3\x82\xb5\xe3\x83\xb3\xe3\x83\x97\xe3\x83\xab\xe3\x81\xaa\xe3\x81\x97" },
     // S_CTX_COPY_IP
     { "Copia IP", "Copy IP", "Copiar IP", "IP kopieren", "IP\xe3\x82\xb3\xe3\x83\x94\xe3\x83\xbc" },
     // S_CTX_COPY_MAC
@@ -388,6 +443,28 @@ static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
     { "Magic packet inviato a %s", "Magic packet sent to %s", "Magic packet enviado a %s", "Magic Packet an %s gesendet", "Magic packet \xe9\x80\x81\xe4\xbf\xa1: %s" },
     // S_WOL_ERROR
     { "Errore invio WoL a %s", "WoL send error to %s", "Error envio WoL a %s", "WoL-Fehler an %s", "WoL\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc: %s" },
+    // S_TRACE_TITLE
+    { "Traceroute", "Traceroute", "Traceroute", "Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9" },
+    // S_TRACE_HOP
+    { "Hop", "Hop", "Salto", "Hop", "\xe3\x83\x9b\xe3\x83\x83\xe3\x83\x97" },
+    // S_TRACE_RTT
+    { "RTT", "RTT", "RTT", "RTT", "RTT" },
+    // S_TRACE_READY
+    { "Pronto.", "Ready.", "Listo.", "Bereit.", "\xe6\xba\x96\xe5\x82\x99" },
+    // S_TRACE_RUNNING
+    { "Tracciamento in corso...", "Tracing route...", "Trazando ruta...", "Route wird verfolgt...", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9\xe4\xb8\xad" },
+    // S_TRACE_STOPPED
+    { "Fermato.", "Stopped.", "Detenido.", "Gestoppt.", "\xe5\x81\x9c\xe6\xad\xa2" },
+    // S_TRACE_DONE
+    { "Completato.", "Done.", "Completado.", "Fertig.", "\xe5\xae\x8c\xe4\xba\x86" },
+    // S_TRACE_ERROR
+    { "Errore avvio traceroute", "Cannot start traceroute", "Error al iniciar", "Fehler beim Start", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc" },
+    // S_TRACE_START
+    { "Avvia", "Start", "Iniciar", "Start", "\xe9\x96\x8b\xe5\xa7\x8b" },
+    // S_TRACE_STOP
+    { "Ferma", "Stop", "Detener", "Stopp", "\xe5\x81\x9c\xe6\xad\xa2" },
+    // S_CTX_TRACEROUTE
+    { "Traceroute", "Traceroute", "Traceroute", "Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9" },
     // S_PING_TITLE
     { "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u" },
     // S_PING_WAITING

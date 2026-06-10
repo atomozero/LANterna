@@ -28,6 +28,7 @@ enum {
     kMsgCtxPing         = 'cxpg', // menu contestuale: avvia ping continuo
     kMsgCtxDetails      = 'cxdt', // menu contestuale: apri finestra dettagli
     kMsgCtxHistory      = 'cxhs', // menu contestuale: apri storico
+    kMsgCtxTraceroute   = 'cxtr', // menu contestuale: traceroute
     kMsgDeviceUpdated   = 'dvup', // DeviceDetailsWindow -> MainWindow: salva
     kMsgShowTopology    = 'topo', // UI -> finestra: mostra topologia
     kMsgReplicantUpdate = 'rpup', // MainWindow -> replicant: aggiorna conteggio

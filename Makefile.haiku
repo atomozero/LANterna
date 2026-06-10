@@ -50,6 +50,7 @@ UI_SRCS := \
   src/ui/HistoryWindow.cpp \
   src/ui/SettingsWindow.cpp \
   src/ui/TopologyView.cpp \
+  src/ui/TracerouteWindow.cpp \
   src/ui/NetworkReplicant.cpp \
   src/ui/main_gui.cpp
 
