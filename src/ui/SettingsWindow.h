@@ -16,7 +16,6 @@ class BTextControl;
 namespace lanterna {
 
 struct AppSettings {
-    std::string language;
     std::string ports;       // es. "22,80,443,445"
     int         timeoutMs  = 400;
     int         maxInFlight = 256;
@@ -25,7 +24,6 @@ struct AppSettings {
 
     void Load(const std::string& path);
     void Save(const std::string& path) const;
-    void DetectSystemLanguage();
 
     static std::string DefaultPath();
 };
@@ -40,8 +38,6 @@ private:
     AppSettings*   fSettings;
     BWindow*       fTarget;
 
-    BPopUpMenu*    fLangMenu    = nullptr;
-    BMenuField*    fLangField   = nullptr;
     BTextControl*  fPortsField  = nullptr;
     BTextControl*  fTimeoutField = nullptr;
     BTextControl*  fConcField   = nullptr;

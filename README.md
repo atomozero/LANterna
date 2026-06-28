@@ -81,11 +81,14 @@ If LANterna saves you time, consider supporting development: [![Buy Me A Coffee]
   Deskbar clock.
 * **Wake-on-LAN** — fire a magic packet at any known MAC straight
   from the row context menu.
-* **Multilingual UI** — every visible string goes through the
-  `Tr(StringId)` table in `src/ui/Locale.h`; Italian, English,
-  Spanish, German and Japanese ship today. The active language is
-  auto-detected from the Haiku locale at first launch and is
-  switchable from the Settings window.
+* **Native Haiku localization (BCatalog)** — every visible string
+  goes through `Tr(StringId)` in `src/ui/Locale.h`, backed by
+  `BCatalog`. The active language follows the system Locale preflet,
+  same as every other native Haiku app. English (source), Italian,
+  Spanish, German and Japanese ship today; translators contribute by
+  editing `locales/<lang>.catkeys` and re-running
+  `make -f Makefile.haiku catalogs install-catalogs` — no source
+  edits needed.
 * **CSV export** — dump the current filtered view to a CSV that
   drops cleanly into a spreadsheet for record-keeping or asset
   audits.
@@ -110,9 +113,12 @@ The project carries two makefiles. The core scanner is plain POSIX
 and builds anywhere; the BeAPI UI builds on Haiku only.
 
 ```
-make                            # core + lanterna-cli, portable POSIX
-make -f Makefile.haiku          # core + UI + Haiku resources, on Haiku
-make -f Makefile.haiku clean    # remove all build artifacts
+make                                      # core + lanterna-cli, portable POSIX
+make -f Makefile.haiku                    # binary + Haiku resources, on Haiku
+make -f Makefile.haiku catkeys            # regenerate locales/en.catkeys
+make -f Makefile.haiku catalogs           # link every <lang>.catkeys to .catalog
+make -f Makefile.haiku install-catalogs   # copy catalogs to ~/config/non-packaged/data/locale/catalogs/
+make -f Makefile.haiku clean              # remove all build artifacts
 ```
 
 The Haiku target also compiles `LANterna.rdef` into `LANterna.rsrc`
@@ -120,6 +126,15 @@ The Haiku target also compiles `LANterna.rdef` into `LANterna.rsrc`
 registers the MIME type (`mimeset`), so Tracker shows the proper
 `Beacon.hvif` icon — without those three steps the binary boots
 with the generic Haiku icon even though the rdef is present.
+
+The three localization targets (`catkeys`, `catalogs`,
+`install-catalogs`) are for translators: `catkeys` scans the UI
+sources with `collectcatkeys` to refresh `locales/en.catkeys` (the
+English master), `catalogs` compiles every per-language
+`<lang>.catkeys` into a binary `.catalog`, and `install-catalogs`
+drops them under `~/config/non-packaged/data/locale/catalogs/x-vnd.atomozero-LANterna/`
+where `BCatalog` looks them up at runtime. Without installed
+catalogs the app falls back to the English source strings.
 
 
 ## Run

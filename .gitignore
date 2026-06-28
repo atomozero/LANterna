@@ -7,3 +7,8 @@
 # Artefatti tipici Haiku (build futuro UI)
 /objects.*
 /*.x86
+/LANterna.rsrc
+/xres.output.rsrc
+
+# Catalog binari (.catalog) rigenerati da `make catalogs` dai .catkeys
+locales/*.catalog

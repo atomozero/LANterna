@@ -16,8 +16,19 @@ BSD_HDR  := /boot/system/develop/headers/bsd
 CXXFLAGS ?= -std=c++17 -Wall -O2 -Isrc -D_DEFAULT_SOURCE -MMD -MP \
             -I$(PRIVATE)/interface -I$(PRIVATE)/shared -I$(BSD_HDR)
 LIBS     := -lbe -lnetwork -lbsd -lcolumnlistview -lshared -ltracker \
-            -lbnetapi -lssl -lcrypto
+            -lbnetapi -lssl -lcrypto -llocalestub
 APP      := LANterna
+
+# Catalog (BCatalog / Haiku localization).
+SIG      := x-vnd.atomozero-LANterna
+LANGS    := it es de ja
+LOCALE_DIR := locales
+INSTALL_LOCALE_DIR := $(HOME)/config/non-packaged/data/locale/catalogs/$(SIG)
+LANG_NAME_en := English
+LANG_NAME_it := Italian
+LANG_NAME_es := Spanish
+LANG_NAME_de := German
+LANG_NAME_ja := Japanese
 
 CORE_SRCS := \
   src/net/Subnet.cpp \
@@ -83,9 +94,39 @@ $(APP): $(OBJS) $(RSRC)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
+# ── Localization (BCatalog) ──────────────────────────────────────────
+# `catkeys` rigenera locales/en.catkeys come "master" raccogliendo tutti i
+# B_TRANSLATE / B_TRANSLATE_MARK dai sorgenti UI (vedi src/ui/Locale.h).
+# collectcatkeys legge un file C++ gia' preprocessato (g++ -E con
+# -DB_COLLECTING_CATKEYS) -- vedi /system/develop/etc/makefile-engine per
+# il riferimento idiomatico.
+# I file localizzati locales/<lang>.catkeys sono mantenuti a mano dai
+# traduttori (o seedati una tantum da tools/extract_locale.py).
+catkeys: $(UI_SRCS) src/ui/Locale.h
+	mkdir -p $(LOCALE_DIR)
+	@# -P sopprime i marker `# linenum file` del preprocessore, altrimenti
+	@# si infilano dentro B_CATKEY((...)) e collectcatkeys non riconosce
+	@# piu' il pattern.
+	$(CXX) $(CXXFLAGS) -DB_COLLECTING_CATKEYS -E -P $(UI_SRCS) \
+	    > $(LOCALE_DIR)/.preprocessed.cpp
+	collectcatkeys -s $(SIG) -o $(LOCALE_DIR)/en.catkeys \
+	    $(LOCALE_DIR)/.preprocessed.cpp
+	rm -f $(LOCALE_DIR)/.preprocessed.cpp
+
+# Compila ogni .catkeys nel .catalog binario consumato a runtime.
+$(LOCALE_DIR)/%.catalog: $(LOCALE_DIR)/%.catkeys
+	linkcatkeys -s $(SIG) -l $(LANG_NAME_$*) -o $@ $<
+
+catalogs: $(patsubst %,$(LOCALE_DIR)/%.catalog,en $(LANGS))
+
+# Installa i catalog dove BCatalog li cerca per default in dev.
+install-catalogs: catalogs
+	mkdir -p $(INSTALL_LOCALE_DIR)
+	cp $(LOCALE_DIR)/*.catalog $(INSTALL_LOCALE_DIR)/
+
 clean:
-	rm -f $(OBJS) $(DEPS) $(APP) $(RSRC)
+	rm -f $(OBJS) $(DEPS) $(APP) $(RSRC) $(LOCALE_DIR)/*.catalog
 
 -include $(DEPS)
 
-.PHONY: all clean
+.PHONY: all clean catkeys catalogs install-catalogs

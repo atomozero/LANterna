@@ -1,0 +1,155 @@
+1	English	x-vnd.atomozero-LANterna	1156551260
+No samples.	LANterna		No samples.
+Detected services	LANterna		Detected services
+Name:	LANterna		Name:
+Network topology	LANterna		Network topology
+Hop	LANterna		Hop
+Value	LANterna		Value
+OK	LANterna		OK
+less	LANterna		less
+Open SMB share	LANterna		Open SMB share
+Notes:	LANterna		Notes:
+Tags	LANterna		Tags
+No devices.	LANterna		No devices.
+Weekly heatmap (intensity = time online per hour)	LANterna		Weekly heatmap (intensity = time online per hour)
+SSH Host	LANterna		SSH Host
+Thu	LANterna		Thu
+Scanning... %d%%	LANterna		Scanning... %d%%
+Remote Desktop	LANterna		Remote Desktop
+No events recorded for this device.	LANterna		No events recorded for this device.
+Scan	LANterna		Scan
+RTT	LANterna		RTT
+Copy IP	LANterna		Copy IP
+Ports to probe:	LANterna		Ports to probe:
+Stop	LANterna		Stop
+No interface	LANterna		No interface
+Cancel	LANterna		Cancel
+IP:	LANterna		IP:
+Settings	LANterna		Settings
+no longer responding.	LANterna		no longer responding.
+Open in browser	LANterna		Open in browser
+Mon	LANterna		Mon
+DNS	LANterna		DNS
+All interfaces	LANterna		All interfaces
+Wed	LANterna		Wed
+Connect SSH	LANterna		Connect SSH
+No results.	LANterna		No results.
+Ready.	LANterna		Ready.
+Detected info	LANterna		Detected info
+Error.	LANterna		Error.
+Tags:	LANterna		Tags:
+Start	LANterna		Start
+HTTPS	LANterna		HTTPS
+Max concurrent:	LANterna		Max concurrent:
+Alias:	LANterna		Alias:
+Customization	LANterna		Customization
+Gateway	LANterna		Gateway
+First seen	LANterna		First seen
+Min	LANterna		Min
+Tracing route...	LANterna		Tracing route...
+Magic packet sent to %s	LANterna		Magic packet sent to %s
+HTTP alternate	LANterna		HTTP alternate
+No devices	LANterna		No devices
+Wake-on-LAN (wake up)	LANterna		Wake-on-LAN (wake up)
+Run a scan to see the topology	LANterna		Run a scan to see the topology
+Event log	LANterna		Event log
+Error: cannot create file.	LANterna		Error: cannot create file.
+SMB Share	LANterna		SMB Share
+HTTP	LANterna		HTTP
+(double-click to open)	LANterna		(double-click to open)
+Samples	LANterna		Samples
+Stopped.	LANterna		Stopped.
+Favorite (highlighted)	LANterna		Favorite (highlighted)
+more	LANterna		more
+TTL	LANterna		TTL
+Avg	LANterna		Avg
+Timeout (ms):	LANterna		Timeout (ms):
+(unknown)	LANterna		(unknown)
+Tue	LANterna		Tue
+Max	LANterna		Max
+mDNS	LANterna		mDNS
+%d devices from history.	LANterna		%d devices from history.
+Name	LANterna		Name
+Sat	LANterna		Sat
+Resolver:	LANterna		Resolver:
+Topology	LANterna		Topology
+(none)	LANterna		(none)
+timeout	LANterna		timeout
+DNS lookup	LANterna		DNS lookup
+Last	LANterna		Last
+IP	LANterna		IP
+Done.	LANterna		Done.
+Ports:	LANterna		Ports:
+MAC:	LANterna		MAC:
+Details	LANterna		Details
+RAW print	LANterna		RAW print
+Continuous ping (latency graph)	LANterna		Continuous ping (latency graph)
+Auto-scan every %d min.	LANterna		Auto-scan every %d min.
+MAC	LANterna		MAC
+AFP share	LANterna		AFP share
+Querying...	LANterna		Querying...
+Offline	LANterna		Offline
+Last seen	LANterna		Last seen
+Tags (comma-separated):	LANterna		Tags (comma-separated):
+Sun	LANterna		Sun
+State:	LANterna		State:
+Interface:	LANterna		Interface:
+Summary	LANterna		Summary
+Vendor	LANterna		Vendor
+mDNS Service	LANterna		mDNS Service
+Language:	LANterna		Language:
+Printer	LANterna		Printer
+%d records.	LANterna		%d records.
+New device on network	LANterna		New device on network
+Group by:	LANterna		Group by:
+Auto-scan (min, 0=off):	LANterna		Auto-scan (min, 0=off):
+N.	LANterna		N.
+Blacklisted device detected	LANterna		Blacklisted device detected
+Printer panel	LANterna		Printer panel
+Network	LANterna		Network
+Monitoring	LANterna		Monitoring
+Cannot start traceroute	LANterna		Cannot start traceroute
+Ports	LANterna		Ports
+Exported: %s	LANterna		Exported: %s
+Web Server	LANterna		Web Server
+Online/offline timeline	LANterna		Online/offline timeline
+Remote desktop	LANterna		Remote desktop
+Language will apply on restart.	LANterna		Language will apply on restart.
+Blacklist (suspicious)	LANterna		Blacklist (suspicious)
+Loss	LANterna		Loss
+Lookup	LANterna		Lookup
+Device offline	LANterna		Device offline
+Fri	LANterna		Fri
+LocalSend	LANterna		LocalSend
+No data to export.	LANterna		No data to export.
+Cannot start scan.	LANterna		Cannot start scan.
+Ping %s:%u	LANterna		Ping %s:%u
+Read service banners (HTTP, SSH, ...)	LANterna		Read service banners (HTTP, SSH, ...)
+Type	LANterna		Type
+Save	LANterna		Save
+Hostname:	LANterna		Hostname:
+Online	LANterna		Online
+LANterna for Haiku v1.0 beta 1\n\nNative local network scanner.\nDiscovers LAN devices via TCP probes,\nenriches with MAC, OUI vendor, DNS and type.\nPersistence via native BFS attributes.\n\nby atomozero\nhttps://github.com/atomozero/LANterna\n\nMIT License	LANterna		LANterna for Haiku v1.0 beta 1\n\nNative local network scanner.\nDiscovers LAN devices via TCP probes,\nenriches with MAC, OUI vendor, DNS and type.\nPersistence via native BFS attributes.\n\nby atomozero\nhttps://github.com/atomozero/LANterna\n\nMIT License
+SSH terminal	LANterna		SSH terminal
+Done. %d devices found.	LANterna		Done. %d devices found.
+Online/offline history...	LANterna		Online/offline history...
+Waiting...	LANterna		Waiting...
+General	LANterna		General
+%d devices, %d groups	LANterna		%d devices, %d groups
+Edit details (alias, notes)...	LANterna		Edit details (alias, notes)...
+AFP Share	LANterna		AFP Share
+Traceroute	LANterna		Traceroute
+Unknown	LANterna		Unknown
+Type:	LANterna		Type:
+Click a node for details.\nDrag nodes to rearrange the map.	LANterna		Click a node for details.\nDrag nodes to rearrange the map.
+History	LANterna		History
+Export CSV	LANterna		Export CSV
+Port	LANterna		Port
+Not enough data for heatmap.	LANterna		Not enough data for heatmap.
+Enter a name.	LANterna		Enter a name.
+Copy MAC	LANterna		Copy MAC
+HTTP service	LANterna		HTTP service
+WoL send error to %s	LANterna		WoL send error to %s
+Vendor:	LANterna		Vendor:
+SMB share	LANterna		SMB share
+%d events: %d online, %d offline	LANterna		%d events: %d online, %d offline

@@ -1,20 +1,20 @@
-// Sistema di localizzazione per LANterna.
-// Stesso pattern di LocalSend: tabella 2D di stringhe + macro Tr().
+// Sistema di localizzazione di LANterna sopra BCatalog (Haiku nativo).
+// L'API pubblica e' `Tr(StringId)`: indicizza un array di stringhe inglesi
+// sorgente, marcate con B_TRANSLATE_MARK per essere raccolte da
+// `collectcatkeys`, e tradotte a runtime via BCatalog. La lingua attiva
+// segue il preflet Locale di Haiku.
 #ifndef LANTERNA_UI_LOCALE_H
 #define LANTERNA_UI_LOCALE_H
 
-#include <cstring>
+#include <Catalog.h>
+
+// Catalog.h fa #undef B_TRANSLATION_CONTEXT alla fine: dobbiamo definirlo
+// DOPO l'include perche' le macro B_TRANSLATE / B_TRANSLATE_NOCOLLECT lo
+// referenziano per nome ad ogni espansione.
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "LANterna"
 
 namespace lanterna {
-
-enum Language {
-    kLangItalian = 0,
-    kLangEnglish,
-    kLangSpanish,
-    kLangGerman,
-    kLangJapanese,
-    kLangCount
-};
 
 enum StringId {
     S_READY = 0,
@@ -217,464 +217,187 @@ enum StringId {
     S_COUNT_TOTAL
 };
 
-// Tabella traduzioni: [stringa][lingua]
-static const char* sStrings[S_COUNT_TOTAL][kLangCount] = {
-    // S_READY
-    { "Pronto.", "Ready.", "Listo.", "Bereit.", "\xe6\xba\x96\xe5\x82\x99\xe5\xae\x8c\xe4\xba\x86" },
-    // S_SCANNING
-    { "Scansione in corso... %d%%", "Scanning... %d%%", "Escaneando... %d%%", "Scan l\xc3\xa4uft... %d%%", "\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe4\xb8\xad... %d%%" },
-    // S_SCAN_DONE
-    { "Fatto. %d device trovati.", "Done. %d devices found.", "Hecho. %d dispositivos.", "Fertig. %d Ger\xc3\xa4te gefunden.", "\xe5\xae\x8c\xe4\xba\x86 %d\xe5\x8f\xb0" },
-    // S_NO_INTERFACE
-    { "Nessuna interfaccia", "No interface", "Sin interfaz", "Keine Schnittstelle", "\xe3\x82\xa4\xe3\x83\xb3\xe3\x82\xbf\xe3\x83\xbc\xe3\x83\x95\xe3\x82\xa7\xe3\x83\xbc\xe3\x82\xb9\xe3\x81\xaa\xe3\x81\x97" },
-    // S_CANNOT_START_SCAN
-    { "Impossibile avviare la scansione.", "Cannot start scan.", "No se puede iniciar.", "Scan kann nicht gestartet werden.", "\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe9\x96\x8b\xe5\xa7\x8b\xe4\xb8\x8d\xe5\x8f\xaf" },
-    // S_INTERFACE
-    { "Interfaccia:", "Interface:", "Interfaz:", "Schnittstelle:", "\xe3\x82\xa4\xe3\x83\xb3\xe3\x82\xbf\xe3\x83\xbc\xe3\x83\x95\xe3\x82\xa7\xe3\x83\xbc\xe3\x82\xb9:" },
-    // S_SCAN
-    { "Scansiona", "Scan", "Escanear", "Scannen", "\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3" },
-    // S_SUMMARY
-    { "Riepilogo", "Summary", "Resumen", "\xc3\x9c\x62\x65rsicht", "\xe6\xa6\x82\xe8\xa6\x81" },
-    // S_EXPORT_CSV
-    { "Esporta CSV", "Export CSV", "Exportar CSV", "CSV exportieren", "CSV\xe3\x82\xa8\xe3\x82\xaf\xe3\x82\xb9\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88" },
-    // S_NOTHING_TO_EXPORT
-    { "Nessun dato da esportare.", "No data to export.", "Sin datos.", "Keine Daten.", "\xe3\x83\x87\xe3\x83\xbc\xe3\x82\xbf\xe3\x81\xaa\xe3\x81\x97" },
-    // S_EXPORTED
-    { "Esportato: %s", "Exported: %s", "Exportado: %s", "Exportiert: %s", "\xe3\x82\xa8\xe3\x82\xaf\xe3\x82\xb9\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88: %s" },
-    // S_ERROR_CREATE_FILE
-    { "Errore: impossibile creare il file.", "Error: cannot create file.", "Error: no se puede crear el archivo.", "Fehler: Datei nicht erstellt.", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc: \xe3\x83\x95\xe3\x82\xa1\xe3\x82\xa4\xe3\x83\xab\xe3\x82\x92\xe4\xbd\x9c\xe6\x88\x90\xe3\x81\xa7\xe3\x81\x8d\xe3\x81\xbe\xe3\x81\x9b\xe3\x82\x93" },
-    // S_COL_IP
-    { "IP", "IP", "IP", "IP", "IP" },
-    // S_COL_NAME
-    { "Nome", "Name", "Nombre", "Name", "\xe5\x90\x8d\xe5\x89\x8d" },
-    // S_COL_MAC
-    { "MAC", "MAC", "MAC", "MAC", "MAC" },
-    // S_COL_VENDOR
-    { "Produttore", "Vendor", "Fabricante", "Hersteller", "\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x80\xe3\x83\xbc" },
-    // S_COL_TYPE
-    { "Tipo", "Type", "Tipo", "Typ", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\x97" },
-    // S_COL_PORTS
-    { "Porte", "Ports", "Puertos", "Ports", "\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88" },
-    // S_COL_FIRST_SEEN
-    { "Primo avvistamento", "First seen", "Primera vez", "Erstmals gesehen", "\xe5\x88\x9d\xe5\x9b\x9e" },
-    // S_COL_LAST_SEEN
-    { "Ultimo avvistamento", "Last seen", "\xc3\x9altima vez", "Zuletzt gesehen", "\xe6\x9c\x80\xe7\xb5\x82" },
-    // S_FILTER_IP
-    { "IP:", "IP:", "IP:", "IP:", "IP:" },
-    // S_FILTER_NAME
-    { "Nome:", "Name:", "Nombre:", "Name:", "\xe5\x90\x8d\xe5\x89\x8d:" },
-    // S_FILTER_MAC
-    { "MAC:", "MAC:", "MAC:", "MAC:", "MAC:" },
-    // S_FILTER_VENDOR
-    { "Produttore:", "Vendor:", "Fabricante:", "Hersteller:", "\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x80\xe3\x83\xbc:" },
-    // S_FILTER_TYPE
-    { "Tipo:", "Type:", "Tipo:", "Typ:", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\x97:" },
-    // S_FILTER_PORTS
-    { "Porte:", "Ports:", "Puertos:", "Ports:", "\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88:" },
-    // S_GROUP_BY
-    { "Raggruppa per:", "Group by:", "Agrupar por:", "Gruppieren:", "\xe3\x82\xb0\xe3\x83\xab\xe3\x83\xbc\xe3\x83\x97:" },
-    // S_VENDOR
-    { "Produttore", "Vendor", "Fabricante", "Hersteller", "\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x80\xe3\x83\xbc" },
-    // S_TYPE
-    { "Tipo", "Type", "Tipo", "Typ", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\x97" },
-    // S_PORT
-    { "Porta", "Port", "Puerto", "Port", "\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88" },
-    // S_VALUE
-    { "Valore", "Value", "Valor", "Wert", "\xe5\x80\xa4" },
-    // S_COUNT_LABEL
-    { "N.", "N.", "N.", "Anz.", "N." },
-    // S_NO_DEVICES
-    { "Nessun device.", "No devices.", "Sin dispositivos.", "Keine Ger\xc3\xa4te.", "\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x81\xaa\xe3\x81\x97" },
-    // S_DEVICES_GROUPS
-    { "%d device, %d gruppi", "%d devices, %d groups", "%d dispositivos, %d grupos", "%d Ger\xc3\xa4te, %d Gruppen", "%d\xe5\x8f\xb0 %d\xe3\x82\xb0\xe3\x83\xab\xe3\x83\xbc\xe3\x83\x97" },
-    // S_DOUBLE_CLICK_OPEN
-    { "(doppio click per aprire)", "(double-click to open)", "(doble clic para abrir)", "(Doppelklick zum \xc3\x96\x66\x66nen)", "(\xe3\x83\x80\xe3\x83\x96\xe3\x83\xab\xe3\x82\xaf\xe3\x83\xaa\xe3\x83\x83\xe3\x82\xaf)" },
-    // S_HTTP
-    { "HTTP", "HTTP", "HTTP", "HTTP", "HTTP" },
-    // S_HTTPS
-    { "HTTPS", "HTTPS", "HTTPS", "HTTPS", "HTTPS" },
-    // S_HTTP_ALT
-    { "HTTP alternativo", "HTTP alternate", "HTTP alternativo", "HTTP alternativ", "HTTP\xe4\xbb\xa3\xe6\x9b\xbf" },
-    // S_HTTP_SERVICE
-    { "HTTP servizio", "HTTP service", "HTTP servicio", "HTTP Dienst", "HTTP\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x93\xe3\x82\xb9" },
-    // S_PRINTER_PANEL
-    { "Pannello stampante", "Printer panel", "Panel impresora", "Druckerverwaltung", "\xe3\x83\x97\xe3\x83\xaa\xe3\x83\xb3\xe3\x82\xbf\xe7\xae\xa1\xe7\x90\x86" },
-    // S_SSH_TERMINAL
-    { "Terminale SSH", "SSH terminal", "Terminal SSH", "SSH-Terminal", "SSH\xe7\xab\xaf\xe6\x9c\xab" },
-    // S_SMB_SHARE
-    { "Condivisione SMB", "SMB share", "Compartir SMB", "SMB-Freigabe", "SMB\xe5\x85\xb1\xe6\x9c\x89" },
-    // S_AFP_SHARE
-    { "Condivisione AFP", "AFP share", "Compartir AFP", "AFP-Freigabe", "AFP\xe5\x85\xb1\xe6\x9c\x89" },
-    // S_REMOTE_DESKTOP
-    { "Desktop remoto", "Remote desktop", "Escritorio remoto", "Remotedesktop", "\xe3\x83\xaa\xe3\x83\xa2\xe3\x83\xbc\xe3\x83\x88" },
-    // S_RAW_PRINT
-    { "Stampa RAW", "RAW print", "Impresi\xc3\xb3n RAW", "RAW-Druck", "RAW\xe5\x8d\xb0\xe5\x88\xb7" },
-    // S_MDNS
-    { "mDNS", "mDNS", "mDNS", "mDNS", "mDNS" },
-    // S_LOCALSEND
-    { "LocalSend", "LocalSend", "LocalSend", "LocalSend", "LocalSend" },
-    // S_SETTINGS_TITLE
-    { "Impostazioni", "Settings", "Configuraci\xc3\xb3n", "Einstellungen", "\xe8\xa8\xad\xe5\xae\x9a" },
-    // S_GENERAL
-    { "Generale", "General", "General", "Allgemein", "\xe4\xb8\x80\xe8\x88\xac" },
-    // S_NETWORK
-    { "Rete", "Network", "Red", "Netzwerk", "\xe3\x83\x8d\xe3\x83\x83\xe3\x83\x88\xe3\x83\xaf\xe3\x83\xbc\xe3\x82\xaf" },
-    // S_LANGUAGE
-    { "Lingua:", "Language:", "Idioma:", "Sprache:", "\xe8\xa8\x80\xe8\xaa\x9e:" },
-    // S_PROBE_PORTS
-    { "Porte da sondare:", "Ports to probe:", "Puertos a sondear:", "Zu scannende Ports:", "\xe3\x83\x9d\xe3\x83\xbc\xe3\x83\x88:" },
-    // S_TIMEOUT_MS
-    { "Timeout (ms):", "Timeout (ms):", "Timeout (ms):", "Timeout (ms):", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\xa0\xe3\x82\xa2\xe3\x82\xa6\xe3\x83\x88 (ms):" },
-    // S_MAX_CONCURRENT
-    { "Connessioni simultanee:", "Max concurrent:", "Conexiones simult\xc3\xa1neas:", "Max. gleichzeitig:", "\xe5\x90\x8c\xe6\x99\x82\xe6\x8e\xa5\xe7\xb6\x9a:" },
-    // S_MONITORING
-    { "Monitoraggio", "Monitoring", "Monitoreo", "\xc3\x9c\x62\x65rwachung", "\xe7\x9b\xa3\xe8\xa6\x96" },
-    // S_AUTO_SCAN_MINUTES
-    { "Scansione automatica (min, 0=off):", "Auto-scan (min, 0=off):", "Auto-escaneo (min, 0=off):", "Auto-Scan (min, 0=aus):", "\xe8\x87\xaa\xe5\x8b\x95\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3 (\xe5\x88\x86):" },
-    // S_GRAB_BANNERS
-    { "Leggi banner servizi (HTTP, SSH, ...)", "Read service banners (HTTP, SSH, ...)", "Leer banners de servicios", "Service-Banner lesen", "\xe3\x83\x90\xe3\x83\x8a\xe3\x83\xbc\xe5\x8f\x96\xe5\xbe\x97" },
-    // S_SAVE
-    { "Salva", "Save", "Guardar", "Speichern", "\xe4\xbf\x9d\xe5\xad\x98" },
-    // S_CANCEL
-    { "Annulla", "Cancel", "Cancelar", "Abbrechen", "\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe3\x82\xbb\xe3\x83\xab" },
-    // S_OK
-    { "OK", "OK", "OK", "OK", "OK" },
-    // S_LANG_RESTART
-    { "La lingua verr\xc3\xa0 applicata al riavvio.", "Language will apply on restart.", "El idioma se aplicar\xc3\xa1 al reiniciar.", "Sprache wird nach Neustart angewendet.", "\xe8\xa8\x80\xe8\xaa\x9e\xe3\x81\xaf\xe5\x86\x8d\xe8\xb5\xb7\xe5\x8b\x95\xe5\xbe\x8c" },
-    // S_ABOUT_TEXT
-    { "LANterna per Haiku v1.0 beta 1\n\n"
-      "Scanner di rete locale nativo.\n"
-      "Scopre i device nella LAN tramite probe TCP,\n"
-      "arricchisce con MAC, vendor OUI, DNS e tipo.\n"
-      "Persistenza su attributi BFS.\n\n"
-      "di atomozero\n"
-      "https://github.com/atomozero/LANterna\n\n"
-      "Licenza MIT",
-      "LANterna for Haiku v1.0 beta 1\n\n"
-      "Native local network scanner.\n"
-      "Discovers LAN devices via TCP probes,\n"
-      "enriches with MAC, OUI vendor, DNS and type.\n"
-      "Persistence via native BFS attributes.\n\n"
-      "by atomozero\n"
-      "https://github.com/atomozero/LANterna\n\n"
-      "MIT License",
-      "LANterna para Haiku v1.0 beta 1\n\n"
-      "Esc\xc3\xa1ner de red local nativo.\n"
-      "Descubre dispositivos LAN mediante sondas TCP,\n"
-      "enriquece con MAC, fabricante OUI, DNS y tipo.\n"
-      "Persistencia en atributos BFS nativos.\n\n"
-      "por atomozero\n"
-      "https://github.com/atomozero/LANterna\n\n"
-      "Licencia MIT",
-      "LANterna f\xc3\xbcr Haiku v1.0 Beta 1\n\n"
-      "Nativer lokaler Netzwerkscanner.\n"
-      "Erkennt LAN-Ger\xc3\xa4te mittels TCP-Probes,\n"
-      "reichert mit MAC, OUI-Hersteller, DNS und Typ an.\n"
-      "Persistenz \xc3\xbc" "ber native BFS-Attribute.\n\n"
-      "von atomozero\n"
-      "https://github.com/atomozero/LANterna\n\n"
-      "MIT-Lizenz",
-      "LANterna for Haiku v1.0 beta 1\n\n"
-      "\xe3\x83\x8d\xe3\x82\xa4\xe3\x83\x86\xe3\x82\xa3\xe3\x83\x96LAN\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\x8a\xe3\x83\xbc\xe3\x80\x82\n"
-      "TCP\xe3\x83\x97\xe3\x83\xad\xe3\x83\xbc\xe3\x83\x96\xe3\x81\xa7LAN\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x82\x92\xe7\x99\xba\xe8\xa6\x8b\xe3\x81\x97\xe3\x80\x81\n"
-      "MAC\xe3\x80\x81OUI\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x80\xe3\x83\xbc\xe3\x80\x81" "DNS\xe3\x80\x81\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\x97\xe3\x81\xa7\xe6\x8b\xa1\xe5\xbc\xb5\xe3\x80\x82\n"
-      "BFS\xe5\xb1\x9e\xe6\x80\xa7\xe3\x81\xab\xe6\xb0\xb8\xe7\xb6\x9a\xe5\x8c\x96\xe3\x80\x82\n\n"
-      "by atomozero\n"
-      "https://github.com/atomozero/LANterna\n\n"
-      "MIT License" },
-    // S_TYPE_LOCALSEND
-    { "LocalSend", "LocalSend", "LocalSend", "LocalSend", "LocalSend" },
-    // S_TYPE_PRINTER
-    { "Stampante", "Printer", "Impresora", "Drucker", "\xe3\x83\x97\xe3\x83\xaa\xe3\x83\xb3\xe3\x82\xbf" },
-    // S_TYPE_SMB
-    { "Condivisione SMB", "SMB Share", "Compartir SMB", "SMB-Freigabe", "SMB\xe5\x85\xb1\xe6\x9c\x89" },
-    // S_TYPE_AFP
-    { "Condivisione AFP", "AFP Share", "Compartir AFP", "AFP-Freigabe", "AFP\xe5\x85\xb1\xe6\x9c\x89" },
-    // S_TYPE_RDP
-    { "Desktop remoto", "Remote Desktop", "Escritorio remoto", "Remotedesktop", "\xe3\x83\xaa\xe3\x83\xa2\xe3\x83\xbc\xe3\x83\x88" },
-    // S_TYPE_SSH
-    { "Host SSH", "SSH Host", "Host SSH", "SSH-Host", "SSH\xe3\x83\x9b\xe3\x82\xb9\xe3\x83\x88" },
-    // S_TYPE_WEB
-    { "Server web", "Web Server", "Servidor web", "Webserver", "Web\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x90\xe3\x83\xbc" },
-    // S_TYPE_MDNS
-    { "Servizio mDNS", "mDNS Service", "Servicio mDNS", "mDNS-Dienst", "mDNS\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x93\xe3\x82\xb9" },
-    // S_TOPOLOGY
-    { "Topologia", "Topology", "Topolog\xc3\xad" "a", "Topologie", "\xe3\x83\x88\xe3\x83\x9d\xe3\x83\xad\xe3\x82\xb8\xe3\x83\xbc" },
-    // S_TOPOLOGY_TITLE
-    { "Topologia di rete", "Network topology", "Topolog\xc3\xad" "a de red", "Netzwerktopologie", "\xe3\x83\x8d\xe3\x83\x83\xe3\x83\x88\xe3\x83\xaf\xe3\x83\xbc\xe3\x82\xaf\xe3\x83\x88\xe3\x83\x9d\xe3\x83\xad\xe3\x82\xb8\xe3\x83\xbc" },
-    // S_TOPOLOGY_CLICK_NODE
-    { "Clicca su un nodo per vedere i dettagli.\nTrascina i nodi per riorganizzare la mappa.",
-      "Click a node for details.\nDrag nodes to rearrange the map.",
-      "Haga clic en un nodo para ver detalles.\nArrastre los nodos para reorganizar.",
-      "Klicke einen Knoten f\xc3\xbcr Details.\nKnoten zum Umordnen ziehen.",
-      "\xe3\x83\x8e\xe3\x83\xbc\xe3\x83\x89\xe3\x82\x92\xe3\x82\xaf\xe3\x83\xaa\xe3\x83\x83\xe3\x82\xaf\xe3\x81\x97\xe3\x81\xa6\xe8\xa9\xb3\xe7\xb4\xb0\xe3\x82\x92\xe8\xa1\xa8\xe7\xa4\xba\xe3\x80\x82\n\xe3\x83\x8e\xe3\x83\xbc\xe3\x83\x89\xe3\x82\x92\xe3\x83\x89\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xb0\xe3\x81\x97\xe3\x81\xa6\xe9\x85\x8d\xe7\xbd\xae\xe5\xa4\x89\xe6\x9b\xb4\xe3\x80\x82" },
-    // S_TOPOLOGY_NO_DEVICE
-    { "Esegui una scansione per visualizzare la topologia",
-      "Run a scan to see the topology",
-      "Ejecute un escaneo para ver la topolog\xc3\xad" "a",
-      "F\xc3\xbchre einen Scan aus um die Topologie zu sehen",
-      "\xe3\x83\x88\xe3\x83\x9d\xe3\x83\xad\xe3\x82\xb8\xe3\x83\xbc\xe3\x82\x92\xe8\xa1\xa8\xe7\xa4\xba\xe3\x81\x99\xe3\x82\x8b\xe3\x81\xab\xe3\x81\xaf\xe3\x82\xb9\xe3\x82\xad\xe3\x83\xa3\xe3\x83\xb3\xe3\x82\x92\xe5\xae\x9f\xe8\xa1\x8c\xe3\x81\x97\xe3\x81\xa6\xe3\x81\x8f\xe3\x81\xa0\xe3\x81\x95\xe3\x81\x84" },
-    // S_GATEWAY
-    { "Gateway", "Gateway", "Puerta de enlace", "Gateway", "\xe3\x82\xb2\xe3\x83\xbc\xe3\x83\x88\xe3\x82\xa6\xe3\x82\xa7\xe3\x82\xa4" },
-    // S_TOPOLOGY_NO_DEVICES_LABEL
-    { "Nessun device", "No devices", "Sin dispositivos", "Keine Ger\xc3\xa4te", "\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x81\xaa\xe3\x81\x97" },
-    // S_PIVOT_NONE
-    { "(nessuna)", "(none)", "(ninguna)", "(keine)", "(\xe3\x81\xaa\xe3\x81\x97)" },
-    // S_PIVOT_UNKNOWN
-    { "(sconosciuto)", "(unknown)", "(desconocido)", "(unbekannt)", "(\xe4\xb8\x8d\xe6\x98\x8e)" },
-    // S_PIVOT_GROUP_BY
-    { "Raggruppa per:", "Group by:", "Agrupar por:", "Gruppieren nach:", "\xe3\x82\xb0\xe3\x83\xab\xe3\x83\xbc\xe3\x83\x97:" },
-    // S_SVC_PRINTER_PANEL
-    { "Pannello stampante", "Printer panel", "Panel impresora", "Druckerverwaltung", "\xe3\x83\x97\xe3\x83\xaa\xe3\x83\xb3\xe3\x82\xbf\xe7\xae\xa1\xe7\x90\x86" },
-    // S_SVC_SSH_TERMINAL
-    { "Terminale SSH", "SSH terminal", "Terminal SSH", "SSH-Terminal", "SSH\xe7\xab\xaf\xe6\x9c\xab" },
-    // S_SVC_SMB_SHARE
-    { "Condivisione SMB", "SMB share", "Compartir SMB", "SMB-Freigabe", "SMB\xe5\x85\xb1\xe6\x9c\x89" },
-    // S_SVC_AFP_SHARE
-    { "Condivisione AFP", "AFP share", "Compartir AFP", "AFP-Freigabe", "AFP\xe5\x85\xb1\xe6\x9c\x89" },
-    // S_SVC_REMOTE_DESKTOP
-    { "Desktop remoto", "Remote desktop", "Escritorio remoto", "Remotedesktop", "\xe3\x83\xaa\xe3\x83\xa2\xe3\x83\xbc\xe3\x83\x88" },
-    // S_SVC_RAW_PRINT
-    { "Stampa RAW", "RAW print", "Impresi\xc3\xb3n RAW", "RAW-Druck", "RAW\xe5\x8d\xb0\xe5\x88\xb7" },
-    // S_HEATMAP_LESS
-    { "meno", "less", "menos", "weniger", "\xe5\xb0\x91" },
-    // S_HEATMAP_MORE
-    { "pi\xc3\xb9", "more", "m\xc3\xa1s", "mehr", "\xe5\xa4\x9a" },
-    // S_NO_SAMPLES
-    { "Nessun campione.", "No samples.", "Sin muestras.", "Keine Daten.", "\xe3\x82\xb5\xe3\x83\xb3\xe3\x83\x97\xe3\x83\xab\xe3\x81\xaa\xe3\x81\x97" },
-    // S_CTX_COPY_IP
-    { "Copia IP", "Copy IP", "Copiar IP", "IP kopieren", "IP\xe3\x82\xb3\xe3\x83\x94\xe3\x83\xbc" },
-    // S_CTX_COPY_MAC
-    { "Copia MAC", "Copy MAC", "Copiar MAC", "MAC kopieren", "MAC\xe3\x82\xb3\xe3\x83\x94\xe3\x83\xbc" },
-    // S_CTX_OPEN_BROWSER
-    { "Apri nel browser", "Open in browser", "Abrir en navegador", "Im Browser \xc3\xb6\x66\x66nen", "\xe3\x83\x96\xe3\x83\xa9\xe3\x82\xa6\xe3\x82\xb6\xe3\x81\xa7\xe9\x96\x8b\xe3\x81\x8f" },
-    // S_CTX_CONNECT_SSH
-    { "Connetti SSH", "Connect SSH", "Conectar SSH", "SSH verbinden", "SSH\xe6\x8e\xa5\xe7\xb6\x9a" },
-    // S_CTX_OPEN_SMB
-    { "Apri condivisione SMB", "Open SMB share", "Abrir recurso SMB", "SMB-Freigabe \xc3\xb6\x66\x66nen", "SMB\xe5\x85\xb1\xe6\x9c\x89\xe3\x82\x92\xe9\x96\x8b\xe3\x81\x8f" },
-    // S_CTX_WOL
-    { "Wake-on-LAN (sveglia)", "Wake-on-LAN (wake up)", "Wake-on-LAN (despertar)", "Wake-on-LAN (wecken)", "Wake-on-LAN" },
-    // S_CTX_PING
-    { "Ping continuo (grafico latenza)", "Continuous ping (latency graph)", "Ping continuo (gr\xc3\xa1\x66ico latencia)", "Dauer-Ping (Latenzgraph)", "\xe9\x80\xa3\xe7\xb6\x9aPing" },
-    // S_CTX_DETAILS
-    { "Modifica dettagli (alias, note)...", "Edit details (alias, notes)...", "Editar detalles (alias, notas)...", "Details bearbeiten...", "\xe8\xa9\xb3\xe7\xb4\xb0\xe7\xb7\xa8\xe9\x9b\x86..." },
-    // S_CTX_HISTORY
-    { "Storico online/offline...", "Online/offline history...", "Historial online/offline...", "Online/Offline-Verlauf...", "\xe5\xb1\xa5\xe6\xad\xb4..." },
-    // S_NOTIF_NEW_DEVICE
-    { "Nuovo device in rete", "New device on network", "Nuevo dispositivo en red", "Neues Ger\xc3\xa4t im Netzwerk", "\xe6\x96\xb0\xe3\x81\x97\xe3\x81\x84\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9" },
-    // S_NOTIF_OFFLINE
-    { "Device offline", "Device offline", "Dispositivo offline", "Ger\xc3\xa4t offline", "\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe3\x82\xaa\xe3\x83\x95" },
-    // S_NOTIF_BLACKLIST
-    { "Device in blacklist rilevato", "Blacklisted device detected", "Dispositivo en lista negra detectado", "Blacklist-Ger\xc3\xa4t erkannt", "\xe3\x83\x96\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xaf\xe3\x83\xaa\xe3\x82\xb9\xe3\x83\x88\xe3\x83\x87\xe3\x83\x90\xe3\x82\xa4\xe3\x82\xb9\xe6\xa4\x9c\xe5\x87\xba" },
-    // S_NOTIF_NO_RESPONSE
-    { "non risponde piu'.", "no longer responding.", "ya no responde.", "antwortet nicht mehr.", "\xe5\xbf\x9c\xe7\xad\x94\xe3\x81\xaa\xe3\x81\x97" },
-    // S_WOL_SENT
-    { "Magic packet inviato a %s", "Magic packet sent to %s", "Magic packet enviado a %s", "Magic Packet an %s gesendet", "Magic packet \xe9\x80\x81\xe4\xbf\xa1: %s" },
-    // S_WOL_ERROR
-    { "Errore invio WoL a %s", "WoL send error to %s", "Error envio WoL a %s", "WoL-Fehler an %s", "WoL\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc: %s" },
-    // S_TRACE_TITLE
-    { "Traceroute", "Traceroute", "Traceroute", "Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9" },
-    // S_TRACE_HOP
-    { "Hop", "Hop", "Salto", "Hop", "\xe3\x83\x9b\xe3\x83\x83\xe3\x83\x97" },
-    // S_TRACE_RTT
-    { "RTT", "RTT", "RTT", "RTT", "RTT" },
-    // S_TRACE_READY
-    { "Pronto.", "Ready.", "Listo.", "Bereit.", "\xe6\xba\x96\xe5\x82\x99" },
-    // S_TRACE_RUNNING
-    { "Tracciamento in corso...", "Tracing route...", "Trazando ruta...", "Route wird verfolgt...", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9\xe4\xb8\xad" },
-    // S_TRACE_STOPPED
-    { "Fermato.", "Stopped.", "Detenido.", "Gestoppt.", "\xe5\x81\x9c\xe6\xad\xa2" },
-    // S_TRACE_DONE
-    { "Completato.", "Done.", "Completado.", "Fertig.", "\xe5\xae\x8c\xe4\xba\x86" },
-    // S_TRACE_ERROR
-    { "Errore avvio traceroute", "Cannot start traceroute", "Error al iniciar traceroute", "Fehler beim Start von Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9\xe9\x96\x8b\xe5\xa7\x8b\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc" },
-    // S_TRACE_START
-    { "Avvia", "Start", "Iniciar", "Start", "\xe9\x96\x8b\xe5\xa7\x8b" },
-    // S_TRACE_STOP
-    { "Ferma", "Stop", "Detener", "Stopp", "\xe5\x81\x9c\xe6\xad\xa2" },
-    // S_CTX_TRACEROUTE
-    { "Traceroute", "Traceroute", "Traceroute", "Traceroute", "\xe3\x83\x88\xe3\x83\xac\xe3\x83\xbc\xe3\x82\xb9" },
-    // S_ALL_INTERFACES
-    { "Tutte le interfacce", "All interfaces", "Todas las interfaces", "Alle Schnittstellen", "\xe3\x81\x99\xe3\x81\xb9\xe3\x81\xa6\xe3\x81\xae\xe3\x82\xa4\xe3\x83\xb3\xe3\x82\xbf\xe3\x83\xbc\xe3\x83\x95\xe3\x82\xa7\xe3\x83\xbc\xe3\x82\xb9" },
-    // S_DNS_TITLE
-    { "DNS lookup", "DNS lookup", "B\xc3\xbasqueda DNS", "DNS-Abfrage", "DNS\xe6\xa4\x9c\xe7\xb4\xa2" },
-    // S_DNS_NAME
-    { "Nome:", "Name:", "Nombre:", "Name:", "\xe5\x90\x8d\xe5\x89\x8d:" },
-    // S_DNS_TYPE
-    { "Tipo:", "Type:", "Tipo:", "Typ:", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\x97:" },
-    // S_DNS_RESOLVER
-    { "Resolver:", "Resolver:", "Resolutor:", "Resolver:", "\xe3\x83\xaa\xe3\x82\xbe\xe3\x83\xab\xe3\x83\x90:" },
-    // S_DNS_VALUE
-    { "Valore", "Value", "Valor", "Wert", "\xe5\x80\xa4" },
-    // S_DNS_TTL
-    { "TTL", "TTL", "TTL", "TTL", "TTL" },
-    // S_DNS_LOOKUP
-    { "Cerca", "Lookup", "Buscar", "Suchen", "\xe6\xa4\x9c\xe7\xb4\xa2" },
-    // S_DNS_QUERYING
-    { "Query in corso...", "Querying...", "Consultando...", "Abfrage...", "\xe6\xa4\x9c\xe7\xb4\xa2\xe4\xb8\xad..." },
-    // S_DNS_EMPTY
-    { "Inserisci un nome.", "Enter a name.", "Ingrese un nombre.", "Namen eingeben.", "\xe5\x90\x8d\xe5\x89\x8d\xe5\xbf\x85\xe9\xa0\x88" },
-    // S_DNS_ERROR
-    { "Errore.", "Error.", "Error.", "Fehler.", "\xe3\x82\xa8\xe3\x83\xa9\xe3\x83\xbc\xe3\x80\x82" },
-    // S_DNS_NO_RESULT
-    { "Nessun risultato.", "No results.", "Sin resultados.", "Keine Treffer.", "\xe7\xb5\x90\xe6\x9e\x9c\xe3\x81\xaa\xe3\x81\x97" },
-    // S_DNS_FOUND
-    { "%d record.", "%d records.", "%d registros.", "%d Eintr\xc3\xa4ge.", "%d\xe4\xbb\xb6" },
-    // S_DNS_BUTTON
-    { "DNS", "DNS", "DNS", "DNS", "DNS" },
-    // S_PING_TITLE
-    { "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u", "Ping %s:%u" },
-    // S_PING_WAITING
-    { "In attesa...", "Waiting...", "Esperando...", "Warte...", "\xe5\xbe\x85\xe6\xa9\x9f\xe4\xb8\xad..." },
-    // S_PING_NO_SAMPLES
-    { "Nessun campione.", "No samples.", "Sin muestras.", "Keine Proben.", "\xe3\x82\xb5\xe3\x83\xb3\xe3\x83\x97\xe3\x83\xab\xe3\x81\xaa\xe3\x81\x97" },
-    // S_PING_LAST
-    { "Ultimo", "Last", "\xc3\x9altimo", "Letzte", "\xe6\x9c\x80\xe5\xbe\x8c" },
-    // S_PING_AVG
-    { "Media", "Avg", "Promedio", "Mittel", "\xe5\xb9\xb3\xe5\x9d\x87" },
-    // S_PING_MIN
-    { "Min", "Min", "M\xc3\xadn", "Min", "\xe6\x9c\x80\xe5\xb0\x8f" },
-    // S_PING_MAX
-    { "Max", "Max", "M\xc3\xa1x", "Max", "\xe6\x9c\x80\xe5\xa4\xa7" },
-    // S_PING_LOSS
-    { "Persi", "Loss", "Perdidos", "Verlust", "\xe6\x90\x8d\xe5\xa4\xb1" },
-    // S_PING_SAMPLES
-    { "Campioni", "Samples", "Muestras", "Proben", "\xe3\x82\xb5\xe3\x83\xb3\xe3\x83\x97\xe3\x83\xab" },
-    // S_PING_TIMEOUT
-    { "timeout", "timeout", "timeout", "Timeout", "\xe3\x82\xbf\xe3\x82\xa4\xe3\x83\xa0\xe3\x82\xa2\xe3\x82\xa6\xe3\x83\x88" },
-    // S_DETAILS_TITLE
-    { "Dettagli", "Details", "Detalles", "Details", "\xe8\xa9\xb3\xe7\xb4\xb0" },
-    // S_DETAILS_DETECTED_INFO
-    { "Informazioni rilevate", "Detected info", "Informaci\xc3\xb3n detectada", "Erkannte Daten", "\xe6\xa4\x9c\xe5\x87\xba\xe6\x83\x85\xe5\xa0\xb1" },
-    // S_DETAILS_PERSONALIZATION
-    { "Personalizzazione", "Customization", "Personalizaci\xc3\xb3n", "Anpassung", "\xe3\x82\xab\xe3\x82\xb9\xe3\x82\xbf\xe3\x83\x9e\xe3\x82\xa4\xe3\x82\xba" },
-    // S_DETAILS_HOSTNAME
-    { "Hostname:", "Hostname:", "Nombre de host:", "Hostname:", "\xe3\x83\x9b\xe3\x82\xb9\xe3\x83\x88\xe5\x90\x8d:" },
-    // S_DETAILS_ALIAS
-    { "Alias:", "Alias:", "Alias:", "Alias:", "\xe3\x82\xa8\xe3\x82\xa4\xe3\x83\xaa\xe3\x82\xa2\xe3\x82\xb9:" },
-    // S_DETAILS_NOTE
-    { "Note:", "Notes:", "Notas:", "Notizen:", "\xe3\x83\xa1\xe3\x83\xa2:" },
-    // S_DETAILS_TAGS
-    { "Tag:", "Tags:", "Etiquetas:", "Tags:", "\xe3\x82\xbf\xe3\x82\xb0:" },
-    // S_DETAILS_TAGS_HINT
-    { "Tag (separati da virgola):", "Tags (comma-separated):", "Etiquetas (separadas por coma):", "Tags (kommagetrennt):", "\xe3\x82\xbf\xe3\x82\xb0 (\xe3\x82\xab\xe3\x83\xb3\xe3\x83\x9e):" },
-    // S_DETAILS_FAVORITE
-    { "Preferito (evidenziato)", "Favorite (highlighted)", "Favorito (destacado)", "Favorit (hervorgehoben)", "\xe3\x81\x8a\xe6\xb0\x97\xe3\x81\xab\xe5\x85\xa5\xe3\x82\x8a" },
-    // S_DETAILS_BLACKLIST
-    { "Blacklist (sospetto)", "Blacklist (suspicious)", "Lista negra (sospechoso)", "Blacklist (verd\xc3\xa4\x63htig)", "\xe3\x83\x96\xe3\x83\xa9\xe3\x83\x83\xe3\x82\xaf\xe3\x83\xaa\xe3\x82\xb9\xe3\x83\x88" },
-    // S_DETAILS_SERVICES
-    { "Servizi rilevati", "Detected services", "Servicios detectados", "Erkannte Dienste", "\xe6\xa4\x9c\xe5\x87\xba\xe3\x82\xb5\xe3\x83\xbc\xe3\x83\x93\xe3\x82\xb9" },
-    // S_HISTORY_TITLE
-    { "Storico", "History", "Historial", "Verlauf", "\xe5\xb1\xa5\xe6\xad\xb4" },
-    // S_HISTORY_TIMELINE
-    { "Timeline online/offline", "Online/offline timeline", "L\xc3\xadnea de tiempo online/offline", "Online/Offline-Zeitleiste", "\xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3\xe5\xb1\xa5\xe6\xad\xb4" },
-    // S_HISTORY_HEATMAP
-    { "Heatmap settimanale (intensita' = tempo online per ora)",
-      "Weekly heatmap (intensity = time online per hour)",
-      "Mapa de calor semanal (intensidad = tiempo online por hora)",
-      "Wochen-Heatmap (Intensit\xc3\xa4t = Online-Zeit pro Stunde)",
-      "\xe9\x80\xb1\xe9\x96\x93\xe3\x83\x92\xe3\x83\xbc\xe3\x83\x88\xe3\x83\x9e\xe3\x83\x83\xe3\x83\x97 (\xe6\xbf\x83\xe5\xba\xa6 = \xe6\x99\x82\xe9\x96\x93\xe5\xb8\xaf\xe3\x81\x94\xe3\x81\xa8\xe3\x81\xae\xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3\xe6\x99\x82\xe9\x96\x93)" },
-    // S_HISTORY_LOG
-    { "Log eventi", "Event log", "Registro de eventos", "Ereignisprotokoll", "\xe3\x82\xa4\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x88\xe3\x83\xad\xe3\x82\xb0" },
-    // S_HISTORY_NO_EVENTS
-    { "Nessun evento registrato per questo device.",
-      "No events recorded for this device.",
-      "Sin eventos para este dispositivo.",
-      "Keine Ereignisse f\xc3\xbcr dieses Ger\xc3\xa4t.",
-      "\xe3\x82\xa4\xe3\x83\x99\xe3\x83\xb3\xe3\x83\x88\xe3\x81\xaa\xe3\x81\x97" },
-    // S_HISTORY_NO_DATA
-    { "Dati insufficienti per la heatmap.",
-      "Not enough data for heatmap.",
-      "Datos insuficientes para mapa de calor.",
-      "Zu wenig Daten f\xc3\xbcr Heatmap.",
-      "\xe3\x83\x87\xe3\x83\xbc\xe3\x82\xbf\xe4\xb8\x8d\xe8\xb6\xb3" },
-    // S_HISTORY_ONLINE
-    { "Online", "Online", "Online", "Online", "\xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3" },
-    // S_HISTORY_OFFLINE
-    { "Offline", "Offline", "Offline", "Offline", "\xe3\x82\xaa\xe3\x83\x95\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3" },
-    // S_HISTORY_UNKNOWN
-    { "Sconosciuto", "Unknown", "Desconocido", "Unbekannt", "\xe4\xb8\x8d\xe6\x98\x8e" },
-    // S_HISTORY_STATE
-    { "Stato:", "State:", "Estado:", "Status:", "\xe7\x8a\xb6\xe6\x85\x8b:" },
-    // S_HISTORY_EVENTS_SUMMARY
-    { "%d eventi: %d online, %d offline",
-      "%d events: %d online, %d offline",
-      "%d eventos: %d online, %d offline",
-      "%d Ereignisse: %d online, %d offline",
-      "%d\xe4\xbb\xb6: \xe3\x82\xaa\xe3\x83\xb3\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3%d, \xe3\x82\xaa\xe3\x83\x95\xe3\x83\xa9\xe3\x82\xa4\xe3\x83\xb3%d" },
-    // S_DAY_MON
-    { "Lun", "Mon", "Lun", "Mo", "\xe6\x9c\x88" },
-    // S_DAY_TUE
-    { "Mar", "Tue", "Mar", "Di", "\xe7\x81\xab" },
-    // S_DAY_WED
-    { "Mer", "Wed", "Mi\xc3\xa9", "Mi", "\xe6\xb0\xb4" },
-    // S_DAY_THU
-    { "Gio", "Thu", "Jue", "Do", "\xe6\x9c\xa8" },
-    // S_DAY_FRI
-    { "Ven", "Fri", "Vie", "Fr", "\xe9\x87\x91" },
-    // S_DAY_SAT
-    { "Sab", "Sat", "S\xc3\xa1\x62", "Sa", "\xe5\x9c\x9f" },
-    // S_DAY_SUN
-    { "Dom", "Sun", "Dom", "So", "\xe6\x97\xa5" },
-    // S_COL_TAGS
-    { "Tag", "Tags", "Etiquetas", "Tags", "\xe3\x82\xbf\xe3\x82\xb0" },
-    // S_FILTER_TAGS
-    { "Tag:", "Tags:", "Etiquetas:", "Tags:", "\xe3\x82\xbf\xe3\x82\xb0:" },
-    // S_LOADED_FROM_HISTORY
-    { "%d device dalla cronologia.", "%d devices from history.", "%d dispositivos del historial.", "%d Ger\xc3\xa4te aus dem Verlauf.", "\xe5\xb1\xa5\xe6\xad\xb4\xe3\x81\x8b\xe3\x82\x89%d\xe5\x8f\xb0" },
-    // S_AUTO_SCAN_STATUS
-    { "Scansione automatica ogni %d min.",
-      "Auto-scan every %d min.",
-      "Auto-escaneo cada %d min.",
-      "Auto-Scan alle %d Min.",
-      "\xe8\x87\xaa\xe5\x8b\x95 %d\xe5\x88\x86\xe6\xaf\x8e" },
-    // S_DEVICES_FOUND
-    { "Fatto. %d device trovati.", "Done. %d devices found.", "Hecho. %d dispositivos.", "Fertig. %d Ger\xc3\xa4te.", "%d\xe5\x8f\xb0\xe7\x99\xba\xe8\xa6\x8b" },
+// kEnglishSource: ogni entry e' B_TRANSLATE_MARK("english").
+// L'ordine deve coincidere con StringId (lo static_assert lo verifica).
+static const char* const kEnglishSource[S_COUNT_TOTAL] = {
+    B_TRANSLATE_MARK("Ready."),  // S_READY
+    B_TRANSLATE_MARK("Scanning... %d%%"),  // S_SCANNING
+    B_TRANSLATE_MARK("Done. %d devices found."),  // S_SCAN_DONE
+    B_TRANSLATE_MARK("No interface"),  // S_NO_INTERFACE
+    B_TRANSLATE_MARK("Cannot start scan."),  // S_CANNOT_START_SCAN
+    B_TRANSLATE_MARK("Interface:"),  // S_INTERFACE
+    B_TRANSLATE_MARK("Scan"),  // S_SCAN
+    B_TRANSLATE_MARK("Summary"),  // S_SUMMARY
+    B_TRANSLATE_MARK("Export CSV"),  // S_EXPORT_CSV
+    B_TRANSLATE_MARK("No data to export."),  // S_NOTHING_TO_EXPORT
+    B_TRANSLATE_MARK("Exported: %s"),  // S_EXPORTED
+    B_TRANSLATE_MARK("Error: cannot create file."),  // S_ERROR_CREATE_FILE
+    B_TRANSLATE_MARK("IP"),  // S_COL_IP
+    B_TRANSLATE_MARK("Name"),  // S_COL_NAME
+    B_TRANSLATE_MARK("MAC"),  // S_COL_MAC
+    B_TRANSLATE_MARK("Vendor"),  // S_COL_VENDOR
+    B_TRANSLATE_MARK("Type"),  // S_COL_TYPE
+    B_TRANSLATE_MARK("Ports"),  // S_COL_PORTS
+    B_TRANSLATE_MARK("First seen"),  // S_COL_FIRST_SEEN
+    B_TRANSLATE_MARK("Last seen"),  // S_COL_LAST_SEEN
+    B_TRANSLATE_MARK("IP:"),  // S_FILTER_IP
+    B_TRANSLATE_MARK("Name:"),  // S_FILTER_NAME
+    B_TRANSLATE_MARK("MAC:"),  // S_FILTER_MAC
+    B_TRANSLATE_MARK("Vendor:"),  // S_FILTER_VENDOR
+    B_TRANSLATE_MARK("Type:"),  // S_FILTER_TYPE
+    B_TRANSLATE_MARK("Ports:"),  // S_FILTER_PORTS
+    B_TRANSLATE_MARK("Group by:"),  // S_GROUP_BY
+    B_TRANSLATE_MARK("Vendor"),  // S_VENDOR
+    B_TRANSLATE_MARK("Type"),  // S_TYPE
+    B_TRANSLATE_MARK("Port"),  // S_PORT
+    B_TRANSLATE_MARK("Value"),  // S_VALUE
+    B_TRANSLATE_MARK("N."),  // S_COUNT_LABEL
+    B_TRANSLATE_MARK("No devices."),  // S_NO_DEVICES
+    B_TRANSLATE_MARK("%d devices, %d groups"),  // S_DEVICES_GROUPS
+    B_TRANSLATE_MARK("(double-click to open)"),  // S_DOUBLE_CLICK_OPEN
+    B_TRANSLATE_MARK("HTTP"),  // S_HTTP
+    B_TRANSLATE_MARK("HTTPS"),  // S_HTTPS
+    B_TRANSLATE_MARK("HTTP alternate"),  // S_HTTP_ALT
+    B_TRANSLATE_MARK("HTTP service"),  // S_HTTP_SERVICE
+    B_TRANSLATE_MARK("Printer panel"),  // S_PRINTER_PANEL
+    B_TRANSLATE_MARK("SSH terminal"),  // S_SSH_TERMINAL
+    B_TRANSLATE_MARK("SMB share"),  // S_SMB_SHARE
+    B_TRANSLATE_MARK("AFP share"),  // S_AFP_SHARE
+    B_TRANSLATE_MARK("Remote desktop"),  // S_REMOTE_DESKTOP
+    B_TRANSLATE_MARK("RAW print"),  // S_RAW_PRINT
+    B_TRANSLATE_MARK("mDNS"),  // S_MDNS
+    B_TRANSLATE_MARK("LocalSend"),  // S_LOCALSEND
+    B_TRANSLATE_MARK("Settings"),  // S_SETTINGS_TITLE
+    B_TRANSLATE_MARK("General"),  // S_GENERAL
+    B_TRANSLATE_MARK("Network"),  // S_NETWORK
+    B_TRANSLATE_MARK("Language:"),  // S_LANGUAGE
+    B_TRANSLATE_MARK("Ports to probe:"),  // S_PROBE_PORTS
+    B_TRANSLATE_MARK("Timeout (ms):"),  // S_TIMEOUT_MS
+    B_TRANSLATE_MARK("Max concurrent:"),  // S_MAX_CONCURRENT
+    B_TRANSLATE_MARK("Monitoring"),  // S_MONITORING
+    B_TRANSLATE_MARK("Auto-scan (min, 0=off):"),  // S_AUTO_SCAN_MINUTES
+    B_TRANSLATE_MARK("Read service banners (HTTP, SSH, ...)"),  // S_GRAB_BANNERS
+    B_TRANSLATE_MARK("Save"),  // S_SAVE
+    B_TRANSLATE_MARK("Cancel"),  // S_CANCEL
+    B_TRANSLATE_MARK("OK"),  // S_OK
+    B_TRANSLATE_MARK("Language will apply on restart."),  // S_LANG_RESTART
+    B_TRANSLATE_MARK("LANterna for Haiku v1.0 beta 1\n\nNative local network scanner.\nDiscovers LAN devices via TCP probes,\nenriches with MAC, OUI vendor, DNS and type.\nPersistence via native BFS attributes.\n\nby atomozero\nhttps://github.com/atomozero/LANterna\n\nMIT License"),  // S_ABOUT_TEXT
+    B_TRANSLATE_MARK("LocalSend"),  // S_TYPE_LOCALSEND
+    B_TRANSLATE_MARK("Printer"),  // S_TYPE_PRINTER
+    B_TRANSLATE_MARK("SMB Share"),  // S_TYPE_SMB
+    B_TRANSLATE_MARK("AFP Share"),  // S_TYPE_AFP
+    B_TRANSLATE_MARK("Remote Desktop"),  // S_TYPE_RDP
+    B_TRANSLATE_MARK("SSH Host"),  // S_TYPE_SSH
+    B_TRANSLATE_MARK("Web Server"),  // S_TYPE_WEB
+    B_TRANSLATE_MARK("mDNS Service"),  // S_TYPE_MDNS
+    B_TRANSLATE_MARK("Topology"),  // S_TOPOLOGY
+    B_TRANSLATE_MARK("Network topology"),  // S_TOPOLOGY_TITLE
+    B_TRANSLATE_MARK("Click a node for details.\nDrag nodes to rearrange the map."),  // S_TOPOLOGY_CLICK_NODE
+    B_TRANSLATE_MARK("Run a scan to see the topology"),  // S_TOPOLOGY_NO_DEVICE
+    B_TRANSLATE_MARK("Gateway"),  // S_GATEWAY
+    B_TRANSLATE_MARK("No devices"),  // S_TOPOLOGY_NO_DEVICES_LABEL
+    B_TRANSLATE_MARK("(none)"),  // S_PIVOT_NONE
+    B_TRANSLATE_MARK("(unknown)"),  // S_PIVOT_UNKNOWN
+    B_TRANSLATE_MARK("Group by:"),  // S_PIVOT_GROUP_BY
+    B_TRANSLATE_MARK("Printer panel"),  // S_SVC_PRINTER_PANEL
+    B_TRANSLATE_MARK("SSH terminal"),  // S_SVC_SSH_TERMINAL
+    B_TRANSLATE_MARK("SMB share"),  // S_SVC_SMB_SHARE
+    B_TRANSLATE_MARK("AFP share"),  // S_SVC_AFP_SHARE
+    B_TRANSLATE_MARK("Remote desktop"),  // S_SVC_REMOTE_DESKTOP
+    B_TRANSLATE_MARK("RAW print"),  // S_SVC_RAW_PRINT
+    B_TRANSLATE_MARK("less"),  // S_HEATMAP_LESS
+    B_TRANSLATE_MARK("more"),  // S_HEATMAP_MORE
+    B_TRANSLATE_MARK("No samples."),  // S_NO_SAMPLES
+    B_TRANSLATE_MARK("Copy IP"),  // S_CTX_COPY_IP
+    B_TRANSLATE_MARK("Copy MAC"),  // S_CTX_COPY_MAC
+    B_TRANSLATE_MARK("Open in browser"),  // S_CTX_OPEN_BROWSER
+    B_TRANSLATE_MARK("Connect SSH"),  // S_CTX_CONNECT_SSH
+    B_TRANSLATE_MARK("Open SMB share"),  // S_CTX_OPEN_SMB
+    B_TRANSLATE_MARK("Wake-on-LAN (wake up)"),  // S_CTX_WOL
+    B_TRANSLATE_MARK("Continuous ping (latency graph)"),  // S_CTX_PING
+    B_TRANSLATE_MARK("Edit details (alias, notes)..."),  // S_CTX_DETAILS
+    B_TRANSLATE_MARK("Online/offline history..."),  // S_CTX_HISTORY
+    B_TRANSLATE_MARK("New device on network"),  // S_NOTIF_NEW_DEVICE
+    B_TRANSLATE_MARK("Device offline"),  // S_NOTIF_OFFLINE
+    B_TRANSLATE_MARK("Blacklisted device detected"),  // S_NOTIF_BLACKLIST
+    B_TRANSLATE_MARK("no longer responding."),  // S_NOTIF_NO_RESPONSE
+    B_TRANSLATE_MARK("Magic packet sent to %s"),  // S_WOL_SENT
+    B_TRANSLATE_MARK("WoL send error to %s"),  // S_WOL_ERROR
+    B_TRANSLATE_MARK("Traceroute"),  // S_TRACE_TITLE
+    B_TRANSLATE_MARK("Hop"),  // S_TRACE_HOP
+    B_TRANSLATE_MARK("RTT"),  // S_TRACE_RTT
+    B_TRANSLATE_MARK("Ready."),  // S_TRACE_READY
+    B_TRANSLATE_MARK("Tracing route..."),  // S_TRACE_RUNNING
+    B_TRANSLATE_MARK("Stopped."),  // S_TRACE_STOPPED
+    B_TRANSLATE_MARK("Done."),  // S_TRACE_DONE
+    B_TRANSLATE_MARK("Cannot start traceroute"),  // S_TRACE_ERROR
+    B_TRANSLATE_MARK("Start"),  // S_TRACE_START
+    B_TRANSLATE_MARK("Stop"),  // S_TRACE_STOP
+    B_TRANSLATE_MARK("Traceroute"),  // S_CTX_TRACEROUTE
+    B_TRANSLATE_MARK("All interfaces"),  // S_ALL_INTERFACES
+    B_TRANSLATE_MARK("DNS lookup"),  // S_DNS_TITLE
+    B_TRANSLATE_MARK("Name:"),  // S_DNS_NAME
+    B_TRANSLATE_MARK("Type:"),  // S_DNS_TYPE
+    B_TRANSLATE_MARK("Resolver:"),  // S_DNS_RESOLVER
+    B_TRANSLATE_MARK("Value"),  // S_DNS_VALUE
+    B_TRANSLATE_MARK("TTL"),  // S_DNS_TTL
+    B_TRANSLATE_MARK("Lookup"),  // S_DNS_LOOKUP
+    B_TRANSLATE_MARK("Querying..."),  // S_DNS_QUERYING
+    B_TRANSLATE_MARK("Enter a name."),  // S_DNS_EMPTY
+    B_TRANSLATE_MARK("Error."),  // S_DNS_ERROR
+    B_TRANSLATE_MARK("No results."),  // S_DNS_NO_RESULT
+    B_TRANSLATE_MARK("%d records."),  // S_DNS_FOUND
+    B_TRANSLATE_MARK("DNS"),  // S_DNS_BUTTON
+    B_TRANSLATE_MARK("Ping %s:%u"),  // S_PING_TITLE
+    B_TRANSLATE_MARK("Waiting..."),  // S_PING_WAITING
+    B_TRANSLATE_MARK("No samples."),  // S_PING_NO_SAMPLES
+    B_TRANSLATE_MARK("Last"),  // S_PING_LAST
+    B_TRANSLATE_MARK("Avg"),  // S_PING_AVG
+    B_TRANSLATE_MARK("Min"),  // S_PING_MIN
+    B_TRANSLATE_MARK("Max"),  // S_PING_MAX
+    B_TRANSLATE_MARK("Loss"),  // S_PING_LOSS
+    B_TRANSLATE_MARK("Samples"),  // S_PING_SAMPLES
+    B_TRANSLATE_MARK("timeout"),  // S_PING_TIMEOUT
+    B_TRANSLATE_MARK("Details"),  // S_DETAILS_TITLE
+    B_TRANSLATE_MARK("Detected info"),  // S_DETAILS_DETECTED_INFO
+    B_TRANSLATE_MARK("Customization"),  // S_DETAILS_PERSONALIZATION
+    B_TRANSLATE_MARK("Hostname:"),  // S_DETAILS_HOSTNAME
+    B_TRANSLATE_MARK("Alias:"),  // S_DETAILS_ALIAS
+    B_TRANSLATE_MARK("Notes:"),  // S_DETAILS_NOTE
+    B_TRANSLATE_MARK("Tags:"),  // S_DETAILS_TAGS
+    B_TRANSLATE_MARK("Tags (comma-separated):"),  // S_DETAILS_TAGS_HINT
+    B_TRANSLATE_MARK("Favorite (highlighted)"),  // S_DETAILS_FAVORITE
+    B_TRANSLATE_MARK("Blacklist (suspicious)"),  // S_DETAILS_BLACKLIST
+    B_TRANSLATE_MARK("Detected services"),  // S_DETAILS_SERVICES
+    B_TRANSLATE_MARK("History"),  // S_HISTORY_TITLE
+    B_TRANSLATE_MARK("Online/offline timeline"),  // S_HISTORY_TIMELINE
+    B_TRANSLATE_MARK("Weekly heatmap (intensity = time online per hour)"),  // S_HISTORY_HEATMAP
+    B_TRANSLATE_MARK("Event log"),  // S_HISTORY_LOG
+    B_TRANSLATE_MARK("No events recorded for this device."),  // S_HISTORY_NO_EVENTS
+    B_TRANSLATE_MARK("Not enough data for heatmap."),  // S_HISTORY_NO_DATA
+    B_TRANSLATE_MARK("Online"),  // S_HISTORY_ONLINE
+    B_TRANSLATE_MARK("Offline"),  // S_HISTORY_OFFLINE
+    B_TRANSLATE_MARK("Unknown"),  // S_HISTORY_UNKNOWN
+    B_TRANSLATE_MARK("State:"),  // S_HISTORY_STATE
+    B_TRANSLATE_MARK("%d events: %d online, %d offline"),  // S_HISTORY_EVENTS_SUMMARY
+    B_TRANSLATE_MARK("Mon"),  // S_DAY_MON
+    B_TRANSLATE_MARK("Tue"),  // S_DAY_TUE
+    B_TRANSLATE_MARK("Wed"),  // S_DAY_WED
+    B_TRANSLATE_MARK("Thu"),  // S_DAY_THU
+    B_TRANSLATE_MARK("Fri"),  // S_DAY_FRI
+    B_TRANSLATE_MARK("Sat"),  // S_DAY_SAT
+    B_TRANSLATE_MARK("Sun"),  // S_DAY_SUN
+    B_TRANSLATE_MARK("Tags"),  // S_COL_TAGS
+    B_TRANSLATE_MARK("Tags:"),  // S_FILTER_TAGS
+    B_TRANSLATE_MARK("%d devices from history."),  // S_LOADED_FROM_HISTORY
+    B_TRANSLATE_MARK("Auto-scan every %d min."),  // S_AUTO_SCAN_STATUS
+    B_TRANSLATE_MARK("Done. %d devices found."),  // S_DEVICES_FOUND
 };
-
-static Language sCurrentLang = kLangItalian;
+static_assert(sizeof(kEnglishSource)/sizeof(kEnglishSource[0]) == S_COUNT_TOTAL,
+              "Locale table out of sync with StringId enum");
 
 inline const char* Tr(StringId id) {
-    return sStrings[id][sCurrentLang];
-}
-
-inline void SetLanguage(Language lang) {
-    sCurrentLang = lang;
-}
-
-inline Language GetLanguage() {
-    return sCurrentLang;
-}
-
-inline void SetLanguageFromCode(const char* code) {
-    if (!code || !*code) return;
-    if (strncmp(code, "it", 2) == 0) sCurrentLang = kLangItalian;
-    else if (strncmp(code, "en", 2) == 0) sCurrentLang = kLangEnglish;
-    else if (strncmp(code, "es", 2) == 0) sCurrentLang = kLangSpanish;
-    else if (strncmp(code, "de", 2) == 0) sCurrentLang = kLangGerman;
-    else if (strncmp(code, "ja", 2) == 0) sCurrentLang = kLangJapanese;
-}
-
-inline const char* LanguageName(Language lang) {
-    switch (lang) {
-        case kLangItalian:  return "Italiano";
-        case kLangEnglish:  return "English";
-        case kLangSpanish:  return "Espa\xc3\xb1ol";
-        case kLangGerman:   return "Deutsch";
-        case kLangJapanese: return "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e";
-        default: return "?";
-    }
-}
-
-inline const char* LanguageCode(Language lang) {
-    switch (lang) {
-        case kLangItalian:  return "it";
-        case kLangEnglish:  return "en";
-        case kLangSpanish:  return "es";
-        case kLangGerman:   return "de";
-        case kLangJapanese: return "ja";
-        default: return "it";
-    }
+    return B_TRANSLATE_NOCOLLECT(kEnglishSource[id]);
 }
 
 } // namespace lanterna

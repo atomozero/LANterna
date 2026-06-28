@@ -1,0 +1,155 @@
+1	Italian	x-vnd.atomozero-LANterna	1156551260
+No samples.	LANterna		Nessun campione.
+Detected services	LANterna		Servizi rilevati
+Name:	LANterna		Nome:
+Network topology	LANterna		Topologia di rete
+Hop	LANterna		Hop
+Value	LANterna		Valore
+OK	LANterna		OK
+less	LANterna		meno
+Open SMB share	LANterna		Apri condivisione SMB
+Notes:	LANterna		Note:
+Tags	LANterna		Tag
+No devices.	LANterna		Nessun device.
+Weekly heatmap (intensity = time online per hour)	LANterna		Heatmap settimanale (intensita' = tempo online per ora)
+SSH Host	LANterna		Host SSH
+Thu	LANterna		Gio
+Scanning... %d%%	LANterna		Scansione in corso... %d%%
+Remote Desktop	LANterna		Desktop remoto
+No events recorded for this device.	LANterna		Nessun evento registrato per questo device.
+Scan	LANterna		Scansiona
+RTT	LANterna		RTT
+Copy IP	LANterna		Copia IP
+Ports to probe:	LANterna		Porte da sondare:
+Stop	LANterna		Ferma
+No interface	LANterna		Nessuna interfaccia
+Cancel	LANterna		Annulla
+IP:	LANterna		IP:
+Settings	LANterna		Impostazioni
+no longer responding.	LANterna		non risponde piu'.
+Open in browser	LANterna		Apri nel browser
+Mon	LANterna		Lun
+DNS	LANterna		DNS
+All interfaces	LANterna		Tutte le interfacce
+Wed	LANterna		Mer
+Connect SSH	LANterna		Connetti SSH
+No results.	LANterna		Nessun risultato.
+Ready.	LANterna		Pronto.
+Detected info	LANterna		Informazioni rilevate
+Error.	LANterna		Errore.
+Tags:	LANterna		Tag:
+Start	LANterna		Avvia
+HTTPS	LANterna		HTTPS
+Max concurrent:	LANterna		Connessioni simultanee:
+Alias:	LANterna		Alias:
+Customization	LANterna		Personalizzazione
+Gateway	LANterna		Gateway
+First seen	LANterna		Primo avvistamento
+Min	LANterna		Min
+Tracing route...	LANterna		Tracciamento in corso...
+Magic packet sent to %s	LANterna		Magic packet inviato a %s
+HTTP alternate	LANterna		HTTP alternativo
+No devices	LANterna		Nessun device
+Wake-on-LAN (wake up)	LANterna		Wake-on-LAN (sveglia)
+Run a scan to see the topology	LANterna		Esegui una scansione per visualizzare la topologia
+Event log	LANterna		Log eventi
+Error: cannot create file.	LANterna		Errore: impossibile creare il file.
+SMB Share	LANterna		Condivisione SMB
+HTTP	LANterna		HTTP
+(double-click to open)	LANterna		(doppio click per aprire)
+Samples	LANterna		Campioni
+Stopped.	LANterna		Fermato.
+Favorite (highlighted)	LANterna		Preferito (evidenziato)
+more	LANterna		più
+TTL	LANterna		TTL
+Avg	LANterna		Media
+Timeout (ms):	LANterna		Timeout (ms):
+(unknown)	LANterna		(sconosciuto)
+Tue	LANterna		Mar
+Max	LANterna		Max
+mDNS	LANterna		mDNS
+%d devices from history.	LANterna		%d device dalla cronologia.
+Name	LANterna		Nome
+Sat	LANterna		Sab
+Resolver:	LANterna		Resolver:
+Topology	LANterna		Topologia
+(none)	LANterna		(nessuna)
+timeout	LANterna		timeout
+DNS lookup	LANterna		DNS lookup
+Last	LANterna		Ultimo
+IP	LANterna		IP
+Done.	LANterna		Completato.
+Ports:	LANterna		Porte:
+MAC:	LANterna		MAC:
+Details	LANterna		Dettagli
+RAW print	LANterna		Stampa RAW
+Continuous ping (latency graph)	LANterna		Ping continuo (grafico latenza)
+Auto-scan every %d min.	LANterna		Scansione automatica ogni %d min.
+MAC	LANterna		MAC
+AFP share	LANterna		Condivisione AFP
+Querying...	LANterna		Query in corso...
+Offline	LANterna		Offline
+Last seen	LANterna		Ultimo avvistamento
+Tags (comma-separated):	LANterna		Tag (separati da virgola):
+Sun	LANterna		Dom
+State:	LANterna		Stato:
+Interface:	LANterna		Interfaccia:
+Summary	LANterna		Riepilogo
+Vendor	LANterna		Produttore
+mDNS Service	LANterna		Servizio mDNS
+Language:	LANterna		Lingua:
+Printer	LANterna		Stampante
+%d records.	LANterna		%d record.
+New device on network	LANterna		Nuovo device in rete
+Group by:	LANterna		Raggruppa per:
+Auto-scan (min, 0=off):	LANterna		Scansione automatica (min, 0=off):
+N.	LANterna		N.
+Blacklisted device detected	LANterna		Device in blacklist rilevato
+Printer panel	LANterna		Pannello stampante
+Network	LANterna		Rete
+Monitoring	LANterna		Monitoraggio
+Cannot start traceroute	LANterna		Errore avvio traceroute
+Ports	LANterna		Porte
+Exported: %s	LANterna		Esportato: %s
+Web Server	LANterna		Server web
+Online/offline timeline	LANterna		Timeline online/offline
+Remote desktop	LANterna		Desktop remoto
+Language will apply on restart.	LANterna		La lingua verrà applicata al riavvio.
+Blacklist (suspicious)	LANterna		Blacklist (sospetto)
+Loss	LANterna		Persi
+Lookup	LANterna		Cerca
+Device offline	LANterna		Device offline
+Fri	LANterna		Ven
+LocalSend	LANterna		LocalSend
+No data to export.	LANterna		Nessun dato da esportare.
+Cannot start scan.	LANterna		Impossibile avviare la scansione.
+Ping %s:%u	LANterna		Ping %s:%u
+Read service banners (HTTP, SSH, ...)	LANterna		Leggi banner servizi (HTTP, SSH, ...)
+Type	LANterna		Tipo
+Save	LANterna		Salva
+Hostname:	LANterna		Hostname:
+Online	LANterna		Online
+LANterna for Haiku v1.0 beta 1\n\nNative local network scanner.\nDiscovers LAN devices via TCP probes,\nenriches with MAC, OUI vendor, DNS and type.\nPersistence via native BFS attributes.\n\nby atomozero\nhttps://github.com/atomozero/LANterna\n\nMIT License	LANterna		LANterna per Haiku v1.0 beta 1\n\nScanner di rete locale nativo.\nScopre i device nella LAN tramite probe TCP,\narricchisce con MAC, vendor OUI, DNS e tipo.\nPersistenza su attributi BFS.\n\ndi atomozero\nhttps://github.com/atomozero/LANterna\n\nLicenza MIT
+SSH terminal	LANterna		Terminale SSH
+Done. %d devices found.	LANterna		Fatto. %d device trovati.
+Online/offline history...	LANterna		Storico online/offline...
+Waiting...	LANterna		In attesa...
+General	LANterna		Generale
+%d devices, %d groups	LANterna		%d device, %d gruppi
+Edit details (alias, notes)...	LANterna		Modifica dettagli (alias, note)...
+AFP Share	LANterna		Condivisione AFP
+Traceroute	LANterna		Traceroute
+Unknown	LANterna		Sconosciuto
+Type:	LANterna		Tipo:
+Click a node for details.\nDrag nodes to rearrange the map.	LANterna		Clicca su un nodo per vedere i dettagli.\nTrascina i nodi per riorganizzare la mappa.
+History	LANterna		Storico
+Export CSV	LANterna		Esporta CSV
+Port	LANterna		Porta
+Not enough data for heatmap.	LANterna		Dati insufficienti per la heatmap.
+Enter a name.	LANterna		Inserisci un nome.
+Copy MAC	LANterna		Copia MAC
+HTTP service	LANterna		HTTP servizio
+WoL send error to %s	LANterna		Errore invio WoL a %s
+Vendor:	LANterna		Produttore:
+SMB share	LANterna		Condivisione SMB
+%d events: %d online, %d offline	LANterna		%d eventi: %d online, %d offline

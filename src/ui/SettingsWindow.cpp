@@ -8,11 +8,7 @@
 #include <Directory.h>
 #include <FindDirectory.h>
 #include <LayoutBuilder.h>
-#include <LocaleRoster.h>
-#include <MenuField.h>
-#include <MenuItem.h>
 #include <Path.h>
-#include <PopUpMenu.h>
 #include <String.h>
 #include <StringView.h>
 #include <TextControl.h>
@@ -36,19 +32,6 @@ std::string AppSettings::DefaultPath() {
     return "/boot/home/config/settings/LANterna/settings";
 }
 
-void AppSettings::DetectSystemLanguage() {
-    if (!language.empty())
-        return;
-    BMessage preferred;
-    if (BLocaleRoster::Default()->GetPreferredLanguages(&preferred) == B_OK) {
-        const char* lang = nullptr;
-        if (preferred.FindString("language", &lang) == B_OK && lang)
-            language = std::string(lang, 2);
-    }
-    if (language.empty())
-        language = "it";
-}
-
 void AppSettings::Load(const std::string& path) {
     std::ifstream f(path);
     if (!f.is_open())
@@ -61,14 +44,16 @@ void AppSettings::Load(const std::string& path) {
         std::string key = line.substr(0, eq);
         std::string val = line.substr(eq + 1);
 
-        if (key == "language")    language = val;
+        // `language=...` legacy: la scelta lingua passa al preflet Locale
+        // di Haiku via BCatalog. Il campo nel file resta letto-e-ignorato
+        // per non rompere settings file esistenti.
+        if (key == "language") /* deprecated, ignored */;
         else if (key == "ports")  ports = val;
         else if (key == "timeout") timeoutMs = atoi(val.c_str());
         else if (key == "maxconn") maxInFlight = atoi(val.c_str());
         else if (key == "autoscan") autoScanMinutes = atoi(val.c_str());
         else if (key == "banners")  grabBanners = (val == "1");
     }
-    SetLanguageFromCode(language.c_str());
 }
 
 void AppSettings::Save(const std::string& path) const {
@@ -79,7 +64,6 @@ void AppSettings::Save(const std::string& path) const {
 
     std::FILE* f = std::fopen(path.c_str(), "w");
     if (!f) return;
-    std::fprintf(f, "language=%s\n", language.c_str());
     std::fprintf(f, "ports=%s\n", ports.c_str());
     std::fprintf(f, "timeout=%d\n", timeoutMs);
     std::fprintf(f, "maxconn=%d\n", maxInFlight);
@@ -103,17 +87,8 @@ SettingsWindow::SettingsWindow(AppSettings* settings, BWindow* target)
       fSettings(settings),
       fTarget(target)
 {
-    // ── Lingua ──
-    fLangMenu = new BPopUpMenu("lang");
-    for (int i = 0; i < kLangCount; i++) {
-        BMenuItem* item = new BMenuItem(LanguageName(static_cast<Language>(i)),
-                                        nullptr);
-        if (strcmp(LanguageCode(static_cast<Language>(i)),
-                   settings->language.c_str()) == 0)
-            item->SetMarked(true);
-        fLangMenu->AddItem(item);
-    }
-    fLangField = new BMenuField(Tr(S_LANGUAGE), fLangMenu);
+    // La lingua dell'UI segue il preflet Locale di Haiku via BCatalog
+    // -- niente picker per-app.
 
     // ── Rete ──
     BString portsStr(settings->ports.c_str());
@@ -150,9 +125,6 @@ SettingsWindow::SettingsWindow(AppSettings* settings, BWindow* target)
 
     BLayoutBuilder::Group<>(this, B_VERTICAL, B_USE_HALF_ITEM_SPACING)
         .SetInsets(B_USE_WINDOW_INSETS)
-        .Add(MakeLabel(Tr(S_GENERAL)))
-        .Add(fLangField)
-        .AddStrut(B_USE_ITEM_SPACING)
         .Add(MakeLabel(Tr(S_NETWORK)))
         .Add(fPortsField)
         .Add(fTimeoutField)
@@ -174,21 +146,6 @@ void SettingsWindow::MessageReceived(BMessage* message) {
     switch (message->what) {
         case kMsgSettingsSave:
         {
-            // Lingua
-            bool langChanged = false;
-            BMenuItem* marked = fLangMenu->FindMarked();
-            if (marked) {
-                int idx = fLangMenu->IndexOf(marked);
-                if (idx >= 0 && idx < kLangCount) {
-                    const char* code = LanguageCode(static_cast<Language>(idx));
-                    if (fSettings->language != code) {
-                        fSettings->language = code;
-                        SetLanguage(static_cast<Language>(idx));
-                        langChanged = true;
-                    }
-                }
-            }
-
             // Rete
             fSettings->ports = fPortsField->Text();
             fSettings->timeoutMs = atoi(fTimeoutField->Text());
@@ -206,13 +163,6 @@ void SettingsWindow::MessageReceived(BMessage* message) {
             // Notifica la finestra principale.
             fTarget->PostMessage(new BMessage(kMsgSettingsChanged));
 
-            if (langChanged) {
-                BAlert* alert = new BAlert("LANterna",
-                    Tr(S_LANG_RESTART),
-                    Tr(S_OK), NULL, NULL,
-                    B_WIDTH_AS_USUAL, B_INFO_ALERT);
-                alert->Go();
-            }
             PostMessage(B_QUIT_REQUESTED);
             break;
         }

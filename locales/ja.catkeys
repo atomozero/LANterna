@@ -1,0 +1,155 @@
+1	Japanese	x-vnd.atomozero-LANterna	1156551260
+No samples.	LANterna		サンプルなし
+Detected services	LANterna		検出サービス
+Name:	LANterna		名前:
+Network topology	LANterna		ネットワークトポロジー
+Hop	LANterna		ホップ
+Value	LANterna		値
+OK	LANterna		OK
+less	LANterna		少
+Open SMB share	LANterna		SMB共有を開く
+Notes:	LANterna		メモ:
+Tags	LANterna		タグ
+No devices.	LANterna		デバイスなし
+Weekly heatmap (intensity = time online per hour)	LANterna		週間ヒートマップ (濃度 = 時間帯ごとのオンライン時間)
+SSH Host	LANterna		SSHホスト
+Thu	LANterna		木
+Scanning... %d%%	LANterna		スキャン中... %d%%
+Remote Desktop	LANterna		リモート
+No events recorded for this device.	LANterna		イベントなし
+Scan	LANterna		スキャン
+RTT	LANterna		RTT
+Copy IP	LANterna		IPコピー
+Ports to probe:	LANterna		ポート:
+Stop	LANterna		停止
+No interface	LANterna		インターフェースなし
+Cancel	LANterna		キャンセル
+IP:	LANterna		IP:
+Settings	LANterna		設定
+no longer responding.	LANterna		応答なし
+Open in browser	LANterna		ブラウザで開く
+Mon	LANterna		月
+DNS	LANterna		DNS
+All interfaces	LANterna		すべてのインターフェース
+Wed	LANterna		水
+Connect SSH	LANterna		SSH接続
+No results.	LANterna		結果なし
+Ready.	LANterna		準備
+Detected info	LANterna		検出情報
+Error.	LANterna		エラー。
+Tags:	LANterna		タグ:
+Start	LANterna		開始
+HTTPS	LANterna		HTTPS
+Max concurrent:	LANterna		同時接続:
+Alias:	LANterna		エイリアス:
+Customization	LANterna		カスタマイズ
+Gateway	LANterna		ゲートウェイ
+First seen	LANterna		初回
+Min	LANterna		最小
+Tracing route...	LANterna		トレース中
+Magic packet sent to %s	LANterna		Magic packet 送信: %s
+HTTP alternate	LANterna		HTTP代替
+No devices	LANterna		デバイスなし
+Wake-on-LAN (wake up)	LANterna		Wake-on-LAN
+Run a scan to see the topology	LANterna		トポロジーを表示するにはスキャンを実行してください
+Event log	LANterna		イベントログ
+Error: cannot create file.	LANterna		エラー: ファイルを作成できません
+SMB Share	LANterna		SMB共有
+HTTP	LANterna		HTTP
+(double-click to open)	LANterna		(ダブルクリック)
+Samples	LANterna		サンプル
+Stopped.	LANterna		停止
+Favorite (highlighted)	LANterna		お気に入り
+more	LANterna		多
+TTL	LANterna		TTL
+Avg	LANterna		平均
+Timeout (ms):	LANterna		タイムアウト (ms):
+(unknown)	LANterna		(不明)
+Tue	LANterna		火
+Max	LANterna		最大
+mDNS	LANterna		mDNS
+%d devices from history.	LANterna		履歴から%d台
+Name	LANterna		名前
+Sat	LANterna		土
+Resolver:	LANterna		リゾルバ:
+Topology	LANterna		トポロジー
+(none)	LANterna		(なし)
+timeout	LANterna		タイムアウト
+DNS lookup	LANterna		DNS検索
+Last	LANterna		最後
+IP	LANterna		IP
+Done.	LANterna		完了
+Ports:	LANterna		ポート:
+MAC:	LANterna		MAC:
+Details	LANterna		詳細
+RAW print	LANterna		RAW印刷
+Continuous ping (latency graph)	LANterna		連続Ping
+Auto-scan every %d min.	LANterna		自動 %d分毎
+MAC	LANterna		MAC
+AFP share	LANterna		AFP共有
+Querying...	LANterna		検索中...
+Offline	LANterna		オフライン
+Last seen	LANterna		最終
+Tags (comma-separated):	LANterna		タグ (カンマ):
+Sun	LANterna		日
+State:	LANterna		状態:
+Interface:	LANterna		インターフェース:
+Summary	LANterna		概要
+Vendor	LANterna		ベンダー
+mDNS Service	LANterna		mDNSサービス
+Language:	LANterna		言語:
+Printer	LANterna		プリンタ
+%d records.	LANterna		%d件
+New device on network	LANterna		新しいデバイス
+Group by:	LANterna		グループ:
+Auto-scan (min, 0=off):	LANterna		自動スキャン (分):
+N.	LANterna		N.
+Blacklisted device detected	LANterna		ブラックリストデバイス検出
+Printer panel	LANterna		プリンタ管理
+Network	LANterna		ネットワーク
+Monitoring	LANterna		監視
+Cannot start traceroute	LANterna		トレース開始エラー
+Ports	LANterna		ポート
+Exported: %s	LANterna		エクスポート: %s
+Web Server	LANterna		Webサーバー
+Online/offline timeline	LANterna		オンライン履歴
+Remote desktop	LANterna		リモート
+Language will apply on restart.	LANterna		言語は再起動後
+Blacklist (suspicious)	LANterna		ブラックリスト
+Loss	LANterna		損失
+Lookup	LANterna		検索
+Device offline	LANterna		デバイスオフ
+Fri	LANterna		金
+LocalSend	LANterna		LocalSend
+No data to export.	LANterna		データなし
+Cannot start scan.	LANterna		スキャン開始不可
+Ping %s:%u	LANterna		Ping %s:%u
+Read service banners (HTTP, SSH, ...)	LANterna		バナー取得
+Type	LANterna		タイプ
+Save	LANterna		保存
+Hostname:	LANterna		ホスト名:
+Online	LANterna		オンライン
+LANterna for Haiku v1.0 beta 1\n\nNative local network scanner.\nDiscovers LAN devices via TCP probes,\nenriches with MAC, OUI vendor, DNS and type.\nPersistence via native BFS attributes.\n\nby atomozero\nhttps://github.com/atomozero/LANterna\n\nMIT License	LANterna		LANterna for Haiku v1.0 beta 1\n\nネイティブLANスキャナー。\nTCPプローブでLANデバイスを発見し、\nMAC、OUIベンダー、DNS、タイプで拡張。\nBFS属性に永続化。\n\nby atomozero\nhttps://github.com/atomozero/LANterna\n\nMIT License
+SSH terminal	LANterna		SSH端末
+Done. %d devices found.	LANterna		%d台発見
+Online/offline history...	LANterna		履歴...
+Waiting...	LANterna		待機中...
+General	LANterna		一般
+%d devices, %d groups	LANterna		%d台 %dグループ
+Edit details (alias, notes)...	LANterna		詳細編集...
+AFP Share	LANterna		AFP共有
+Traceroute	LANterna		トレース
+Unknown	LANterna		不明
+Type:	LANterna		タイプ:
+Click a node for details.\nDrag nodes to rearrange the map.	LANterna		ノードをクリックして詳細を表示。\nノードをドラッグして配置変更。
+History	LANterna		履歴
+Export CSV	LANterna		CSVエクスポート
+Port	LANterna		ポート
+Not enough data for heatmap.	LANterna		データ不足
+Enter a name.	LANterna		名前必須
+Copy MAC	LANterna		MACコピー
+HTTP service	LANterna		HTTPサービス
+WoL send error to %s	LANterna		WoLエラー: %s
+Vendor:	LANterna		ベンダー:
+SMB share	LANterna		SMB共有
+%d events: %d online, %d offline	LANterna		%d件: オンライン%d, オフライン%d

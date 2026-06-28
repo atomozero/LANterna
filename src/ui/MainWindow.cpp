@@ -173,10 +173,9 @@ MainWindow::MainWindow()
     fScanning = false;
     fSelectedInterface = 0;
 
-    // Carica impostazioni e lingua.
-    fAppSettings.DetectSystemLanguage();
+    // Carica impostazioni. La lingua segue il preflet Locale di Haiku via
+    // BCatalog (Locale.h), non e' piu' un campo delle settings.
     fAppSettings.Load(AppSettings::DefaultPath());
-    SetLanguageFromCode(fAppSettings.language.c_str());
 
     fInterfaces = EnumerateInterfaces();
 
