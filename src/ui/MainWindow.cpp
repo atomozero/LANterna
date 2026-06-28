@@ -389,14 +389,11 @@ void MainWindow::MessageReceived(BMessage* message) {
                 _StartScan();
             break;
         case kMsgAbout:
-        {
-            BAlert* alert = new BAlert("About LANterna",
-                Tr(S_ABOUT_TEXT),
-                Tr(S_OK), NULL, NULL,
-                B_WIDTH_AS_USUAL, B_INFO_ALERT);
-            alert->Go();
+            // Delegato a LanternaApp::AboutRequested() (main_gui.cpp), che
+            // costruisce un BAboutWindow con la stessa identita' visiva del
+            // banner (icona Beacon a 64px via HeaderView::MakeLogoBitmap).
+            be_app->PostMessage(B_ABOUT_REQUESTED);
             break;
-        }
         case kMsgExportSaveRef:
         {
             entry_ref dir;
