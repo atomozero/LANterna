@@ -31,7 +31,7 @@ public:
         if (icon != NULL)
             about->SetIcon(icon);
 
-        about->SetVersion("1.0 beta 2");
+        about->SetVersion("1.0 beta 3");
         about->AddCopyright(2026, "atomozero");
         about->AddDescription(
             "Native LAN scanner for Haiku. Walks the local subnet, probes "
