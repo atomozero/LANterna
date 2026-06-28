@@ -241,6 +241,18 @@ MainWindow::MainWindow()
     fAboutButton = new BButton("about", "?",
                                new BMessage(kMsgAbout));
     fStatusView = new BStringView("status", Tr(S_READY));
+    // Status bar in font leggermente piu' piccolo, stesso scaling di
+    // Sotoportego cosi' le due app sono visivamente coerenti.
+    BFont smallFont(be_plain_font);
+    smallFont.SetSize(smallFont.Size() * 0.9f);
+    fStatusView->SetFont(&smallFont);
+
+    // Banner slate in cima alla finestra: tile-logo + dot di stato +
+    // titolo "LANterna" + sottotitolo dinamico legato alla scansione.
+    fHeader = new HeaderView("header");
+    fHeader->SetEasterEggTarget(BMessenger(this), kMsgAbout);
+    fHeader->SetSubtitle(Tr(S_READY));
+    fHeader->SetState(kHeaderIdle);
 
     fListView = new BColumnListView("devices", 0);
     fListView->SetInvocationMessage(new BMessage(kMsgRowInvoked));
@@ -287,6 +299,7 @@ MainWindow::MainWindow()
     fFilterTags->SetModificationMessage(new BMessage(kMsgFilterChanged));
 
     BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
+        .Add(fHeader)
         .AddGroup(B_HORIZONTAL)
             .Add(fInterfaceField)
             .Add(fScanButton)
@@ -319,8 +332,11 @@ MainWindow::MainWindow()
                        B_USE_WINDOW_SPACING, B_USE_HALF_ITEM_SPACING)
         .End();
 
-    if (fInterfaces.empty())
+    if (fInterfaces.empty()) {
         fScanButton->SetEnabled(false);
+        fHeader->SetState(kHeaderError);
+        fHeader->SetSubtitle(Tr(S_NO_INTERFACE));
+    }
 
     // Carica i device persistiti dalle scansioni precedenti.
     _LoadPersistedDevices();
@@ -553,6 +569,8 @@ void MainWindow::MessageReceived(BMessage* message) {
             BString s;
             s.SetToFormat(Tr(S_SCANNING), static_cast<int>(percent));
             fStatusView->SetText(s.String());
+            if (fHeader)
+                fHeader->SetSubtitle(s.String());
             break;
         }
         case kMsgScanDone:
@@ -563,6 +581,10 @@ void MainWindow::MessageReceived(BMessage* message) {
             s.SetToFormat(Tr(S_DEVICES_FOUND), static_cast<int>(found));
             fStatusView->SetText(s.String());
             _SetScanning(false);
+            if (fHeader) {
+                fHeader->SetState(kHeaderDone);
+                fHeader->SetSubtitle(s.String());
+            }
             // Confronta IP pre/post per notificare device scomparsi.
             _CheckOfflineDevices();
             // Aggiorna la pivot se aperta (lock necessario: thread diverso).
@@ -635,6 +657,11 @@ void MainWindow::_StartScan() {
     fDevices.clear();
     _SetScanning(true);
     fStatusView->SetText(Tr(S_SCANNING));
+    if (fHeader) {
+        BString s;
+        s.SetToFormat(Tr(S_SCANNING), 0);
+        fHeader->SetSubtitle(s.String());
+    }
 
     ScanConfig config;
     // Applica impostazioni utente.
@@ -665,6 +692,10 @@ void MainWindow::_StartScan() {
     if (!ok) {
         fStatusView->SetText(Tr(S_CANNOT_START_SCAN));
         _SetScanning(false);
+        if (fHeader) {
+            fHeader->SetState(kHeaderError);
+            fHeader->SetSubtitle(Tr(S_CANNOT_START_SCAN));
+        }
     }
 }
 
@@ -1214,6 +1245,8 @@ void MainWindow::_SetScanning(bool scanning) {
     fScanning = scanning;
     fScanButton->SetEnabled(!scanning);
     fInterfaceField->SetEnabled(!scanning);
+    if (fHeader && scanning)
+        fHeader->SetState(kHeaderProgress);
 }
 
 std::string MainWindow::_DefaultOuiPath() const {

@@ -13,6 +13,7 @@
 #include <set>
 #include <vector>
 
+#include "HeaderView.h"
 #include "net/Subnet.h"
 #include "SettingsWindow.h"
 
@@ -103,6 +104,7 @@ private:
     BButton* fAboutButton = nullptr;
     BColumnListView* fListView = nullptr;
     BStringView* fStatusView = nullptr;
+    HeaderView* fHeader = nullptr;
     bool fScanning = false;
 
     // Filtri per colonna.

@@ -44,6 +44,7 @@ CORE_SRCS := \
 
 UI_SRCS := \
   src/ui/ScanRunner.cpp \
+  src/ui/HeaderView.cpp \
   src/ui/MainWindow.cpp \
   src/ui/PivotWindow.cpp \
   src/ui/PingWindow.cpp \
@@ -61,16 +62,29 @@ SRCS := $(CORE_SRCS) $(UI_SRCS)
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(SRCS:.cpp=.d)
 
+RDEF := LANterna.rdef
+RSRC := LANterna.rsrc
+
 all: $(APP)
 
-$(APP): $(OBJS)
+# Compila il .rdef nel .rsrc binario. Include l'icona vettoriale Beacon.hvif
+# (vedi LANterna.rdef -> BEOS:ICON), la firma app e la versione.
+$(RSRC): $(RDEF) Beacon.hvif
+	rc -o $@ $(RDEF)
+
+# Link finale + iniezione risorse + registrazione MIME. Senza i passaggi
+# xres/mimeset Tracker mostra l'icona generica del binario invece di
+# Beacon.hvif.
+$(APP): $(OBJS) $(RSRC)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS)
+	xres -o $@ $(RSRC)
+	mimeset -f $@
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJS) $(DEPS) $(APP)
+	rm -f $(OBJS) $(DEPS) $(APP) $(RSRC)
 
 -include $(DEPS)
 
