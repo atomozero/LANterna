@@ -7,8 +7,8 @@ resource app_version {
     middle = 0,
     minor = 0,
     variety = B_APPV_BETA,
-    internal = 3,
-    short_info = "LANterna 1.0b3",
+    internal = 4,
+    short_info = "LANterna 1.0b4",
     long_info = "Scanner di rete locale per Haiku"
 };
 
