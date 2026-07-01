@@ -279,7 +279,9 @@ MainWindow::MainWindow()
         new ColoredColumn(Tr(S_COL_TAGS), 100, 60, 200, B_TRUNCATE_END),
         kColTags);
 
-    // Filtri per colonna: ricerca case-insensitive su sottostringa.
+    // Filtri per colonna: substring case-insensitive, CSV per multi-termine,
+    // "!" o "-" davanti a un termine per esclusione. Vedi
+    // _MatchesFilterExpr() per la sintassi completa.
     fFilterIp     = new BTextControl("flt_ip",     Tr(S_FILTER_IP),     "", nullptr);
     fFilterHost   = new BTextControl("flt_host",   Tr(S_FILTER_NAME),   "", nullptr);
     fFilterMac    = new BTextControl("flt_mac",    Tr(S_FILTER_MAC),    "", nullptr);
@@ -287,6 +289,22 @@ MainWindow::MainWindow()
     fFilterType   = new BTextControl("flt_type",   Tr(S_FILTER_TYPE),   "", nullptr);
     fFilterPorts  = new BTextControl("flt_ports",  Tr(S_FILTER_PORTS),  "", nullptr);
     fFilterTags   = new BTextControl("flt_tags",   Tr(S_FILTER_TAGS), "", nullptr);
+
+    // Tooltip di scoperta per la sintassi dei filtri (uguale per tutti,
+    // il caso principale e' esclusione sul tag per nascondere IoT/smart-home).
+    const char* kFilterHint =
+        "Sintassi: sottostringa (case-insensitive).\n"
+        "  CSV \"a,b\"      = qualsiasi delle due\n"
+        "  \"!x\" o \"-x\"   = escludi righe che contengono x\n"
+        "  \"srv,!prod\"   = include \"srv\", esclude \"prod\"\n"
+        "Esempio tag: \"!iot,!lightswitch\" nasconde smart-home.";
+    fFilterIp->SetToolTip(kFilterHint);
+    fFilterHost->SetToolTip(kFilterHint);
+    fFilterMac->SetToolTip(kFilterHint);
+    fFilterVendor->SetToolTip(kFilterHint);
+    fFilterType->SetToolTip(kFilterHint);
+    fFilterPorts->SetToolTip(kFilterHint);
+    fFilterTags->SetToolTip(kFilterHint);
 
     // Invia notifica ad ogni modifica per filtraggio live.
     fFilterIp->SetModificationMessage(new BMessage(kMsgFilterChanged));
@@ -905,25 +923,76 @@ void MainWindow::_AddDeviceWithChildren(const DeviceInfo& dev) {
     }
 }
 
-// Controlla se un valore contiene la sottostringa di filtro (case-insensitive).
-static bool _Contains(const BString& value, const char* filter) {
+// Filtro con supporto per esclusioni e liste CSV. Semantica per ogni cella:
+//   ""                    - passa tutto
+//   "foo"                 - il valore deve contenere "foo" (case-insensitive)
+//   "foo,bar"             - almeno uno tra "foo" e "bar" deve comparire
+//   "!foo" o "-foo"       - il valore NON deve contenere "foo"
+//   "foo,!bar"            - deve contenere "foo" MA non "bar"
+//   "!iot,!lightswitch"   - non deve contenere nessuno dei due (utile per
+//                           nascondere i device smart-home dal tag filter)
+// Il match e' substring case-insensitive: "!light" esclude "lightswitch"
+// e "light-bulb". Se servisse una corrispondenza esatta si potra' aggiungere
+// dopo (es. sintassi "=foo"), ma il substring copre bene i tag reali.
+static bool _MatchesFilterExpr(const BString& value, const char* filter) {
     if (filter == nullptr || filter[0] == '\0')
         return true;
-    BString lower(value.Length() ? value : "-");
-    BString flt(filter);
-    lower.ToLower();
-    flt.ToLower();
-    return lower.FindFirst(flt) >= 0;
+
+    BString haystack(value.Length() ? value : "-");
+    haystack.ToLower();
+
+    // Split del filtro per virgole in termini.
+    BString expr(filter);
+    bool hasInclude = false;
+    bool anyIncludeMatched = false;
+
+    int32 start = 0;
+    while (start <= expr.Length()) {
+        int32 comma = expr.FindFirst(',', start);
+        if (comma < 0) comma = expr.Length();
+        BString term;
+        expr.CopyInto(term, start, comma - start);
+        start = comma + 1;
+
+        term.Trim();
+        if (term.Length() == 0)
+            continue;
+
+        bool negate = false;
+        if (term.ByteAt(0) == '!' || term.ByteAt(0) == '-') {
+            negate = true;
+            term.Remove(0, 1);
+            term.Trim();
+            if (term.Length() == 0)
+                continue;
+        }
+        term.ToLower();
+
+        bool present = haystack.FindFirst(term) >= 0;
+        if (negate) {
+            // Un solo match negativo basta a scartare il device.
+            if (present)
+                return false;
+        } else {
+            hasInclude = true;
+            if (present)
+                anyIncludeMatched = true;
+        }
+    }
+
+    // Se ci sono termini di inclusione, ne deve matchare almeno uno.
+    // Se ci sono solo esclusioni, il device passa (nessuna ha matchato sopra).
+    return !hasInclude || anyIncludeMatched;
 }
 
 bool MainWindow::_MatchesFilters(const DeviceInfo& dev) const {
-    return _Contains(dev.ip,     fFilterIp->Text())
-        && _Contains(dev.host,   fFilterHost->Text())
-        && _Contains(dev.mac,    fFilterMac->Text())
-        && _Contains(dev.vendor, fFilterVendor->Text())
-        && _Contains(dev.type,   fFilterType->Text())
-        && _Contains(dev.ports,  fFilterPorts->Text())
-        && _Contains(dev.tags,   fFilterTags->Text());
+    return _MatchesFilterExpr(dev.ip,     fFilterIp->Text())
+        && _MatchesFilterExpr(dev.host,   fFilterHost->Text())
+        && _MatchesFilterExpr(dev.mac,    fFilterMac->Text())
+        && _MatchesFilterExpr(dev.vendor, fFilterVendor->Text())
+        && _MatchesFilterExpr(dev.type,   fFilterType->Text())
+        && _MatchesFilterExpr(dev.ports,  fFilterPorts->Text())
+        && _MatchesFilterExpr(dev.tags,   fFilterTags->Text());
 }
 
 void MainWindow::_RebuildList() {
