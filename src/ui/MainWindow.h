@@ -131,6 +131,13 @@ private:
 
     // Scansione periodica.
     BMessageRunner* fAutoScanRunner = nullptr;
+
+    // Sopprimi le notifiche "new device" durante la scansione di bootstrap
+    // (primo avvio con persistenza vuota): senza di questo su una LAN
+    // complessa arriverebbero centinaia di notifiche insieme. Impostato in
+    // _LoadPersistedDevices se il DB persistito e' vuoto, azzerato a fine
+    // della prima scansione completata.
+    bool fBootstrapScan = false;
 };
 
 } // namespace lanterna

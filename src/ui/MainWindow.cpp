@@ -583,6 +583,9 @@ void MainWindow::MessageReceived(BMessage* message) {
             }
             // Confronta IP pre/post per notificare device scomparsi.
             _CheckOfflineDevices();
+            // Bootstrap consumato: le scansioni successive tornano a
+            // notificare i device davvero nuovi.
+            fBootstrapScan = false;
             // Aggiorna la pivot se aperta (lock necessario: thread diverso).
             if (fPivotWindow != nullptr && fPivotWindow->Lock()) {
                 if (!fPivotWindow->IsHidden())
@@ -774,8 +777,13 @@ void MainWindow::_StoreDevice(const BMessage* message) {
     fDevices.push_back(dev);
     fCurrentScanIps.insert(dev.ip);
 
-    // Notifica Haiku per i device nuovi o blacklist (sempre, per allerta).
-    if (dev.isNew || dev.blacklist)
+    // Notifica Haiku per i device nuovi o blacklist. La scansione di
+    // bootstrap (persistenza vuota al primo avvio) sopprime le notifiche
+    // "isNew" perche' su una LAN densa sarebbero decine o centinaia --
+    // le entry di blacklist restano notificabili perche' sono state
+    // marcate esplicitamente dall'utente.
+    bool notify = dev.blacklist || (dev.isNew && !fBootstrapScan);
+    if (notify)
         _NotifyNewDevice(dev);
 
     if (_MatchesFilters(dev))
@@ -1115,6 +1123,11 @@ void MainWindow::_LoadPersistedDevices() {
         status.SetToFormat(Tr(S_LOADED_FROM_HISTORY),
                            static_cast<int>(all.size()));
         fStatusView->SetText(status.String());
+    } else {
+        // Prima esecuzione (o persistenza pulita): tratta la prossima
+        // scansione come "bootstrap" e non emettere una raffica di
+        // notifiche "new device" per ogni host della LAN.
+        fBootstrapScan = true;
     }
 }
 
