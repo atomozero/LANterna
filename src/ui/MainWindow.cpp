@@ -686,8 +686,8 @@ void MainWindow::_StartScan() {
     } else {
         selected.push_back(fInterfaces[fSelectedInterface]);
     }
-    bool ok = StartScan(BMessenger(this), selected,
-                        config, _DefaultOuiPath());
+    std::string ouiPath = _DefaultOuiPath();
+    bool ok = StartScan(BMessenger(this), selected, config, ouiPath);
     if (!ok) {
         fStatusView->SetText(Tr(S_CANNOT_START_SCAN));
         _SetScanning(false);
@@ -695,6 +695,13 @@ void MainWindow::_StartScan() {
             fHeader->SetState(kHeaderError);
             fHeader->SetSubtitle(Tr(S_CANNOT_START_SCAN));
         }
+    } else if (ouiPath.empty() && fHeader) {
+        // Hint visivo: senza DB OUI la colonna Vendor restera' vuota.
+        // Il dettaglio dei path tentati e' su stderr (vedi
+        // _DefaultOuiPath()).
+        fHeader->SetSubtitle(
+            "OUI database mancante, vendor non risolvibile "
+            "(vedi terminale)");
     }
 }
 
@@ -1259,15 +1266,31 @@ void MainWindow::_SetScanning(bool scanning) {
 }
 
 std::string MainWindow::_DefaultOuiPath() const {
-    // Candidati, in ordine: file utente nelle settings, poi accanto all'app.
-    BPath settings;
-    if (find_directory(B_USER_SETTINGS_DIRECTORY, &settings) == B_OK) {
-        settings.Append("LANterna/oui.txt");
-        BEntry entry(settings.Path());
-        if (entry.Exists())
-            return settings.Path();
-    }
+    // Ordine di ricerca del database OUI IEEE. Il primo che esiste vince.
+    // Le path di dati non-packaged servono per install da pacchetto (dove
+    // l'app dir e' read-only su packagefs e non si puo' scrivere accanto
+    // al binario).
+    std::vector<std::string> candidates;
 
+    // 1) User settings (path canonico consigliato nel README).
+    BPath userSettings;
+    if (find_directory(B_USER_SETTINGS_DIRECTORY, &userSettings) == B_OK) {
+        userSettings.Append("LANterna/oui.txt");
+        candidates.push_back(userSettings.Path());
+    }
+    // 2) User non-packaged data dir (compatibile con install da pkg).
+    BPath userData;
+    if (find_directory(B_USER_NONPACKAGED_DATA_DIRECTORY, &userData) == B_OK) {
+        userData.Append("LANterna/oui.txt");
+        candidates.push_back(userData.Path());
+    }
+    // 3) System non-packaged data dir (install "di sistema" manuale).
+    BPath sysData;
+    if (find_directory(B_SYSTEM_NONPACKAGED_DATA_DIRECTORY, &sysData) == B_OK) {
+        sysData.Append("LANterna/oui.txt");
+        candidates.push_back(sysData.Path());
+    }
+    // 4) Accanto al binario (dev / bundle "portable").
     app_info info;
     if (be_app != nullptr && be_app->GetAppInfo(&info) == B_OK) {
         BEntry appEntry(&info.ref);
@@ -1276,12 +1299,30 @@ std::string MainWindow::_DefaultOuiPath() const {
             BPath dir;
             appPath.GetParent(&dir);
             dir.Append("oui.txt");
-            BEntry ouiEntry(dir.Path());
-            if (ouiEntry.Exists())
-                return dir.Path();
+            candidates.push_back(dir.Path());
         }
     }
-    return std::string(); // nessun file: vendor lasciato vuoto
+    // 5) Current working directory (esecuzione `./LANterna` da src tree).
+    candidates.push_back("./oui.txt");
+
+    for (const std::string& p : candidates) {
+        BEntry entry(p.c_str());
+        if (entry.Exists()) {
+            fprintf(stderr, "[LANterna] OUI database: %s\n", p.c_str());
+            return p;
+        }
+    }
+    // Nessun file trovato: log dei path tentati, cosi' l'utente sa dove
+    // metterlo. La colonna Vendor restera' vuota.
+    fprintf(stderr,
+        "[LANterna] OUI database non trovato, vendor lookup disabilitato.\n"
+        "           Path tentati:\n");
+    for (const std::string& p : candidates)
+        fprintf(stderr, "             - %s\n", p.c_str());
+    fprintf(stderr,
+        "           Scarica https://standards-oui.ieee.org/oui/oui.txt\n"
+        "           e copialo in ~/config/settings/LANterna/oui.txt\n");
+    return std::string();
 }
 
 } // namespace lanterna
