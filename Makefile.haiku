@@ -124,9 +124,47 @@ install-catalogs: catalogs
 	mkdir -p $(INSTALL_LOCALE_DIR)
 	cp $(LOCALE_DIR)/*.catalog $(INSTALL_LOCALE_DIR)/
 
+# ── HPKG packaging ───────────────────────────────────────────────────
+# Costruisce lanterna-<ver>-x86_64.hpkg pronto per HaikuDepot / pkgman.
+# Layout dentro il pkg (mappato da packagefs a `/boot/system/`):
+#   apps/LANterna/LANterna                                          (binario)
+#   data/LANterna/oui.txt                                           (DB OUI, se presente)
+#   data/locale/catalogs/x-vnd.atomozero-LANterna/<lang>.catalog    (i18n)
+#   documentation/packages/lanterna/README.md
+#   .PackageInfo                                                    (metadati)
+PKG_VER    := 1.0.0-1
+PKG_NAME   := lanterna-$(PKG_VER)-x86_64.hpkg
+PKG_STAGE  := build/pkg
+
+hpkg: $(APP) catalogs PackageInfo
+	rm -rf $(PKG_STAGE)
+	mkdir -p $(PKG_STAGE)/apps/LANterna
+	mkdir -p $(PKG_STAGE)/data/LANterna
+	mkdir -p $(PKG_STAGE)/data/locale/catalogs/$(SIG)
+	mkdir -p $(PKG_STAGE)/documentation/packages/lanterna
+	cp $(APP) $(PKG_STAGE)/apps/LANterna/
+	cp $(LOCALE_DIR)/*.catalog \
+	    $(PKG_STAGE)/data/locale/catalogs/$(SIG)/
+	cp README.md $(PKG_STAGE)/documentation/packages/lanterna/
+	@# oui.txt e' opzionale: se presente accanto al Makefile lo includiamo,
+	@# altrimenti si fa a meno (l'app cerca anche in ~/config/settings).
+	@if [ -f oui.txt ]; then \
+	    echo "cp oui.txt -> data/LANterna/"; \
+	    cp oui.txt $(PKG_STAGE)/data/LANterna/; \
+	else \
+	    echo "[warn] oui.txt non presente nel repo, non incluso nel pkg."; \
+	fi
+	package create -C $(PKG_STAGE) -i PackageInfo $(PKG_NAME)
+	@echo ""
+	@echo "hpkg pronto: $(PKG_NAME)"
+	@echo "  Install:     pkgman install ./$(PKG_NAME)"
+	@echo "  Ispezione:   package dump ./$(PKG_NAME) | head"
+
 clean:
 	rm -f $(OBJS) $(DEPS) $(APP) $(RSRC) $(LOCALE_DIR)/*.catalog
+	rm -rf $(PKG_STAGE)
+	rm -f lanterna-*-x86_64.hpkg
 
 -include $(DEPS)
 
-.PHONY: all clean catkeys catalogs install-catalogs
+.PHONY: all clean catkeys catalogs install-catalogs hpkg

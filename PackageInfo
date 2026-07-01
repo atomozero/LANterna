@@ -1,0 +1,44 @@
+name			lanterna
+version			1.0.0-1
+architecture	x86_64
+summary			"Native LAN scanner for Haiku"
+
+description		"LANterna e' uno scanner LAN nativo per Haiku. Percorre
+la subnet locale, sonda i servizi TCP e arricchisce ogni host con
+vendor (OUI), reverse DNS, mDNS / DNS-SD, NetBIOS, SNMP e SSDP / UPnP.
+
+I risultati vivono come attributi BFS cosi' sopravvivono ai riavvii,
+la scansione periodica opzionale tiene l'inventario aggiornato e le
+BNotification avvertono quando un device nuovo entra o uno noto
+sparisce dalla LAN.
+
+La UI segue il preflet Locale di sistema (BCatalog): italiano,
+inglese, spagnolo, tedesco, giapponese."
+
+packager		"atomozero <atomozero@proton.me>"
+vendor			"atomozero"
+
+licenses {
+	"MIT"
+}
+
+copyrights {
+	"2026 atomozero"
+}
+
+provides {
+	lanterna = 1.0.0
+	app:LANterna = 1.0.0
+}
+
+requires {
+	haiku_x86_64
+	lib:libssl >= 3
+	lib:libcrypto >= 3
+	lib:libstdc++
+	lib:libgcc_s
+}
+
+urls {
+	"https://github.com/atomozero/LANterna"
+}

@@ -12,3 +12,7 @@
 
 # Catalog binari (.catalog) rigenerati da `make catalogs` dai .catkeys
 locales/*.catalog
+
+# hpkg staging + output di `make -f Makefile.haiku hpkg`
+/build/
+/lanterna-*-x86_64.hpkg

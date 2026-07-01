@@ -1359,6 +1359,13 @@ std::string MainWindow::_DefaultOuiPath() const {
         sysData.Append("LANterna/oui.txt");
         candidates.push_back(sysData.Path());
     }
+    // 3b) System data dir (install da hpkg -- packagefs monta `data/` del
+    // pacchetto qui).
+    BPath pkgData;
+    if (find_directory(B_SYSTEM_DATA_DIRECTORY, &pkgData) == B_OK) {
+        pkgData.Append("LANterna/oui.txt");
+        candidates.push_back(pkgData.Path());
+    }
     // 4) Accanto al binario (dev / bundle "portable").
     app_info info;
     if (be_app != nullptr && be_app->GetAppInfo(&info) == B_OK) {
